@@ -61,3 +61,4 @@ From then on the simulation can be directly started with `./omentreplay`.
 ## Issues
 - nfn-scala project: it does not handle large content objects according to ccn-lite. Instead of splitting large content objects, the data is dumped into a file on the local filesystem and the path is stored in the content object.
 - The project is not yet setup to be easily used in an actual network (there is only the `LocalNode` wrapper which executes everything on localhost). However, all the functionality (except the hack for large data files) is prepared because communication happens over sockets.
+- Timeouts are not fully implemented when using NACKS.
