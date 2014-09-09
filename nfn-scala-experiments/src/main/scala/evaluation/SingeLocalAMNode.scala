@@ -2,6 +2,7 @@ package evaluation
 
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.ConfigFile
 import com.typesafe.config.ConfigFactory
+import config.{ComputeNodeConfig, RouterConfig, CombinedNodeConfig}
 
 import scala.concurrent.duration._
 import akka.util.Timeout
@@ -12,13 +13,11 @@ import lambdacalculus.parser.ast.{Expr, LambdaDSL}
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 import nfn.service.impl.{Translate, WordCountService}
-import nfn.CombinedNodeConfig
 import nfn.service.impl.Translate
 import nfn.service.impl.WordCountService
 import scala.util.Success
 import scala.util.Failure
 import scala.Some
-import nfn.RouterConfig
 
 /**
  * Created by basil on 14/05/14.

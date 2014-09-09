@@ -1,12 +1,12 @@
-package nfn
+package config
 
 import java.util.concurrent.TimeUnit
 
+import ccn.packet.CCNName
 import ccnliteinterface._
 import com.typesafe.config.ConfigException.BadValue
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.{Config, ConfigFactory}
 import monitor.Monitor.NodeLog
-import ccn.packet.CCNName
 
 import scala.concurrent.duration.Duration
 
@@ -57,12 +57,20 @@ object StaticConfig {
   }
 }
 
+object SystemEnvironment {
+  val ccnLiteEnv: String = {
+    val maybeCcnLiteEnv = System.getenv("CCNL_PATH")
+    if(maybeCcnLiteEnv == null) {
+      throw new Exception("CCNL_PATH system variable is not set. Set it to the root directory of your local ccn-lite copy and compile it.")
+    }
+    maybeCcnLiteEnv
+  }
+}
+
 trait NodeConfig {
   def host: String
   def port: Int
   def prefix: CCNName
-
-  import StaticConfig._
   def toNodeLog: NodeLog
 
 

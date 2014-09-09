@@ -90,17 +90,6 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
   }
 
   override def ccnbToXml(binaryPacket: Array[Byte]): String = {
-    logger.warn(s"ccnbToXml for: '${new String(binaryPacket)}'")
-    val f = new File("./testfile" + binaryPacket.hashCode())
-
-    val bos = new BufferedOutputStream(new FileOutputStream(f))
-    try {
-      bos.write(binaryPacket)
-    } finally {
-      bos.close()
-    }
-
-
     val pktdump = "ccn-lite-pktdump"
     val cmds = Array(utilFolderName+pktdump, "-f", "1", "-s", wireFormatNum(wireFormat).toString)
 
@@ -119,38 +108,4 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
 
     res
   }
-}
-
-object CCNLiteInterfaceCli extends App {
-  val ccnIf = CCNLiteInterfaceCli(NDNTLVWireFormat())
-
-  val bi = ccnIf.mkBinaryInterest(Array("yay", "wo"))
-
-  val bc = ccnIf.mkBinaryContent(Array("yay", "works"), "testdata".getBytes)
-
-  ccnIf.ccnbToXml(bi)
-  ccnIf.ccnbToXml(bc)
-
-
-
-  val filename = "tempfile"
-  val file = new File(filename)
-
-  if(file.exists()) {
-    file.delete()
-  }
-
-  file.createNewFile()
-
-  val pw = new PrintWriter(file)
-  try {
-    pw.println("testcontentyo")
-  }  finally {
-    pw.close()
-  }
-
-  ccnIf.mkAddToCacheInterest(file.getCanonicalPath)
-
-  file.delete()
-
 }

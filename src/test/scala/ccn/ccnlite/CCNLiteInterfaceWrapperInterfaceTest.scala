@@ -13,10 +13,10 @@ import ccn.packet._
 */
 class CCNLiteInterfaceWrapperInterfaceTest extends FlatSpec with Matchers with GivenWhenThen {
 
-  testCCNLiteInterfaceWrapper(CCNBWireFormat(), CCNLiteJniInterface())
   testCCNLiteInterfaceWrapper(NDNTLVWireFormat(), CCNLiteCliInterface())
+  testCCNLiteInterfaceWrapper(CCNBWireFormat(), CCNLiteCliInterface())
   def testCCNLiteInterfaceWrapper(wireFormat: CCNLiteWireFormat, ifType: CCNLiteInterfaceType) = {
-    val ccnIf = CCNLiteInterface.createCCNLiteInterface(CCNBWireFormat(), CCNLiteJniInterface())
+    val ccnIf = CCNLiteInterface.createCCNLiteInterface(wireFormat, ifType)
 
     val interest = Interest("name", "interest")
 
@@ -33,10 +33,11 @@ class CCNLiteInterfaceWrapperInterfaceTest extends FlatSpec with Matchers with G
     s"CCNLiteInterface of type $ifType with wire format $wireFormat with content $content" should "be converted to ccnb back to xml into content object" in {
       val ccnbContent = ccnIf.mkBinaryContent(content.name.cmps.toArray, content.data)
       val xmlUnparsed = ccnIf.ccnbToXml(ccnbContent)
-      val resultContent = NFNCCNLiteParser.parseCCNPacket(xmlUnparsed)
-      resultContent.get should be (a [Content])
-      resultContent.get.name.cmps should be (Seq("name", "content"))
-      resultContent.get.asInstanceOf[Content].data should be ("testcontent".getBytes)
+      val resultContentPacket = NFNCCNLiteParser.parseCCNPacket(xmlUnparsed)
+      resultContentPacket.get should be (a [Content])
+      val resultContent = resultContentPacket.get.asInstanceOf[Content]
+      resultContent.name.cmps should be (Seq("name", "content"))
+      resultContent.data shouldBe "testcontent".getBytes
     }
     s"CCNLiteInterface of type $ifType with wire format $wireFormat with Content $content" should "be converted to ccnb for an addToCache requeest" in {
 

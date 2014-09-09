@@ -7,8 +7,8 @@ import ccnliteinterface._
 import ccnliteinterface.cli.CCNLiteInterfaceCli
 import ccnliteinterface.jni.CCNLiteInterfaceCCNbJni
 import com.typesafe.scalalogging.slf4j.Logging
+import config.StaticConfig
 import myutil.IOHelper
-import nfn.StaticConfig
 
 
 object CCNLiteInterfaceWrapper {

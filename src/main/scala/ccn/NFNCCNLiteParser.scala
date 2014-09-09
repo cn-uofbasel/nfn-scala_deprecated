@@ -23,6 +23,7 @@ object NFNCCNLiteParser extends Logging {
 
 
   def parsePacket(xmlString: String):Option[Packet] = {
+
     def parseData(elem: Node): String = {
 
       val data = elem \ "data"
@@ -84,7 +85,7 @@ object NFNCCNLiteParser extends Logging {
       val contents = elem \ "Content"
 
       assert(contents.size == 1, "content should only contain one node with content")
-      parseData(contents.head).getBytes
+      parseDataNDNTLV(contents.head).getBytes
     }
 
     val cleanedXmlString = xmlString.trim.replace("&", "&amp;")

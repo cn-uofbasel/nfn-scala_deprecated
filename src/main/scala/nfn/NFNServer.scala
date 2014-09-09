@@ -13,7 +13,7 @@ import ccn.ccnlite.CCNLiteInterfaceWrapper
 import ccn.packet._
 import ccnliteinterface.CCNLiteInterface
 import com.typesafe.scalalogging.slf4j.Logging
-import config.AkkaConfig
+import config.{ComputeNodeConfig, RouterConfig, StaticConfig, AkkaConfig}
 import monitor.Monitor
 import monitor.Monitor.PacketLogWithoutConfigs
 import network._

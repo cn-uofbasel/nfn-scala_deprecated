@@ -16,7 +16,7 @@ import node.{StandardNodeFactory, LocalNode}
 import monitor.Monitor
 import lambdacalculus.parser.ast._
 import nfn.service.impl._
-import config.AkkaConfig
+import config.{StaticConfig, AkkaConfig}
 import java.io.File
 
 

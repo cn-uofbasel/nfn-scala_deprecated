@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import akka.util.Timeout
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern._
-import config.AkkaConfig
+import config.{ComputeNodeConfig, RouterConfig, StaticConfig, AkkaConfig}
 import ccn.packet._
 import scala.concurrent.Future
 import scala.concurrent.duration._
