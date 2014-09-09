@@ -2,10 +2,9 @@ package monitor
 
 import akka.actor._
 import akka.testkit._
-import org.scalatest._
-import net.liftweb.json._
-import net.liftweb.json.Serialization.{read, write}
 import monitor.Monitor._
+import net.liftweb.json.Serialization.write
+import org.scalatest._
 
 
 class MonitorSpec(_system: ActorSystem) extends TestKit(_system)
