@@ -46,7 +46,7 @@ object NFNServiceLibrary extends Logging {
     def pinnedData = "pinnedfunction".getBytes
 
     def byteCodeData(serv: NFNService):Array[Byte] = {
-      BytecodeLoader.fromClass(serv) match {
+      BytecodeLoader.byteCodeForClass(serv) match {
         case Some(bc) => {
 //          if(bc.length + serv.ccnName)
           // TODO remove this when packet fragmentation works
