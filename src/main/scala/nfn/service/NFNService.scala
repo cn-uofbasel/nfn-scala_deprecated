@@ -10,9 +10,9 @@ import ccn.packet._
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.ConfigFile
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.slf4j.Logging
-import config.AkkaConfig
+import config.{StaticConfig, AkkaConfig}
 import lambdacalculus.parser.ast._
-import nfn.{StaticConfig, NodeConfig, NFNApi}
+import nfn.NFNApi
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._

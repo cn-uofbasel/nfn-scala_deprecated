@@ -2,7 +2,7 @@ package ccn
 
 import java.io._
 import com.typesafe.scalalogging.slf4j.Logging
-import nfn.{StaticConfig, RouterConfig, NodeConfig}
+import config.{SystemEnvironment, RouterConfig, StaticConfig}
 import ccn.packet.CCNName
 
 /**
@@ -43,6 +43,7 @@ class LogStreamReaderToFile(is: InputStream, logname: String, appendTimestamp: B
   }
 }
 
+
 /**
  * Encapsulates a native ccn-lite-relay process.
  * Starts a process with the given port and sets up a compute port. All output is written to a file in './log/ccnlite-<host>-<port>.log.
@@ -50,9 +51,10 @@ class LogStreamReaderToFile(is: InputStream, logname: String, appendTimestamp: B
  * @param nodeConfig
  */
 case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
+  val ccnLiteEnv = SystemEnvironment.ccnLiteEnv
 
   case class NetworkFace(toHost: String, toPort: Int) {
-    private val cmdUDPFace = s"../util/ccn-lite-ctrl -x $sockName newUDPface any $toHost $toPort"
+    private val cmdUDPFace = s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName newUDPface any $toHost $toPort"
     logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdUDPFace")
 
     Runtime.getRuntime.exec(cmdUDPFace.split(" "))
@@ -62,7 +64,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     globalFaceId += 2
 
     def registerPrefix(prefixToRegister: String) = {
-      val cmdPrefixReg =  s"../util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $networkFaceId"
+      val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $networkFaceId"
       logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdPrefixReg")
       Runtime.getRuntime.exec(cmdPrefixReg.split(" "))
       globalFaceId += 1
@@ -86,7 +88,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 
 //    if(port != 10010) {
 
-      val ccnliteExecutableName = if(nodeConfig.isCCNOnly) "../ccn-lite-relay" else "../ccn-nfn-relay"
+      val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/ccn-lite-relay" else s"$ccnLiteEnv/ccn-nfn-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
       val cmd = s"$ccnliteExecutable -v 99 -u $port -x $sockName"
       logger.debug(s"$processName-$prefix: executing: '$cmd'")

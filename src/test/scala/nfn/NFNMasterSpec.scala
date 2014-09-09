@@ -6,6 +6,7 @@ import ccn.ccnlite.CCNLiteInterfaceWrapper
 import ccn.packet._
 import ccnliteinterface._
 import com.typesafe.config.ConfigFactory
+import config.{ComputeNodeConfig, RouterConfig}
 import lambdacalculus.LambdaCalculus
 import lambdacalculus.parser.ast._
 import nfn.service.NFNServiceLibrary

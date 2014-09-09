@@ -1,6 +1,7 @@
 package evaluation.usecase
 
 import com.typesafe.config.ConfigFactory
+import config.{ComputeNodeConfig, RouterConfig, CombinedNodeConfig}
 import nfn._
 import node.LocalNode
 import ccn.packet._
@@ -10,11 +11,9 @@ import akka.pattern.AskTimeoutException
 import scala.concurrent.duration._
 import akka.util.Timeout
 import lambdacalculus.LambdaCalculus
-import nfn.CombinedNodeConfig
 import scala.util.Success
 import scala.util.Failure
 import scala.Some
-import nfn.RouterConfig
 
 object LambdaExpressionTester extends App {
 

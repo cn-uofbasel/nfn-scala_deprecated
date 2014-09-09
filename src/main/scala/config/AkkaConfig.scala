@@ -2,10 +2,8 @@ package config
 
 import java.util.concurrent.TimeUnit
 
-import com.typesafe.config.{Config, ConfigFactory}
-import nfn.NodeConfig
-import scala.concurrent.duration._
 import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 
 object AkkaConfig {
 
