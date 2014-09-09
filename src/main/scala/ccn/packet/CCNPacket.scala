@@ -37,7 +37,7 @@ case class CCNName(cmps: String *) extends Logging {
     else cmps.toList.mkString("/", "/", "")
   }
 
-  private def isThunkWithKeyword(keyword: String) = cmps.size >= 2 && !cmps.drop(cmps.size-2).forall(_ != keyword)
+  private def isThunkWithKeyword(keyword: String) = cmps.size >= 2 && cmps.last == nfnKeyword && !cmps.drop(cmps.size-2).forall(_ != keyword)
 
   def isThunk: Boolean = isThunkWithKeyword(thunkKeyword)
 
