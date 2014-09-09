@@ -26,6 +26,11 @@ object BytecodeLoader extends Logging {
     }
   }
 
+  def byteCodeForClass(clazz: Any):Option[Array[Byte]] = {
+    val byteCode = byteCodeForClassAndDependencies(clazz.getClass.getName)
+    Some(byteCode)
+  }
+
   /**
    * Finds the class with the given class name, finds all dependent classes, filters out both Scala and Java SDK classes,
    * puts everything accordingly into a jarfile and returns the data for this jarfile
@@ -70,9 +75,10 @@ object BytecodeLoader extends Logging {
     } finally {
       jarOut.close()
     }
-    logger.info(s"Created jar with dependant bytecode for class $className")
 
-    baOut.toByteArray
+    val ba = baOut.toByteArray
+    logger.info(s"Created jar (size=${ba.size}) with dependant bytecode for class $className")
+    ba
   }
 
   /**
@@ -95,9 +101,6 @@ object BytecodeLoader extends Logging {
     entries foreach { e =>
 
       if (!e.isDirectory && e.getName.endsWith(".class")) {
-//        println(s"Class entry: ${e.getName}")
-
-
         val entryClassName = e.getName.substring(0, e.getName.length-6).replace('/', '.')
 
         if(entryClassName == classNameToLoad.replace("/", "").replace("_", ".")) {
@@ -108,12 +111,8 @@ object BytecodeLoader extends Logging {
         }
       }
     }
-    throw new Exception(s"Class $classNameToLoad was not found in jar")
+    throw new Exception(s"Class $classNameToLoad was not found in jar (found ${entries.size} classes in jar)")
   }
 
-  def fromClass(clazz: Any):Option[Array[Byte]] = {
-    val byteCode = byteCodeForClassAndDependencies(clazz.getClass.getName)
-    Some(byteCode)
-  }
 }
 
