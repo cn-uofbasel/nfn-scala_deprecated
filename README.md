@@ -3,7 +3,7 @@ nfn-scala
 =========
 
 nfn-scala is a NFN service layer implementation in Scala, interfacing and depending on CCN-lite. 
-This project provides a fully asynchronous compute environment, an API to interface with NFN, a DSL to program the lambda calculus and other things.
+This project provides a asynchronous compute environment, an API to interface with NFN, a DSL to program the lambda calculus and other things.
 
 ##Installation
 
@@ -34,7 +34,7 @@ Ubuntu:
 3. Follow [instructions](http://www.scala-sbt.org/0.13.2/docs/Getting-Started/Setup.html) to install sbt
 
 OSX:
-JDK 7 should be available, otherwise it can be downloaded directly from (oracle)[http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html]. 
+JDK 7 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
 
 1. `brew install openssl`
 2. `brew install sbt`

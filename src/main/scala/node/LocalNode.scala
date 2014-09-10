@@ -113,9 +113,6 @@ object LocalNode {
   }
 }
 
-/**
- * Created by basil on 10/04/14.
- */
 case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[ComputeNodeConfig]){
 
   implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
