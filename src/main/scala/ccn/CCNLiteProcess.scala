@@ -51,7 +51,6 @@ class LogStreamReaderToFile(is: InputStream, logname: String, appendTimestamp: B
  * @param nodeConfig
  */
 case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
-  val ccnLiteEnv = SystemEnvironment.ccnLiteEnv
 
   case class NetworkFace(toHost: String, toPort: Int) {
     private val cmdUDPFace = s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName newUDPface any $toHost $toPort"
@@ -60,16 +59,26 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     Runtime.getRuntime.exec(cmdUDPFace.split(" "))
     udpFaces += (toHost -> toPort) -> this
 
-    private val networkFaceId: Int = globalFaceId
+    val faceId: Int = globalFaceId
     globalFaceId += 2
 
     def registerPrefix(prefixToRegister: String) = {
-      val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $networkFaceId"
+      val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $faceId"
       logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdPrefixReg")
       Runtime.getRuntime.exec(cmdPrefixReg.split(" "))
       globalFaceId += 1
     }
+
+    def unregisterPrefixPrefix(prefixToRegister: String) = {
+      udpFaces.get((host, port)) map { updFace =>
+        val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixunreg $prefixToRegister $faceId"
+        logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdPrefixReg")
+        Runtime.getRuntime.exec(cmdPrefixReg.split(" "))
+      }
+    }
   }
+
+  val ccnLiteEnv = SystemEnvironment.ccnLiteEnv
 
   private var process: Process = null
   private var globalFaceId = 2
@@ -114,20 +123,17 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     udpFaces.getOrElse(host -> port, NetworkFace(host, port))
   }
 
-  private def addPrefixToNewOrExistingNetworkFace(host: String, port: Int, prefix: String) = {
-    val networkFace = getOrCreateNetworkFace(host, port)
-
-    networkFace.registerPrefix(prefix)
-  }
-
   def connect(otherNodeConfig: RouterConfig): Unit = {
-    addPrefixToNewOrExistingNetworkFace(otherNodeConfig.host, otherNodeConfig.port, otherNodeConfig.prefix.toString)
+    getOrCreateNetworkFace(otherNodeConfig.host, otherNodeConfig.port).registerPrefix(otherNodeConfig.prefix.toString)
   }
 
 
   def addPrefix(prefix: CCNName, gatewayHost: String, gatewayPort: Int) = {
-    addPrefixToNewOrExistingNetworkFace(gatewayHost, gatewayPort, prefix.toString)
+    getOrCreateNetworkFace(gatewayHost, gatewayPort).registerPrefix(prefix.toString)
   }
 
-//  def removePrefix(prefix: CCNName)
+  def removePrefix(prefix: CCNName, gatewayHost: String, gatewayPort: Int) = {
+    getOrCreateNetworkFace(host, port).unregisterPrefixPrefix(prefix.toString)
+  }
+  
 }
