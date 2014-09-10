@@ -19,7 +19,7 @@ import ccn.CCNLiteProcess
 import monitor.Monitor
 import ccn.CCNLiteProcess
 
-object StandardNodeFactory {
+object LocalNodeFactory {
   def forId(id: Int, isCCNOnly: Boolean = false)(implicit config: Config): LocalNode = {
     val nodePrefix = CCNName("node", s"node$id")
     LocalNode(

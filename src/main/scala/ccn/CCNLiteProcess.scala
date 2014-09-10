@@ -128,4 +128,6 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   def addPrefix(prefix: CCNName, gatewayHost: String, gatewayPort: Int) = {
     addPrefixToNewOrExistingNetworkFace(gatewayHost, gatewayPort, prefix.toString)
   }
+
+//  def removePrefix(prefix: CCNName)
 }
