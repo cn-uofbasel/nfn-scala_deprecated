@@ -12,7 +12,7 @@ import akka.util.Timeout
 import nfn._
 import ccn.packet._
 import scala.concurrent.Future
-import node.{StandardNodeFactory, LocalNode}
+import node.{LocalNodeFactory, LocalNode}
 import monitor.Monitor
 import lambdacalculus.parser.ast._
 import nfn.service.impl._
@@ -26,13 +26,13 @@ object PaperExperiment extends App {
 
   val expNum = 3
 
-  val node1 = StandardNodeFactory.forId(1)
-  val node2 = StandardNodeFactory.forId(2, isCCNOnly = true)
+  val node1 = LocalNodeFactory.forId(1)
+  val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
 
-  val node3 = StandardNodeFactory.forId(3)
+  val node3 = LocalNodeFactory.forId(3)
 
-  val node4 = StandardNodeFactory.forId(4)
-  val node5 = StandardNodeFactory.forId(5, isCCNOnly = true)
+  val node4 = LocalNodeFactory.forId(4)
+  val node5 = LocalNodeFactory.forId(5, isCCNOnly = true)
   val nodes = List(node1, node2, node3, node4, node5)
 
   val docname1 = node1.prefix.append("doc", "test1")

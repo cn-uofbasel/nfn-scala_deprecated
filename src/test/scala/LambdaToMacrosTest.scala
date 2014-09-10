@@ -1,3 +1,4 @@
+import lambdacalculus.parser.ast.LambdaPrettyPrinter
 import lambdamacros.LambdaMacros
 import org.scalatest.{Matchers, FlatSpec}
 
@@ -7,7 +8,7 @@ import LambdaMacros._
 class LambdaToMacrosTest extends FlatSpec with Matchers {
 
 //  "Scala expression 1" should "be compiled to lambda string '1'" in {
-//    lambda({1}) shouldBe "1"
+//    lambda({1}, LambdaPrettyPrinter) shouldBe "1"
 //  }
 
 //  "Scala expression {x => x}" should "be compiled to lambda string '\\x.x'" in {
