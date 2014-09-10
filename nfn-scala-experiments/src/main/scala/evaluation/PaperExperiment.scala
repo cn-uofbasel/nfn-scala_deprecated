@@ -1,24 +1,18 @@
 package evaluation
 
-import akka.actor.{ActorLogging, ActorRef}
-import com.typesafe.config.{Config, ConfigFactory}
-import nfn.service._
-
-import scala.util._
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
-import akka.util.Timeout
-
-import nfn._
+import akka.actor.ActorRef
 import ccn.packet._
-import scala.concurrent.Future
-import node.{LocalNodeFactory, LocalNode}
-import monitor.Monitor
+import com.typesafe.config.{Config, ConfigFactory}
+import config.StaticConfig
 import lambdacalculus.parser.ast._
+import monitor.Monitor
+import nfn._
+import nfn.service._
 import nfn.service.impl._
-import config.{StaticConfig, AkkaConfig}
-import java.io.File
+import node.LocalNodeFactory
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util._
 
 object PaperExperiment extends App {
 
@@ -125,8 +119,8 @@ object PaperExperiment extends App {
   }
   node1.publishService(dynServ)
 
-  import LambdaDSL._
-  import LambdaNFNImplicits._
+  import lambdacalculus.parser.ast.LambdaDSL._
+  import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
   val ts = new Translate().toString
@@ -177,7 +171,6 @@ object PaperExperiment extends App {
   }
 
   def doExp(exprToDo: Expr) = {
-    import AkkaConfig.timeout
     val startTime = System.currentTimeMillis()
     node1 ? exprToDo andThen {
       case Success(content) => {
