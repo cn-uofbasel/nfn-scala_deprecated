@@ -28,7 +28,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
     def futInToOut(is: InputStream, os: OutputStream): Future[Unit] = {
       Future(
         Iterator.continually(is.read)
-                .takeWhile(-1 !=)
+                .takeWhile(_ != -1)
                 .foreach(os.write)
       )
     }

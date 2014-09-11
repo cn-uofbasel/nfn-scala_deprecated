@@ -11,7 +11,7 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ assemblySettings ++ Seq (
     version       := "0.1-SNAPSHOT",
     scalaVersion  := "2.10.3",
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "UTF-8"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-encoding", "-language:implicitConversions", "UTF-8"),
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
