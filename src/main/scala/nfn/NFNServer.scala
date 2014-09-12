@@ -78,11 +78,13 @@ class UDPConnectionContentInterest(local:InetSocketAddress,
         val binaryInterest = ccnLite.mkBinaryInterest(i)
         self.tell(UDPConnection.Send(binaryInterest), senderCopy)
       case c: Content =>
-        val binaryContent = ccnLite.mkBinaryContent(c)
-        self.tell(UDPConnection.Send(binaryContent), senderCopy)
+        ccnLite.mkBinaryContent(c) foreach { binaryContent =>
+          self.tell(UDPConnection.Send(binaryContent), senderCopy)
+        }
       case n: NAck =>
-        val binaryContent = ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes))
-        self.tell(UDPConnection.Send(binaryContent), senderCopy)
+        ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes)) foreach { binaryContent =>
+          self.tell(UDPConnection.Send(binaryContent), senderCopy)
+        }
     }
 
   def interestContentReceiveWithoutLog: Receive = {
@@ -279,17 +281,6 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   }
 
   def handlePacket(packet: CCNPacket, senderCopy: ActorRef) = {
-//    def monitorReceive(packet: CCNPacket): Unit = {
-//      val ccnPacketLog = packet match {
-//        case i: Interest => Monitor.InterestInfoLog("interest", i.name.toString)
-//        case c: Content => {
-//          val name = c.name.toString
-//          val data = new String(c.data).take(50)
-//          Monitor.ContentInfoLog("content", name, data)
-//        }
-//      }
-//      Monitor.monitor ! new Monitor.PacketLog(nodeConfig.toNFNNodeLog, nodeConfig.toComputeNodeLog, isSent = false, ccnPacketLog)
-//    }
 
     packet match {
       case i: Interest => {
@@ -353,7 +344,9 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
     case NFNApi.AddToCCNCache(content) => {
       logger.info(s"sending add to cache for $content")
-      nfnGateway ! UDPConnection.Send(ccnIf.mkAddToCacheInterest(content))
+      ccnIf.mkAddToCacheInterest(content) foreach { binaryAddToCacheReq =>
+        nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
+      }
     }
 
     case NFNApi.AddToLocalCache(content, prependLocalPrefix) => {

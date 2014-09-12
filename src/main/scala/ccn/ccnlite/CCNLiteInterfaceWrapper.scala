@@ -2,13 +2,11 @@ package ccn.ccnlite
 
 import ccn.NFNCCNLiteParser
 import ccn.packet._
-import java.io.{FileReader, FileOutputStream, File}
+import java.io.{FileOutputStream, File}
 import ccnliteinterface._
-import ccnliteinterface.cli.CCNLiteInterfaceCli
-import ccnliteinterface.jni.CCNLiteInterfaceCCNbJni
 import com.typesafe.scalalogging.slf4j.Logging
-import config.StaticConfig
-import myutil.IOHelper
+
+import scala.collection.mutable.ListBuffer
 
 
 object CCNLiteInterfaceWrapper {
@@ -31,10 +29,28 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
     }
   }
 
-  def mkBinaryContent(content: Content): Array[Byte] = {
-    val name = content.name.cmps.toArray
-    val data = content.data
-    ccnIf.mkBinaryContent(name, data)
+  def mkBinaryContent(content: Content): List[Array[Byte]] = {
+
+    val maxSegmentSize = 100
+
+    content match {
+      case Content(name, data) if data.size > maxSegmentSize => {
+        val buf = ListBuffer[Array[Byte]]()
+        def go(segNum: Int, largeData: Array[Byte]): List[Array[Byte]] = {
+          val (segData, largeDataTail) = largeData.splitAt(maxSegmentSize)
+          val segName = content.name.append(s"seg$segNum")
+          buf.prepend(ccnIf.mkBinaryContent(segName.cmps.toArray, segData))
+          if (largeDataTail.nonEmpty) {
+            go(segNum + 1, largeDataTail)
+          } else {
+            buf.toList
+          }
+        }
+        go(0, data)
+      }
+      case Content(name, data) => ccnIf.mkBinaryContent(name.cmps.toArray, data) :: Nil
+    }
+
   }
 
   def mkBinaryContent(name: Array[String], data: Array[Byte]): Array[Byte] = {
@@ -45,9 +61,9 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
     ccnIf.mkBinaryInterest(interest.name.cmps.toArray)
   }
 
-  def mkBinaryPacket(packet: CCNPacket): Array[Byte] = {
+  def mkBinaryPacket(packet: CCNPacket): List[Array[Byte]] = {
     packet match {
-      case i: Interest => mkBinaryInterest(i)
+      case i: Interest => mkBinaryInterest(i) :: Nil
       case c: Content => mkBinaryContent(c)
       case n: NAck => mkBinaryContent(n.toContent)
     }
@@ -58,43 +74,39 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
   }
 
 
-  def mkAddToCacheInterest(content: Content): Array[Byte] = {
 
-//    val ccnLiteCCNBIf = CCNLiteInterfaceWrapper.createCCNLiteInterfaceWrapper(CCNBWireFormat(), StaticConfig.ccnlitelibrarytype)
-//
-//    val binaryContent = ccnLiteCCNBIf.mkBinaryContent(content)
+  def mkAddToCacheInterest(content: Content): List[Array[Byte]] = {
 
-    // TODO this hack is required because even though the management operations can be written in CCNB,
-    // for the addToCache message the encoding must be in CCNB currently
-    val binaryContent = mkBinaryContent(content)
+    // TODO this is required because potentially several fies try to write to the same file, eve if it is very unlikely...
+    // no longer required when addToCache does no longer require to parse a file or is implemented directly in Scala
+    CCNLiteInterfaceWrapper.synchronized {
 
-    val servLibDir = new File("./service-library")
-    if(!servLibDir.exists) {
-      servLibDir.mkdir()
-    }
-    val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}.ccnb"
-    val file = new File(filename)
+      mkBinaryContent(content) map { binaryContent =>
+        val servLibDir = new File("./service-library")
+        if (!servLibDir.exists) {
+          servLibDir.mkdir()
+        }
+        val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}.ccnb"
+        val file = new File(filename)
+        file.delete()
 
-    // Just to be sure, if the file already exists, wait quickly and try again
-    if (file.exists) {
-      logger.warn(s"Temporary file already existed, this should never happen!")
-      Thread.sleep(1)
-      mkAddToCacheInterest(content)
-    } else {
-      file.createNewFile
-      val out = new FileOutputStream(file)
-      try {
-        out.write(binaryContent)
-      } finally {
-        if (out != null) out.close
+        // Just to be sure, if the file already exists, wait quickly and try again
+        file.createNewFile
+        val out = new FileOutputStream(file)
+        try {
+          out.write(binaryContent)
+        } finally {
+          if (out != null) out.close
+        }
+        val absoluteFilename = file.getCanonicalPath
+        val binaryInterest: Array[Byte] = ccnIf.mkAddToCacheInterest(absoluteFilename)
+
+        file.delete
+        binaryInterest
       }
-      val absoluteFilename = file.getCanonicalPath
-      val binaryInterest = ccnIf.mkAddToCacheInterest(absoluteFilename)
-
-      file.delete
-      binaryInterest
     }
   }
+
 
   def base64CCNBToPacket(base64ccnb: String): Option[CCNPacket] = {
     val xml = ccnIf.ccnbToXml(NFNCCNLiteParser.decodeBase64(base64ccnb))
