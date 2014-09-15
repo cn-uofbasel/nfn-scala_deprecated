@@ -33,51 +33,67 @@ object TLVDecoder {
 
   def nonNegativeInteger(d: List[Byte]): Long = {
     d match {
-      case List(b1) => b1
-      case List(b1, b2) => ByteBuffer.wrap(Array(0.toByte, 0.toByte, b1.toByte, b2.toByte)).getInt
+      case List(b1) if b1 < 0 => (b1 + 0x100).toShort
+      case List(b1) => b1.toShort
+      case List(b1) => b1.toLong
+      case List(b1, b2) => ByteBuffer.wrap(Array(0.toByte, 0.toByte, b1.toByte, b2.toByte)).getInt.toLong
       case List(b1, b2, b3, b4) => ByteBuffer.wrap(Array(0.toByte, 0.toByte, 0.toByte, 0.toByte, b1, b2, b3, b4)).getLong
       case List(b1, b2, b3, b4, b5, b6, b7, b8) => {
-        throw new Exception("ULong is not supported in the JVM, you need to get a library or use bigint if you really need such a large number")
-        ByteBuffer.wrap(Array(b1, b2, b3, b4, b5, b6, b7, b8)).getLong
+        throw new Exception("ULong cannot be represented in the JVM with primitive datatypes, you would have to rely on a class representing UInt (bigint, a library or implement it yourself)")
       }
+      case _ => throw new Exception(s"a nonnegnum in byte format has to have 1, 2, 4 or 8 bytes and not ${d.toList}")
     }
   }
 
-  def varNumberToInt(d: List[Byte]): Int = {
-    d match {
-      case List(b) => b
-      case List(b1, b2) => ByteBuffer.wrap(Array(b1, b2)).getShort
-      case List(b1, b2, b3, b4) => ByteBuffer.wrap(Array(b1, b2, b3, b3)).getInt
-    }
 
+  def varNumberToLong(d: List[Byte]): Long = {
+    d match {
+      case List(b) if b < 0 => (b + 0x100).toShort
+      case List(b) => b.toShort
+      case List(b1, b2) => ByteBuffer.wrap(Array(0.toByte, 0.toByte, b1, b2)).getInt
+      case List(b1, b2, b3, b4) => ByteBuffer.wrap(Array(0.toByte, 0.toByte, 0.toByte, 0.toByte, b1, b2, b3, b4)).getLong
+      case List(b1, b2, b3, b4, b5, b6, b7, b8) => {
+        ByteBuffer.wrap(Array(b1, b2, b3, b3)).getLong
+      }
+      case _ => throw new Exception(s"a varnum in byte format has to have 1, 2, 4 or 8 bytes and not ${d.toList}")
+    }
+  }
+  def decodeVarNumber(d: List[Byte]): (List[Byte], List[Byte]) = {
+    d match {
+      case h :: t =>
+        h match {
+          case b if b == -3 => {
+            if(t.isEmpty) error("b == 253 but not enough following data")
+            else t.splitAt(2)
+          }
+          case b if b == -2 => if (t.size < 2) error("varnumber: b == 254 but no enough following") else t.splitAt(4)
+          case b if b == -1 => if (t.size < 4) error("varnumber: b == 254 but no enough following") else t.splitAt(8)
+
+          case b => (List(h), t)
+        }
+      case _ => error("varNumber: no data")
+    }
   }
 
   def decodeSingleTLV(data: List[Byte]): Option[(TLV, List[Byte])] = {
-    def varNumber(d: List[Byte]): (List[Byte], List[Byte]) = {
-      d match {
-        case h :: t =>
-          h match {
-            case b if b < 253 => (List(b), t)
-            case b if b == 253 => if(t.isEmpty) error("b == 253 but not enough following data")        else t.splitAt(1)
-            case b if b == 254 => if (t.size < 2) error("varnumber: b == 254 but no enough following") else t.splitAt(2)
-            case b if b == 255 => if (t.size < 4) error("varnumber: b == 254 but no enough following") else t.splitAt(4)
-          }
-        case _ => error("varNumber: no data")
-      }
-    }
+
+    println(s"Decode: $data")
 
     data match {
       case Nil => None
       case List(dataTLV@ _*) => {
-        val (typVN, dataLV) = varNumber(dataTLV.toList)
-          //      println(s"typ: ${varNumberToInt(typ)}")
-        val typ = varNumberToInt(typVN)
-        val (lengthVN, dataV) = varNumber(dataLV)
-          //      println(s"length: ${varNumberToInt(lengthVN)}")
-        val length = varNumberToInt(lengthVN)
+        val (typVN, dataLV) = decodeVarNumber(dataTLV.toList)
+        val typ = varNumberToLong(typVN)
+
+        val (lengthVN, dataV) = decodeVarNumber(dataLV)
+        val length = varNumberToLong(lengthVN)
+
         val (value, data_) = {
-          val (dataList, data_) = dataV.splitAt(length)
-          if(dataList.size != length) error(s"data field not long enough: length=$length datafield='${new String(dataList.toArray)}'")
+
+          if(length > Integer.MAX_VALUE) println("warning: cut of length in array because of sign")
+
+          val (dataList, data_) = dataV.splitAt(length.toInt)
+          if(dataList.size != length) error(s"data field not long enough: expected_length=$length datafield_length=${dataList.size} '${new String(dataList.toArray)}'")
           (dataList, data_)
         }
 

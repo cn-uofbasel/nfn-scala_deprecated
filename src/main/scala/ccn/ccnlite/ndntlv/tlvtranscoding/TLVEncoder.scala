@@ -16,7 +16,7 @@ object TLVEncoder {
         bb.putLong(i)
         bb.array.splitAt(4)._2.toList
       }
-      // TODO unsigned with 8Byte is not implmented, but this is also true for intToVarNum in the decoder
+      // TODO unsigned with 8Byte is not implemented, but this is also true for intToVarNum in the decoder
     }
   }
 
@@ -31,28 +31,32 @@ object TLVEncoder {
      }
    }
 
-  def intToVarNum(value: Int): List[Byte] = {
+  def longToVarNum(value: Long): List[Byte] = {
     value match {
-      case i if i < 253 => List(i.toByte)
-      case i if i <= Short.MaxValue => {
-        val bb = ByteBuffer.allocate(3)
-        bb.put(253.toByte)
-        bb.putShort(i.toShort)
-        bb.array().toList
+      case i if i < 253 => { List(i.toByte) }
+
+      case i if i < 65536 => {
+        val head = 253.toByte
+        val b1 = i.toByte
+        val b2 = (i >> 8).toByte
+        val r: List[Byte] = List(head, b2, b1)
+        r
       }
-      case i @ _ => {
-        val bb = ByteBuffer.allocate(5)
-        bb.put(254.toByte)
-        bb.putInt(i)
-        bb.array().toList
+      case i => {
+        val head = 254.toByte
+        val b1 = i.toByte
+        val b2 = (i >> 8).toByte
+        val b3 = (i >> 16).toByte
+        val b4 = (i >> 24).toByte
+        List(head, b4, b3, b2, b1)
       }
     }
   }
 
 
    def encode(tlv: TLV): List[Byte] = {
-     val t = intToVarNum(tlv.t)
-     val l = intToVarNum(tlv.l)
+     val t = longToVarNum(tlv.t)
+     val l = longToVarNum(tlv.l)
      val v = tlv.v
 
      t ::: l ::: v
