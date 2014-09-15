@@ -77,8 +77,6 @@ object TLVDecoder {
 
   def decodeSingleTLV(data: List[Byte]): Option[(TLV, List[Byte])] = {
 
-    println(s"Decode: $data")
-
     data match {
       case Nil => None
       case List(dataTLV@ _*) => {

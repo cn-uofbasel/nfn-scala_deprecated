@@ -47,7 +47,7 @@ trait NDNTLVParser extends Parsers {
   def parse[A](data: List[Byte], f: Parser[A]): A = {
     val tlvs = TLVDecoder.decodeTLVs(data)
     val reader = new TLVStreamReader(tlvs)
-    phrase(f)(new TLVStreamReader(tlvs)) match {
+    phrase(f)(reader) match {
       case Success(v, _) => v
       case Failure(eMsg, _) => throw new Exception(s"error when parsing tlvs: '$tlvs': $eMsg")
     }
