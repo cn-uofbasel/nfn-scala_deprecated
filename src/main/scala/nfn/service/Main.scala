@@ -15,7 +15,6 @@ import scala.reflect.runtime.{universe => ru}
 
 object NFNServiceLibrary extends Logging {
   private var services:Map[CCNName, NFNService] = Map()
-  val tempBytecodeContentDirName = "./temp-bytecode-content"
 
   def add(serv: NFNService) =  {
     val name = serv.ccnName
@@ -46,32 +45,9 @@ object NFNServiceLibrary extends Logging {
     def pinnedData = "pinnedfunction".getBytes
 
     def byteCodeData(serv: NFNService):Array[Byte] = {
-      BytecodeLoader.byteCodeForClass(serv) match {
-        case Some(bc) => {
-//          if(bc.length + serv.ccnName)
-          // TODO remove this when packet fragmentation works
-          // replace with simply 'bc'
-          val tempBytecodeContentDir = new File(tempBytecodeContentDirName)
-          if(!tempBytecodeContentDir.exists()) {
-            tempBytecodeContentDir.mkdir()
-          }
-          val bytecodeContentFileName = s"$tempBytecodeContentDirName/${serv.ccnName.cmps.mkString("+")}"
-
-          val bytecodeContentFile = new File(bytecodeContentFileName)
-          if(bytecodeContentFile.exists()) {
-            bytecodeContentFile.delete()
-            bytecodeContentFile.createNewFile()
-          }
-          val out = new FileOutputStream(bytecodeContentFile)
-          try{
-            out.write(bc)
-          } finally { out.close() }
-
-          bytecodeContentFileName.getBytes
-        }
-        case None =>
-          logger.error(s"nfnPublush: No bytecode found for unpinned service $serv")
-          pinnedData
+      BytecodeLoader.byteCodeForClass(serv).getOrElse {
+        logger.error(s"nfnPublush: No bytecode found for unpinned service $serv")
+        pinnedData
       }
     }
 

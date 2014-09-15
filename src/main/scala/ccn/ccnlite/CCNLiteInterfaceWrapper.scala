@@ -1,6 +1,7 @@
 package ccn.ccnlite
 
 import ccn.NFNCCNLiteParser
+import ccn.ccnlite.ndntlv.ccnlitecontentformat._
 import ccn.packet._
 import java.io.{FileOutputStream, File}
 import ccnliteinterface._
@@ -33,29 +34,40 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
 
     val maxSegmentSize = 100
 
+    val segmentSize = maxSegmentSize
+
+    val dataSize = content.data.size
+    val segmentComponent = "seg"
+
+    def singleContentData(data: Array[Byte]): Array[Byte] = {
+      SingleContent(None, None, Data(data.toList)).encodeData
+    }
+
     content match {
-      case Content(name, data) if data.size > maxSegmentSize => {
+      case Content(name, data) if dataSize > segmentSize => {
         val buf = ListBuffer[Array[Byte]]()
         def go(segNum: Int, largeData: Array[Byte]): List[Array[Byte]] = {
-          val (segData, largeDataTail) = largeData.splitAt(maxSegmentSize)
-          val segName = content.name.append(s"seg$segNum")
-          buf.prepend(ccnIf.mkBinaryContent(segName.cmps.toArray, segData))
+          val (segData, largeDataTail) = largeData.splitAt(segmentSize)
+          val segName = content.name.append(s"$segmentComponent$segNum")
+          buf.prepend(ccnIf.mkBinaryContent(segName.cmps.toArray, singleContentData(segData)))
           if (largeDataTail.nonEmpty) {
             go(segNum + 1, largeDataTail)
           } else {
             buf.toList
           }
         }
-        go(0, data)
+
+        val numberOfSegments = math.round(dataSize.toFloat / segmentSize)
+        val lastSegmentSize = dataSize % segmentSize
+        val metaContentData = MultiSegmentContent(None, None, Some(SegmentName(segmentComponent)), NumberOfSegments(numberOfSegments), SegmentSize(segmentSize), LastSegmentSize(lastSegmentSize)).encodeData
+        metaContentData :: go(0, data)
       }
-      case Content(name, data) => ccnIf.mkBinaryContent(name.cmps.toArray, data) :: Nil
+      case Content(name, data) => {
+        ccnIf.mkBinaryContent(name.cmps.toArray, singleContentData(data)) :: Nil
+      }
     }
-
   }
 
-  def mkBinaryContent(name: Array[String], data: Array[Byte]): Array[Byte] = {
-    ccnIf.mkBinaryContent(name, data)
-  }
 
   def mkBinaryInterest(interest: Interest): Array[Byte] = {
     ccnIf.mkBinaryInterest(interest.name.cmps.toArray)

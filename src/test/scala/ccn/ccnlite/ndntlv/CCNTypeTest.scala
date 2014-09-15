@@ -19,7 +19,7 @@ class CCNTypeTest extends FlatSpec with Matchers with GivenWhenThen {
     val interest = NDNPacketFormatParser.parse(encodedOriginal)
 
 
-    val encoded = TLVEncoder.encode(interest.encode)
+    val encoded = TLVEncoder.encode(interest.encodeTLV)
     val interest2 = NDNPacketFormatParser.parse(encoded)
 
     interest shouldBe originalInterest
@@ -44,7 +44,7 @@ class CCNTypeTest extends FlatSpec with Matchers with GivenWhenThen {
   def testCCNLiteContentFormat(c: ccnlitecontentformat.ContentType, testName: String) = {
     s"The ccn-lite content type $c for test $testName" should "be converted to NDNTLV and back to an object" in {
       //  println(TLVEncoder.longToVarNum(250))
-      val tlvData = TLVEncoder.encode(c.encode)
+      val tlvData = TLVEncoder.encode(c.encodeTLV)
       val c2 = CCNLiteContentFormatParser.parse(tlvData)
 
       c shouldBe c2

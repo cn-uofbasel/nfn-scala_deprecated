@@ -10,6 +10,7 @@ import akka.pattern._
 import akka.util.Timeout
 import ccn._
 import ccn.ccnlite.CCNLiteInterfaceWrapper
+import ccn.ccnlite.ndntlv.ccnlitecontentformat._
 import ccn.packet._
 import ccnliteinterface.CCNLiteInterface
 import com.typesafe.scalalogging.slf4j.Logging
@@ -21,8 +22,9 @@ import nfn.NFNServer._
 import nfn.localAbstractMachine.LocalAbstractMachineWorker
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 
 object NFNServer {
@@ -152,9 +154,55 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   }
 
   // Check pit for an address to return content to, otherwise discard it
+  private def handleUnstrippedContent(unstrippedContent: Content, senderCopy: ActorRef) = {
+
+    def stripNDNTLVAndConcatSegments(unstrippedContent: Content): Unit = {
+      logger.warning(s"hack: stripping NDNTLV")
+      CCNLiteContentFormatParser.parse(unstrippedContent.data.toList) match {
+        case SingleContent(_, _, Data(data)) =>
+          self.tell(Content(unstrippedContent.name, data.toArray), senderCopy)
+        case MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
+          implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
+          val futContentSegments: Future[List[Content]] =
+            Future.sequence(
+              (0L until numOfSegs).toList.map { (segNum: Long) =>
+                val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName)}$segNum")
+                (self ? NFNApi.CCNSendReceive(Interest(name), useThunks = false)).mapTo[CCNPacket] map {
+                  case n: NAck => throw new Exception(":NACK")
+                  case c: Content => c
+                  case i: Interest => throw new Exception("An interest was returned, this should never happen")
+                }
+              }
+            )
+
+          Await.result(futContentSegments, timeout.duration)
+          futContentSegments onComplete {
+            case Success(contentSegments) => {
+              val concatenatedSegmentData: List[Byte] =
+                contentSegments.foldLeft(List.empty[Byte]) { (accData, c) =>
+                  c.data.toList ::: accData
+                }
+              self.tell(Content(unstrippedContent.name, concatenatedSegmentData.toArray), senderCopy)
+            }
+            case Failure(e) => throw new Exception("Could not fetch all segments", e)
+          }
+        }
+        case StreamContent(_, _, _, _, _) => throw new Exception(s"StreamContent handling not yet implemented")
+      }
+    }
+
+    stripNDNTLVAndConcatSegments(unstrippedContent)
+  }
+
   private def handleContent(content: Content, senderCopy: ActorRef) = {
 
-    def handleInterstThunkContent = {
+    if(content.name.isThunk && !content.name.isCompute) {
+      handleInterstThunkContent
+    } else {
+      handleNonThunkContent
+    }
+
+    def handleInterstThunkContent: Unit = {
       def timeoutFromContent: FiniteDuration = {
         val timeoutInContent = new String(content.data)
         if(timeoutInContent != "" && timeoutInContent.forall(_.isDigit)) {
@@ -183,8 +231,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           case None => logger.error(s"Discarding thunk content $content because there is no entry in pit")
         }
     }
-    def handleNonThunkContent = {
-
+    def handleNonThunkContent: Unit = {
       implicit val timeout = Timeout(defaultTimeoutDuration)
       (pit ? PIT.Get(content.name)).mapTo[Option[Set[Face]]] onSuccess {
         case Some(pendingFaces) => {
@@ -201,13 +248,8 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           logger.warning(s"Discarding content $content because there is no entry in pit")
       }
     }
-
-    if(content.name.isThunk && !content.name.isCompute) {
-      handleInterstThunkContent
-    } else {
-      handleNonThunkContent
-    }
   }
+
 
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
 
@@ -281,7 +323,6 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   }
 
   def handlePacket(packet: CCNPacket, senderCopy: ActorRef) = {
-
     packet match {
       case i: Interest => {
         logger.info(s"Received interest: $i")
@@ -289,7 +330,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       }
       case c: Content => {
         logger.info(s"Received content: $c")
-        handleContent(c, senderCopy)
+        handleUnstrippedContent(c, senderCopy)
       }
       case n: NAck => {
         logger.info(s"Received NAck: $n")

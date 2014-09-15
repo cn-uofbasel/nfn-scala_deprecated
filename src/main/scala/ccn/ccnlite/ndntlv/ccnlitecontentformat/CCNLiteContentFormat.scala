@@ -1,9 +1,7 @@
 package ccn.ccnlite.ndntlv.ccnlitecontentformat
 
 import ccn.ccnlite.ndntlv._
-import ccn.ccnlite.ndntlv.ndnpacketformat.ContentType
 import ccn.ccnlite.ndntlv.tlvparser.NDNTLVParser
-import ccn.ccnlite.ndntlv.tlvtranscoding.{TLVDecoder, TLVEncoder, TLV}
 
 
 object CCNLiteContentFormatParser extends NDNTLVParser {
@@ -19,13 +17,14 @@ object CCNLiteContentFormatParser extends NDNTLVParser {
     { case mime ~ charSet ~ data => SingleContent(mime map MimeType, charSet map CharSet, Data(data))}
 
   def multiSegmentContent: Parser[MultiSegmentContent] = stringType(40010).? ~ stringType(40011).? ~ stringType(40020).? ~ nonNegInType(40021) ~ nonNegInType(40022) ~ nonNegInType(40023) ^^
-    { case mimeType ~ charSet ~ segName ~ numOfSegs ~ segSize ~ lastSegSize => MultiSegmentContent(mimeType map MimeType, charSet map CharSet, segName map SegmentName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize))}
+    { case mimeType ~ charSet ~ segName ~ numOfSegs ~ segSize ~ lastSegSize => MultiSegmentContent(mimeType map MimeType, charSet map CharSet, segName map (SegmentName(_)), NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize))}
   def streamContent: Parser[StreamContent] = stringType(40010).? ~ stringType(40011).? ~ stringType(40020).? ~ nonNegInType(40022) ~ nonNegInType(40030).? ^^
-    { case mimetype ~ charSet ~ segName ~ segSize ~ bitrate => StreamContent(mimetype map MimeType, charSet map CharSet, segName map SegmentName, SegmentSize(segSize), bitrate map AverageApproximatedBitRate)}
+    { case mimetype ~ charSet ~ segName ~ segSize ~ bitrate => StreamContent(mimetype map MimeType, charSet map CharSet, segName map (SegmentName(_)), SegmentSize(segSize), bitrate map AverageApproximatedBitRate)}
 }
 
 
-trait ContentType extends RecursiveType
+sealed trait ContentType extends RecursiveType
+
 
 
 case class SingleContent(mimeType: Option[MimeType], charSet: Option[CharSet], data: Data) extends ContentType {
@@ -72,6 +71,9 @@ case class Data(data: List[Byte]) extends GeneralContentInfo with DataType {
 
 trait MultiSegmentInfo extends NDNTLVType
 
+object SegmentName {
+  val DefaultSegmentName = SegmentName("s")
+}
 case class SegmentName(str: String) extends MultiSegmentInfo with StringType {
   override def typ: Int = 40020
 }

@@ -5,7 +5,11 @@ import ccn.ccnlite.ndntlv.tlvtranscoding._
 trait NDNTLVType {
   def typ: Int
 
-  def encode:TLV = {
+  def encodeData: Array[Byte] = {
+    TLVEncoder.encode(encodeTLV).toArray
+  }
+
+  def encodeTLV:TLV = {
     val data = tlvData
     TLV(typ, data.length, data)
   }
@@ -21,7 +25,7 @@ trait RecursiveType extends NDNTLVType {
 
   override def tlvData: List[Byte] = {
     TLVEncoder.encode(
-      unapply map { _ map { _.encode }}
+      unapply map { _ map { _.encodeTLV }}
     )
   }
 

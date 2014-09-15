@@ -42,7 +42,7 @@ object LargeContentTest extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  sendAndPrintForName(contentNameLarge1)
+  sendAndPrintForName(contentNameSmall1)
 
   def sendAndPrintForName(name: CCNName) = {
     node1 ? Interest(name) onComplete {
