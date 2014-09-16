@@ -157,37 +157,45 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   // Check pit for an address to return content to, otherwise discard it
   private def handleUnstrippedContent(unstrippedContent: Content, senderCopy: ActorRef) = {
 
-    CCNLiteContentFormatParser.parse(unstrippedContent.data.toList) match {
-      case SingleContent(_, _, Data(data)) =>
-        handleContent(Content(unstrippedContent.name, data.toArray), senderCopy)
-      case msc @ MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
+    try {
 
-        logger.info(s"Received multi segment content: $msc")
-        implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
-        val futContentSegments: Future[List[Content]] =
-          Future.sequence(
-            (0L until numOfSegs).toList.map { (segNum: Long) =>
-//              logger.debug(s"seg: $segNum")
-//              val name = CCNName(unstrippedContent.name.cmps.init ++ Seq(unstrippedContent.name.cmps.last + segName.getOrElse(SegmentName.DefaultSegmentName).str + segNum.toString):_*)
-              val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName).str}$segNum")
-              logger.debug(s"sendreceving: $name")
-              (self ? NFNApi.CCNSendReceive(Interest(name), useThunks = false)).mapTo[CCNPacket] map {
-                case n: NAck => throw new Exception(":NACK")
-                case c: Content => c
-                case i: Interest => throw new Exception("An interest was returned, this should never happen")
+      CCNLiteContentFormatParser.parse(unstrippedContent.data.toList) match {
+        case SingleContent(_, _, Data(data)) =>
+          handleContent(Content(unstrippedContent.name, data.toArray), senderCopy)
+        case msc @ MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
+
+          logger.info(s"Received multi segment content: $msc")
+          implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
+          val futContentSegments: Future[List[Content]] =
+            Future.sequence(
+              (0L until numOfSegs).toList.map { (segNum: Long) =>
+  //              logger.debug(s"seg: $segNum")
+  //              val name = CCNName(unstrippedContent.name.cmps.init ++ Seq(unstrippedContent.name.cmps.last + segName.getOrElse(SegmentName.DefaultSegmentName).str + segNum.toString):_*)
+                val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName).str}$segNum")
+                logger.debug(s"sendreceving: $name")
+                (self ? NFNApi.CCNSendReceive(Interest(name), useThunks = false)).mapTo[CCNPacket] map {
+                  case n: NAck => throw new Exception(":NACK")
+                  case c: Content => c
+                  case i: Interest => throw new Exception("An interest was returned, this should never happen")
+                }
               }
-            }
-          )
+            )
 
-        futContentSegments map { contentSegments =>
-          val concatenatedSegmentData: List[Byte] =
-            contentSegments.foldRight(List.empty[Byte]) { (c, accData) =>
-              c.data.toList ::: accData
-            }
-          handleContent(Content(unstrippedContent.name, concatenatedSegmentData.toArray), senderCopy)
+          futContentSegments map { contentSegments =>
+            val concatenatedSegmentData: List[Byte] =
+              contentSegments.foldRight(List.empty[Byte]) { (c, accData) =>
+                c.data.toList ::: accData
+              }
+            handleContent(Content(unstrippedContent.name, concatenatedSegmentData.toArray), senderCopy)
+          }
         }
+        case StreamContent(_, _, _, _, _) => throw new Exception(s"StreamContent handling not yet implemented")
       }
-      case StreamContent(_, _, _, _, _) => throw new Exception(s"StreamContent handling not yet implemented")
+    } catch {
+      case e: Exception => {
+        logger.warning(s"Could not parse content with ccn-lite content format, treating content $unstrippedContent!")
+        handleContent(unstrippedContent, senderCopy)
+      }
     }
   }
 
@@ -328,12 +336,22 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       }
       case c: Content => {
         logger.info(s"Received content: $c")
-        handleUnstrippedContent(c, senderCopy)
+        handleContent(c, senderCopy)
       }
       case n: NAck => {
         logger.info(s"Received NAck: $n")
         handleNack(n, senderCopy)
       }
+    }
+  }
+  def handleUnstrippedPacket(packet: CCNPacket, senderCopy: ActorRef) = {
+    packet match {
+      case i: Interest => handlePacket(i, senderCopy)
+      case c: Content => {
+        logger.info(s"Received unstripeed content: $c")
+        handleUnstrippedContent(c, senderCopy)
+      }
+      case n: NAck => handlePacket(n, senderCopy)
     }
   }
 
@@ -347,7 +365,9 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
       maybePacket match {
         // Received an interest from the network (byte format) -> spawn a new worker which handles the messages (if it crashes we just assume a timeout at the moment)
-        case Some(packet: CCNPacket) => handlePacket(packet, sender)
+        case Some(packet: CCNPacket) => {
+          handleUnstrippedPacket(packet, sender)
+        }
         case Some(AddToCache()) => ???
         case None => {
           if(new String(data).contains("Content successfully added")) {

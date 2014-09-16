@@ -81,10 +81,11 @@ case class ComputeWorker(ccnServer: ActorRef) extends Actor {
                 val result: NFNValue = callable.exec
                 val resultData = result.toStringRepresentation.getBytes
 
-                if(resultData.size > CCNLiteInterfaceWrapper.maxSegmentSize) throw new Exception("computed result is only implemented for max seg sized results")
-
-                val encodedResultData = SingleContent(None, None, Data(resultData.toList)).encodeData
-                val content = Content(name.withoutThunkAndIsThunk._1, encodedResultData)
+//                if(resultData.size > CCNLiteInterfaceWrapper.maxSegmentSize) throw new Exception("computed result is only implemented for max seg sized results")
+//
+//                val encodedResultData = SingleContent(None, None, Data(resultData.toList)).encodeData
+//                val content = Content(name.withoutThunkAndIsThunk._1, encodedResultData)
+                val content = Content(name.withoutThunkAndIsThunk._1, resultData)
                 logger.info(s"Finished computation, result: $content")
                 senderCopy ! content
               } catch {
