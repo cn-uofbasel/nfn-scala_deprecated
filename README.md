@@ -3,7 +3,7 @@ nfn-scala
 =========
 
 nfn-scala is a NFN service layer implementation in Scala, interfacing and depending on CCN-lite. 
-This project provides a asynchronous compute environment, an API to interface with NFN, a DSL to program the lambda calculus and other things.
+This project provides a asynchronous compute environment, an API to interface with NFN, a DSL to program the lambda calculus and other things. 
 
 ##Installation
 
@@ -50,7 +50,7 @@ To compile this library, run the sbt command `compileJniNativelib`.
 
 ### Running the project
 There are some runnables in the nfn-scala-experiments project. Type `project nfn-scala-experiments` and then `run` in the sbt console. 
-Choose from a list of runnable applications, e.g. `evaluation.PaperExperiment` which runs the currently selected expriments (change in source code).
+Choose from a list of runnable applications, e.g. `evaluation.PaperExperiment` which runs the currently selected expriment (change in source code).
 
 ## Visualization
 To replay and visualize the most recently run NFN program, change to the directory `./omnetreplay`. 
@@ -59,6 +59,5 @@ Now you should be able to run the `make.sh` script which compiles and runs every
 From then on the simulation can be directly started with `./omentreplay`.
 
 ## Issues
-- nfn-scala project: it does not handle large content objects according to ccn-lite. Instead of splitting large content objects, the data is dumped into a file on the local filesystem and the path is stored in the content object.
 - The project is not yet setup to be easily used in an actual network (there is only the `LocalNode` wrapper which executes everything on localhost). However, all the functionality (except the hack for large data files) is prepared because communication happens over sockets.
 - Timeouts are not fully implemented when using NACKS.
