@@ -18,7 +18,7 @@ object PaperExperiment extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
-  val expNum = 3
+  val expNum = 1
 
   val node1 = LocalNodeFactory.forId(1)
   val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
@@ -111,13 +111,15 @@ object PaperExperiment extends App {
     node3.addPrefixFace(wcPrefix, node4)
   }
 
-  val dynServ = new NFNDynamicService {
-    override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (_, _) =>
-      println("yay")
-      NFNIntValue(42)
-    }
-  }
-  node1.publishService(dynServ)
+//  val dynServ = new NFNDynamicService {
+//    override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (_, _) =>
+//      println("yay")
+//      NFNIntValue(42)
+//    }
+//  }
+//  node1.publishService(dynServ)
+
+  Thread.sleep(2000)
 
   import lambdacalculus.parser.ast.LambdaDSL._
   import nfn.LambdaNFNImplicits._
@@ -126,7 +128,6 @@ object PaperExperiment extends App {
   val ts = new Translate().toString
   val wc = new WordCountService().toString
   val nack = new NackServ().toString
-  val dyn = dynServ.toString
 
   val exp1 = wc appl docname1
 
@@ -155,8 +156,6 @@ object PaperExperiment extends App {
 
   val exp8 = nack appl
 
-  val exp9 = dyn appl
-
   expNum match {
     case 1 => doExp(exp1)
     case 2 => doExp(exp2)
@@ -166,8 +165,7 @@ object PaperExperiment extends App {
     case 6 => doExp(exp6)
     case 7 => doExp(exp7)
     case 8 => doExp(exp8)
-    case 9 => doExp(exp9)
-    case _ => throw new Exception(s"expNum can only be 1 to 7 and not $expNum")
+    case _ => throw new Exception(s"expNum can only be 1 to 8 and not $expNum")
   }
 
   def doExp(exprToDo: Expr) = {
@@ -176,14 +174,19 @@ object PaperExperiment extends App {
       case Success(content) => {
         val totalTime = System.currentTimeMillis - startTime
         println(s"RESULT($totalTime): $content")
+        exit
       }
       case Failure(error) =>
+        exit
         throw error
 //        Monitor.monitor ! Monitor.Visualize()
     }
   }
-  Thread.sleep(StaticConfig.defaultTimeoutDuration.toMillis + 100)
-  Monitor.monitor ! Monitor.Visualize()
-  nodes foreach { _.shutdown() }
+
+  def exit = {
+    Monitor.monitor ! Monitor.Visualize()
+    nodes foreach { _.shutdown() }
+  }
+//  Thread.sleep(StaticConfig.defaultTimeoutDuration.toMillis + 100)
 }
 

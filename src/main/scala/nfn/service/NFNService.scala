@@ -12,6 +12,7 @@ import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{StaticConfig, AkkaConfig}
 import lambdacalculus.parser.ast._
+import myutil.IOHelper
 import nfn.NFNApi
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,41 +30,41 @@ object NFNService extends Logging {
    * @return
    */
   def serviceFromContent(content: Content): Try[NFNService] = {
-//    println(s"serviceFromContent: content size=${content.data.size}")
-//    val serviceLibraryDir = "./service-library"
-//    val serviceLibararyFile = new File(serviceLibraryDir)
-//
-//    if(serviceLibararyFile.exists) {
-//      serviceLibararyFile.mkdir
-//    }
-//
-//    def createTempFile: File = {
-//      val f = new File(s"$serviceLibraryDir/${System.nanoTime}")
-//      if (!f.exists) {
-//        f
-//      } else {
-//        Thread.sleep(1)
-//        createTempFile
-//      }
-//    }
-//
-//    var out: FileOutputStream = null
-//    val file: File = createTempFile
-//    try {
-//      out = new FileOutputStream(file)
-//      out.write(content.data)
-//      out.flush()
+    println(s"serviceFromContent: content size=${content.data.size}")
+    val serviceLibraryDir = "./service-library"
+    val serviceLibararyFile = new File(serviceLibraryDir)
+
+    if(serviceLibararyFile.exists) {
+      serviceLibararyFile.mkdir
+    }
+
+    def createTempFile: File = {
+      val f = new File(s"$serviceLibraryDir/tempserv${System.nanoTime}")
+      if (!f.exists) {
+        f
+      } else {
+        Thread.sleep(1)
+        createTempFile
+      }
+    }
+
+    val file: File = createTempFile
+    val out = new FileOutputStream(file)
+    val filePath = file.getCanonicalPath
+    try {
+
+      out.write(content.data)
+      out.flush()
+      println(filePath)
+    } finally {
+      if (out != null) out.close
+    }
+
     val servName = content.name.cmps.head.replace("_", ".")
-    val fileName = new String(content.data)
-    val filePath = new File(fileName).getCanonicalPath
     val loadedService: Try[NFNService] = BytecodeLoader.loadClass[NFNService](filePath, servName)
     logger.debug(s"Dynamically loaded class $servName from content")
+    if (file.exists) file.delete
     loadedService
-//      loadedService
-//    } finally {
-//      if (out != null) out.close
-////      if (file.exists) file.delete
-//    }
   }
 
   def parseAndFindFromName(name: String, ccnServer: ActorRef): Future[CallableNFNService] = {

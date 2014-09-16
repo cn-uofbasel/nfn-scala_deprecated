@@ -23,7 +23,7 @@ object LargeContentTest extends App {
   val contentNameLarge1 = node1.prefix.append(CCNName("content", "large"))
 
   val smallData = ("1"*10).getBytes
-  val largeData = ("1"*201).getBytes // atm segmentsize is 100
+  val largeData = ((1 to 500) map { _.toString} mkString(" ")).getBytes // atm segmentsize is 100
 
   val contentNameSmall2 = node2.prefix.append(CCNName("content", "small"))
   val contentNameLarge2 = node2.prefix.append(CCNName("content", "large"))
@@ -45,7 +45,7 @@ object LargeContentTest extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  sendAndPrintForName(contentNameLarge1)
+  sendAndPrintForName(contentNameLarge2)
 
   def sendAndPrintForName(name: CCNName) = {
     node1 ? Interest(name)  onComplete {

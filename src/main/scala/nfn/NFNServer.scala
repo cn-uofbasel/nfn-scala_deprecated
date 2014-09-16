@@ -160,16 +160,17 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     CCNLiteContentFormatParser.parse(unstrippedContent.data.toList) match {
       case SingleContent(_, _, Data(data)) =>
         handleContent(Content(unstrippedContent.name, data.toArray), senderCopy)
-      case MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
+      case msc @ MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
+
+        logger.info(s"Received multi segment content: $msc")
         implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
         val futContentSegments: Future[List[Content]] =
           Future.sequence(
             (0L until numOfSegs).toList.map { (segNum: Long) =>
-
 //              logger.debug(s"seg: $segNum")
-              val name = CCNName(unstrippedContent.name.cmps.init ++ Seq(unstrippedContent.name.cmps.last + segName.getOrElse(SegmentName.DefaultSegmentName).str + segNum.toString):_*)
+//              val name = CCNName(unstrippedContent.name.cmps.init ++ Seq(unstrippedContent.name.cmps.last + segName.getOrElse(SegmentName.DefaultSegmentName).str + segNum.toString):_*)
+              val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName).str}$segNum")
               logger.debug(s"sendreceving: $name")
-//              val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName).str}$segNum")
               (self ? NFNApi.CCNSendReceive(Interest(name), useThunks = false)).mapTo[CCNPacket] map {
                 case n: NAck => throw new Exception(":NACK")
                 case c: Content => c
@@ -180,7 +181,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
         futContentSegments map { contentSegments =>
           val concatenatedSegmentData: List[Byte] =
-            contentSegments.foldLeft(List.empty[Byte]) { (accData, c) =>
+            contentSegments.foldRight(List.empty[Byte]) { (c, accData) =>
               c.data.toList ::: accData
             }
           handleContent(Content(unstrippedContent.name, concatenatedSegmentData.toArray), senderCopy)

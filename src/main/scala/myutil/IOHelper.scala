@@ -25,12 +25,12 @@ object IOHelper {
    * @param op
    * @return
    */
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit): Unit = {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
 
-  def printToFile(f: java.io.File, data: String) {
+  def printToFile(f: java.io.File, data: String): Unit = {
     printToFile(f)(_.println(data))
   }
 

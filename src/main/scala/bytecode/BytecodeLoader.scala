@@ -1,11 +1,12 @@
 package bytecode
 
-import java.io.ByteArrayOutputStream
+import java.io.{File, ByteArrayOutputStream}
 import java.net.{URL, URLClassLoader}
 import java.util.jar.{JarEntry, JarFile, JarOutputStream}
 import java.util.zip.ZipEntry
 
 import com.typesafe.scalalogging.slf4j.Logging
+import myutil.IOHelper
 import org.apache.bcel.Repository
 import org.apache.bcel.classfile._
 

@@ -139,6 +139,8 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     }
     node1.publishService(dynServ)
 
+    Thread.sleep(1000)
+
     import lambdacalculus.parser.ast.LambdaDSL._
     import nfn.LambdaNFNImplicits._
     implicit val useThunks: Boolean = false
@@ -198,8 +200,6 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     }
 
     def doExp(exprToDo: Expr, res: String) = {
-      val startTime = System.currentTimeMillis()
-
       val f: Future[Content] = node1 ? exprToDo
       f.foreach { _ =>
         nodes foreach { _.shutdown() }

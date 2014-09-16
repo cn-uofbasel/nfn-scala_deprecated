@@ -13,6 +13,10 @@ import scala.collection.mutable.ListBuffer
 
 object CCNLiteInterfaceWrapper {
 
+  val maxSegmentSize = 100
+  val segmentComponent = "s"
+
+
   def createCCNLiteInterfaceWrapper(wireFormat: CCNLiteWireFormat, ccnIfType: CCNLiteInterfaceType) =
     CCNLiteInterfaceWrapper(CCNLiteInterface.createCCNLiteInterface(wireFormat, ccnIfType))
 }
@@ -33,12 +37,11 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
 
   def mkBinaryContent(content: Content): List[Array[Byte]] = {
 
-    val maxSegmentSize = 100
 
-    val segmentSize = maxSegmentSize
+    val segmentSize = CCNLiteInterfaceWrapper.maxSegmentSize
+    val segmentComponent = CCNLiteInterfaceWrapper.segmentComponent
 
     val dataSize = content.data.size
-    val segmentComponent = "s"
 
     def singleContentData(data: Array[Byte]): Array[Byte] = {
       SingleContent(None, None, Data(data.toList)).encodeData
@@ -47,15 +50,13 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
     content match {
       case Content(name, data) if dataSize > segmentSize => {
         val buf = ListBuffer[Array[Byte]]()
-        def go(segNum: Int, largeData: Array[Byte]): List[Array[Byte]] = {
+        def go(segNum: Int, largeData: Array[Byte]): Unit = {
           val (segData, largeDataTail) = largeData.splitAt(segmentSize)
-
-          val segName = CCNName(content.name.cmps.init ++ Seq(content.name.cmps.last + segmentComponent + segNum.toString):_*)
-          buf.prepend(ccnIf.mkBinaryContent(segName.cmps.toArray, singleContentData(segData)))
+//          val segName = CCNName(content.name.cmps.init ++ Seq(content.name.cmps.last + segmentComponent + segNum.toString):_*)
+          val segName = content.name.append(segmentComponent + segNum.toString)
+          buf.append(ccnIf.mkBinaryContent(segName.cmps.toArray, singleContentData(segData)))
           if (largeDataTail.nonEmpty) {
             go(segNum + 1, largeDataTail)
-          } else {
-            buf.toList
           }
         }
 
@@ -66,7 +67,11 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
 
         logger.info(s"Segmenting Content $content with meta information: $multiSegmentContent")
         if(metaContentData.size > segmentSize) throw new Exception(s"MetaData is too large to fit into a segment of size $segmentSize")
-        ccnIf.mkBinaryContent(content.name.cmps.toArray, metaContentData) :: go(0, data)
+
+        buf.append(ccnIf.mkBinaryContent(content.name.cmps.toArray, metaContentData))
+        go(0, data)
+
+        buf.toList.reverse
       }
       case Content(name, data) => {
         ccnIf.mkBinaryContent(name.cmps.toArray, singleContentData(data)) :: Nil
