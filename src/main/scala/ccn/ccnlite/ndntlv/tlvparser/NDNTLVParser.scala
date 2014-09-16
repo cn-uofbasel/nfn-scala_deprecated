@@ -1,5 +1,7 @@
 package ccn.ccnlite.ndntlv.tlvparser
 
+import ccn.ccnlite.ndntlv.NDNTLVType.NDNTLVException
+import ccn.ccnlite.ndntlv.tlvparser.NDNTLVParser.NDNTLVParseException
 import ccn.ccnlite.ndntlv.{NonNegativeIntegerType, NDNTLVType}
 import ccn.ccnlite.ndntlv.tlvtranscoding.{TLV, TLVDecoder}
 
@@ -7,6 +9,9 @@ import scala.util.parsing.combinator.Parsers
 import scala.util.parsing.input.{Position, Reader}
 
 
+object NDNTLVParser {
+  class NDNTLVParseException(msg: String) extends NDNTLVException(msg)
+}
 
 trait NDNTLVParser extends Parsers {
 
@@ -40,7 +45,7 @@ trait NDNTLVParser extends Parsers {
     val reader = new TLVStreamReader(tlvs)
     phrase(grammar)(reader) match {
       case Success(v, _) => v
-      case Failure(eMsg, _) => throw new Exception(s"Parse error: $eMsg")
+      case Failure(eMsg, _) => throw new NDNTLVParseException(s"Parse error: $eMsg")
     }
   }
 
@@ -49,7 +54,7 @@ trait NDNTLVParser extends Parsers {
     val reader = new TLVStreamReader(tlvs)
     phrase(f)(reader) match {
       case Success(v, _) => v
-      case Failure(eMsg, _) => throw new Exception(s"error when parsing tlvs: '$tlvs': $eMsg")
+      case Failure(eMsg, _) => throw new NDNTLVParseException(s"error when parsing tlvs: '$tlvs': $eMsg")
     }
   }
 

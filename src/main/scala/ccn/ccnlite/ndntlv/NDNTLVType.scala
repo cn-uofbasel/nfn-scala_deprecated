@@ -2,6 +2,10 @@ package ccn.ccnlite.ndntlv
 
 import ccn.ccnlite.ndntlv.tlvtranscoding._
 
+
+object NDNTLVType {
+  class NDNTLVException(msg: String) extends Exception(msg)
+}
 trait NDNTLVType {
   def typ: Int
 

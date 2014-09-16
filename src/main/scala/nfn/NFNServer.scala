@@ -5,27 +5,25 @@ import java.net.InetSocketAddress
 
 import akka.actor._
 import akka.event.Logging
-import akka.event.Logging
 import akka.pattern._
 import akka.util.Timeout
 import ccn._
 import ccn.ccnlite.CCNLiteInterfaceWrapper
+import ccn.ccnlite.ndntlv.NDNTLVType.NDNTLVException
 import ccn.ccnlite.ndntlv.ccnlitecontentformat._
 import ccn.packet._
 import ccnliteinterface.CCNLiteInterface
 import com.typesafe.scalalogging.slf4j.Logging
-import config.{ComputeNodeConfig, RouterConfig, StaticConfig, AkkaConfig}
+import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import monitor.Monitor
 import monitor.Monitor.PacketLogWithoutConfigs
-import myutil.FormattedOutput
 import network._
 import nfn.NFNServer._
 import nfn.localAbstractMachine.LocalAbstractMachineWorker
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.{Failure, Success}
 
 
 object NFNServer {
@@ -192,7 +190,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
         case StreamContent(_, _, _, _, _) => throw new Exception(s"StreamContent handling not yet implemented")
       }
     } catch {
-      case e: Exception => {
+      case e: NDNTLVException => {
         logger.warning(s"Could not parse content with ccn-lite content format, treating content $unstrippedContent!")
         handleContent(unstrippedContent, senderCopy)
       }

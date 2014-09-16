@@ -2,10 +2,14 @@ package ccn.ccnlite.ndntlv.tlvtranscoding
 
 import java.nio.ByteBuffer
 
+import ccn.ccnlite.ndntlv.NDNTLVType.NDNTLVException
+
 object TLVDecoder {
 
+  case class TLVDecoderException(msg: String) extends NDNTLVException(msg)
+
   def error(msg: String) = {
-    throw new Exception(msg)
+    throw new TLVDecoderException(msg)
   }
 
   def errorWrongType(typeName: String, actual: Int, expected: Int) = {

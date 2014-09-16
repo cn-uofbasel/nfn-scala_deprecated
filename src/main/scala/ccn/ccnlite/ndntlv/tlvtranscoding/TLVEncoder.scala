@@ -3,6 +3,7 @@ package ccn.ccnlite.ndntlv.tlvtranscoding
 import java.nio.ByteBuffer
 
 object TLVEncoder {
+
   def longToNonNegativeInteger(l: Long): List[Byte] = {
     l match {
       case i if i <= 255 => List(i.toByte)
