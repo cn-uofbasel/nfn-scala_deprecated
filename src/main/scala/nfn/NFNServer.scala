@@ -17,6 +17,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import config.{ComputeNodeConfig, RouterConfig, StaticConfig, AkkaConfig}
 import monitor.Monitor
 import monitor.Monitor.PacketLogWithoutConfigs
+import myutil.FormattedOutput
 import network._
 import nfn.NFNServer._
 import nfn.localAbstractMachine.LocalAbstractMachineWorker
@@ -156,43 +157,39 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   // Check pit for an address to return content to, otherwise discard it
   private def handleUnstrippedContent(unstrippedContent: Content, senderCopy: ActorRef) = {
 
-    def stripNDNTLVAndConcatSegments(unstrippedContent: Content): Unit = {
-      logger.warning(s"hack: stripping NDNTLV")
-      CCNLiteContentFormatParser.parse(unstrippedContent.data.toList) match {
-        case SingleContent(_, _, Data(data)) =>
-          self.tell(Content(unstrippedContent.name, data.toArray), senderCopy)
-        case MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
-          implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
-          val futContentSegments: Future[List[Content]] =
-            Future.sequence(
-              (0L until numOfSegs).toList.map { (segNum: Long) =>
-                val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName)}$segNum")
-                (self ? NFNApi.CCNSendReceive(Interest(name), useThunks = false)).mapTo[CCNPacket] map {
-                  case n: NAck => throw new Exception(":NACK")
-                  case c: Content => c
-                  case i: Interest => throw new Exception("An interest was returned, this should never happen")
-                }
+    CCNLiteContentFormatParser.parse(unstrippedContent.data.toList) match {
+      case SingleContent(_, _, Data(data)) =>
+        handleContent(Content(unstrippedContent.name, data.toArray), senderCopy)
+      case MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
+        implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
+        val futContentSegments: Future[List[Content]] =
+          Future.sequence(
+            (0L until numOfSegs).toList.map { (segNum: Long) =>
+
+//              logger.debug(s"seg: $segNum")
+              val name = CCNName(unstrippedContent.name.cmps.init ++ Seq(unstrippedContent.name.cmps.last + segName.getOrElse(SegmentName.DefaultSegmentName).str + segNum.toString):_*)
+              logger.debug(s"sendreceving: $name")
+//              val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName).str}$segNum")
+              (self ? NFNApi.CCNSendReceive(Interest(name), useThunks = false)).mapTo[CCNPacket] map {
+                case n: NAck => throw new Exception(":NACK")
+                case c: Content => c
+                case i: Interest => throw new Exception("An interest was returned, this should never happen")
               }
-            )
-
-          Await.result(futContentSegments, timeout.duration)
-          futContentSegments onComplete {
-            case Success(contentSegments) => {
-              val concatenatedSegmentData: List[Byte] =
-                contentSegments.foldLeft(List.empty[Byte]) { (accData, c) =>
-                  c.data.toList ::: accData
-                }
-              self.tell(Content(unstrippedContent.name, concatenatedSegmentData.toArray), senderCopy)
             }
-            case Failure(e) => throw new Exception("Could not fetch all segments", e)
-          }
-        }
-        case StreamContent(_, _, _, _, _) => throw new Exception(s"StreamContent handling not yet implemented")
-      }
-    }
+          )
 
-    stripNDNTLVAndConcatSegments(unstrippedContent)
+        futContentSegments map { contentSegments =>
+          val concatenatedSegmentData: List[Byte] =
+            contentSegments.foldLeft(List.empty[Byte]) { (accData, c) =>
+              c.data.toList ::: accData
+            }
+          handleContent(Content(unstrippedContent.name, concatenatedSegmentData.toArray), senderCopy)
+        }
+      }
+      case StreamContent(_, _, _, _, _) => throw new Exception(s"StreamContent handling not yet implemented")
+    }
   }
+
 
   private def handleContent(content: Content, senderCopy: ActorRef) = {
 
@@ -344,7 +341,9 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     // If it is an interest, start a compute request
     case packet:CCNPacket => handlePacket(packet, sender)
     case UDPConnection.Received(data, sendingRemote) => {
+
       val maybePacket = ccnIf.byteStringToPacket(data)
+
       maybePacket match {
         // Received an interest from the network (byte format) -> spawn a new worker which handles the messages (if it crashes we just assume a timeout at the moment)
         case Some(packet: CCNPacket) => handlePacket(packet, sender)

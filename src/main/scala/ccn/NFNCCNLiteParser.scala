@@ -4,6 +4,7 @@ import javax.xml.bind.DatatypeConverter
 
 import ccn.packet._
 import com.typesafe.scalalogging.slf4j.Logging
+import myutil.FormattedOutput
 import org.xml.sax.SAXParseException
 
 import scala.xml._
@@ -47,7 +48,7 @@ object NFNCCNLiteParser extends Logging {
       components.map { parseData }
     }
 
-    def parseComponentsNDNTLV(elem: Elem):Seq[String] = {
+    def parseComponentsNDNTLV(elem: Elem):Seq[Array[Byte]] = {
       val components = elem \ "Name" \ "NameComponent"
 
       val cmps = components.map { parseDataNDNTLV }
@@ -55,23 +56,23 @@ object NFNCCNLiteParser extends Logging {
       cmps
     }
 
-    def parseDataNDNTLV(elem: Node): String = {
+    def parseDataNDNTLV(elem: Node): Array[Byte] = {
       val datasNodes = elem \ "data"
 
-      datasNodes.foldLeft("") { (curData: String, data: Node) =>
+      datasNodes.foldLeft(Array[Byte]()) { (curData: Array[Byte], data: Node) =>
         val nameSize = (data \ "@size").text.toInt
         val encoding = (data \ "@dt").text
         val nameData = data.text.trim
 
         val nextData = encoding match {
           case "string" =>
-            nameData
+            nameData.getBytes
           case "binary.base64" =>
-            new String(decodeBase64(nameData))
+            decodeBase64(nameData)
           case _ => throw new Exception(s"parseData() does not support data of type: '$encoding'")
         }
 
-        curData + nextData
+        curData ++ nextData
       }
     }
 
@@ -85,7 +86,7 @@ object NFNCCNLiteParser extends Logging {
       val contents = elem \ "Content"
 
       assert(contents.size == 1, "content should only contain one node with content")
-      parseDataNDNTLV(contents.head).getBytes
+      parseDataNDNTLV(contents.head)
     }
 
     val cleanedXmlString = xmlString.trim.replace("&", "&amp;")
@@ -108,11 +109,11 @@ object NFNCCNLiteParser extends Logging {
             }
           }
           case interest @ <Interest>{_*}</Interest>=> {
-            val nameComponents = parseComponentsNDNTLV(interest)
+            val nameComponents = parseComponentsNDNTLV(interest) map { cmp => new String(cmp) }
             Interest(nameComponents :_*)
           }
           case content @ <Data>{_*}</Data> => {
-            val nameComponents = parseComponentsNDNTLV(content)
+            val nameComponents = parseComponentsNDNTLV(content) map { cmp => new String(cmp) }
             val contentData = parseContentDataNDNTLV(content)
             if(new String(contentData).startsWith(":NACK")) {
               NAck(CCNName(nameComponents :_*))

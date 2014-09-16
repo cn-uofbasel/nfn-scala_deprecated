@@ -6,6 +6,7 @@ import ccn.packet._
 import java.io.{FileOutputStream, File}
 import ccnliteinterface._
 import com.typesafe.scalalogging.slf4j.Logging
+import myutil.FormattedOutput
 
 import scala.collection.mutable.ListBuffer
 
@@ -37,7 +38,7 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
     val segmentSize = maxSegmentSize
 
     val dataSize = content.data.size
-    val segmentComponent = "seg"
+    val segmentComponent = "s"
 
     def singleContentData(data: Array[Byte]): Array[Byte] = {
       SingleContent(None, None, Data(data.toList)).encodeData
@@ -48,7 +49,8 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
         val buf = ListBuffer[Array[Byte]]()
         def go(segNum: Int, largeData: Array[Byte]): List[Array[Byte]] = {
           val (segData, largeDataTail) = largeData.splitAt(segmentSize)
-          val segName = content.name.append(s"$segmentComponent$segNum")
+
+          val segName = CCNName(content.name.cmps.init ++ Seq(content.name.cmps.last + segmentComponent + segNum.toString):_*)
           buf.prepend(ccnIf.mkBinaryContent(segName.cmps.toArray, singleContentData(segData)))
           if (largeDataTail.nonEmpty) {
             go(segNum + 1, largeDataTail)
@@ -57,10 +59,14 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
           }
         }
 
-        val numberOfSegments = math.round(dataSize.toFloat / segmentSize)
+        val numberOfSegments = math.round(dataSize.toFloat / segmentSize + 0.5f)
         val lastSegmentSize = dataSize % segmentSize
-        val metaContentData = MultiSegmentContent(None, None, Some(SegmentName(segmentComponent)), NumberOfSegments(numberOfSegments), SegmentSize(segmentSize), LastSegmentSize(lastSegmentSize)).encodeData
-        metaContentData :: go(0, data)
+        val multiSegmentContent = MultiSegmentContent(None, None, Some(SegmentName(segmentComponent)), NumberOfSegments(numberOfSegments), SegmentSize(segmentSize), LastSegmentSize(lastSegmentSize))
+        val metaContentData =  multiSegmentContent.encodeData
+
+        logger.info(s"Segmenting Content $content with meta information: $multiSegmentContent")
+        if(metaContentData.size > segmentSize) throw new Exception(s"MetaData is too large to fit into a segment of size $segmentSize")
+        ccnIf.mkBinaryContent(content.name.cmps.toArray, metaContentData) :: go(0, data)
       }
       case Content(name, data) => {
         ccnIf.mkBinaryContent(name.cmps.toArray, singleContentData(data)) :: Nil
@@ -89,11 +95,13 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
 
   def mkAddToCacheInterest(content: Content): List[Array[Byte]] = {
 
+    // TODO: content format
+
     // TODO this is required because potentially several fies try to write to the same file, eve if it is very unlikely...
     // no longer required when addToCache does no longer require to parse a file or is implemented directly in Scala
     CCNLiteInterfaceWrapper.synchronized {
-
       mkBinaryContent(content) map { binaryContent =>
+
         val servLibDir = new File("./service-library")
         if (!servLibDir.exists) {
           servLibDir.mkdir()
@@ -114,6 +122,7 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
         val binaryInterest: Array[Byte] = ccnIf.mkAddToCacheInterest(absoluteFilename)
 
         file.delete
+
         binaryInterest
       }
     }

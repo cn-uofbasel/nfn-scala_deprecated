@@ -98,3 +98,11 @@ case class AverageApproximatedBitRate(nonNegInt: Long) extends NDNTLVType with N
   override def typ: Int = 40030
 }
 
+
+object CCNLCFTest extends App {
+  val l: List[Byte] =
+    List(-3, -100, 64, 14, -3, -100, 76, 10, 49, 49, 49, 49, 49, 49, 49, 49, 49, 49)
+
+  println(CCNLiteContentFormatParser.parse(l))
+
+}
