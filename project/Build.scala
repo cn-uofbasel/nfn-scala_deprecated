@@ -124,11 +124,14 @@ object MainBuild extends Build {
     }
 
     val processBuilder = {
-      val cmds = List("make", "-e", "USE_NFN=0", "-e", "USE_NACKS=0", "clean", "all")
+      val cmds = List("make", "clean", "all")
 
       new java.lang.ProcessBuilder(cmds:_*)
     }
     processBuilder.directory(new File(s"$ccnlPath"))
+    val e = processBuilder.environment()
+    e.put("USE_NFN", "1")
+    e.put("USE_NACKS", "1")
     val process = processBuilder.start()
     val processOutputReaderPrinter = new InputStreamToStdOut(process.getInputStream)
     val t = new Thread(processOutputReaderPrinter).start()
