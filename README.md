@@ -14,16 +14,18 @@ We suggest using cli as long as performance is not important because it is less 
 
 ### ccn-lite
 
-Refer to the installation information in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite), but in short the following should work.
+For all the information about the installation of ccn-lite refer to [CCN-lite](https://github.com/cn-uofbasel/ccn-lite), but for a quick start the following should work.
 
-1. Set the ccn-lite env: `export CCNL_PATH="<path/to/ccnlite"` (don't forget to add it to your  bash profile if you want it to persist)
-2. Ubuntu: `sudo apt-get install libssl-dev`
+1. `git clone https://github.com/cn-uofbasel/ccn-lite`
+2. Set the ccn-lite env: `export CCNL_PATH="<path/to/ccnlite"` (don't forget to add it to your  bash profile if you want it to persist)
+3. Ubuntu: `sudo apt-get install libssl-dev`
 
    OSX: `brew install openssl` (assuming the [homebrew](http://brew.sh) packet manager is installed)
+   OSX: `make clean all` in the `$CCNL_PATH` root directory
 
-3. Ubuntu: `make clean && make all` in the `$CCNL_PATH` root directory
+3. Ubuntu: `make clean all` in the `$CCNL_PATH` root directory
 
-   OSX: `make clean && make -f BSDmakefile` in the `$CCNL_PATH` root directory
+   OSX: `make -f BSDmakefile clean all` in the `$CCNL_PATH` root directory
 
 ### nfn-scala
 
@@ -39,7 +41,6 @@ JDK 7 should be available, otherwise it can be downloaded directly from [oracle]
 1. `brew install openssl`
 2. `brew install sbt`
 3. `export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_07.jdk/Contents/Home/"`
-4. `make clean && make -f BSDmakefile` in the `ccn-lite` root directory
 
 ##Running NFN
 ### Starting sbt
