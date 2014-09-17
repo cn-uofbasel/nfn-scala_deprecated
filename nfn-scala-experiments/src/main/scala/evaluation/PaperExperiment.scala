@@ -9,7 +9,7 @@ import monitor.Monitor
 import nfn._
 import nfn.service._
 import nfn.service.impl._
-import node.LocalNodeFactory
+import node.LocalNodeAbstractionFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util._
@@ -20,13 +20,13 @@ object PaperExperiment extends App {
 
   val expNum = 3
 
-  val node1 = LocalNodeFactory.forId(1)
-  val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
+  val node1 = LocalNodeAbstractionFactory.forId(1)
+  val node2 = LocalNodeAbstractionFactory.forId(2, isCCNOnly = true)
 
-  val node3 = LocalNodeFactory.forId(3)
+  val node3 = LocalNodeAbstractionFactory.forId(3)
 
-  val node4 = LocalNodeFactory.forId(4)
-  val node5 = LocalNodeFactory.forId(5, isCCNOnly = true)
+  val node4 = LocalNodeAbstractionFactory.forId(4)
+  val node5 = LocalNodeAbstractionFactory.forId(5, isCCNOnly = true)
   val nodes = List(node1, node2, node3, node4, node5)
 
   val docname1 = node1.prefix.append("doc", "test1")

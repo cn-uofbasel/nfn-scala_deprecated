@@ -19,17 +19,17 @@ import ccn.CCNLiteProcess
 import monitor.Monitor
 import ccn.CCNLiteProcess
 
-object LocalNodeFactory {
-  def forId(id: Int, isCCNOnly: Boolean = false)(implicit config: Config): LocalNode = {
+object LocalNodeAbstractionFactory {
+  def forId(id: Int, isCCNOnly: Boolean = false)(implicit config: Config): NodeAbstraction = {
     val nodePrefix = CCNName("node", s"node$id")
-    LocalNode(
+    NodeAbstraction(
       RouterConfig("127.0.0.1", 10000 + id * 10, nodePrefix, isCCNOnly = isCCNOnly),
       Some(ComputeNodeConfig("127.0.0.1", 10000 + id * 10 + 1, nodePrefix, withLocalAM = false))
     )
   }
 }
 
-object LocalNode {
+object NodeAbstraction {
   /**
    * Connects the given sequence to a grid.
    * The size of the sequence does not have to be a power of a natural number.
@@ -41,7 +41,7 @@ object LocalNode {
    * o-o-o    o-o
    * @param nodes
    */
-  def connectGrid(nodes: Seq[LocalNode]): Unit = {
+  def connectGrid(nodes: Seq[NodeAbstraction]): Unit = {
     if(nodes.size <= 1) return
 
     import Math._
@@ -74,7 +74,7 @@ object LocalNode {
    * o-o-o
    * @param nodes
    */
-  def connectStar(nodes: Seq[LocalNode]): Unit = {
+  def connectStar(nodes: Seq[NodeAbstraction]): Unit = {
     if(nodes.size <= 1) return
 
     nodes.tail foreach { _ <~> nodes.head }
@@ -87,7 +87,7 @@ object LocalNode {
    * o - o
    * @param unconnectedNodes
    */
-  def connectAll(unconnectedNodes: Seq[LocalNode]): Unit = {
+  def connectAll(unconnectedNodes: Seq[NodeAbstraction]): Unit = {
     if(unconnectedNodes.size <= 1 ) return
 
     val head = unconnectedNodes.head
@@ -104,7 +104,7 @@ object LocalNode {
    * @param nodes
    * @return
    */
-  def connectLine(nodes: Seq[LocalNode]): Unit = {
+  def connectLine(nodes: Seq[NodeAbstraction]): Unit = {
     if(nodes.size <= 1) return
 
     nodes.tail.foldLeft(nodes.head) {
@@ -113,7 +113,7 @@ object LocalNode {
   }
 }
 
-case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[ComputeNodeConfig]){
+case class NodeAbstraction(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[ComputeNodeConfig]){
 
   implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
 
@@ -169,23 +169,23 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    * - and registration of the prefix und the face (there could be several prefixes under the same network face, but currently only one is supported)
    * @param otherNode
    */
-  def connect(otherNode: LocalNode) = {
+  def connect(otherNode: NodeAbstraction) = {
     assert(isConnecting, "Node can only connect to other nodes before caching any content")
 
     Monitor.monitor ! Monitor.ConnectLog(routerConfig.toNodeLog, otherNode.routerConfig.toNodeLog)
     ccnLiteProcess.connect(otherNode.routerConfig)
   }
 
-  def addNodeFace(faceOfNode: LocalNode, gateway: LocalNode) = {
+  def addNodeFace(faceOfNode: NodeAbstraction, gateway: NodeAbstraction) = {
     addPrefixFace(faceOfNode.routerConfig.prefix, gateway)
   }
 
-  def addPrefixFace(prefix: CCNName, gateway: LocalNode) = {
+  def addPrefixFace(prefix: CCNName, gateway: NodeAbstraction) = {
     val gatewayConfig = gateway.routerConfig
     ccnLiteProcess.addPrefix(prefix, gatewayConfig.host, gatewayConfig.port)
   }
 
-  def addNodeFaces(faceOfNodes: List[LocalNode], gateway: LocalNode) = {
+  def addNodeFaces(faceOfNodes: List[NodeAbstraction], gateway: NodeAbstraction) = {
     faceOfNodes map { addNodeFace(_, gateway) }
   }
 
@@ -193,7 +193,7 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    * Connects this with other and other with this, see [[connect]] for details of the connection process.
    * @param otherNode
    */
-  def connectBidirectional(otherNode: LocalNode) = {
+  def connectBidirectional(otherNode: NodeAbstraction) = {
     this.connect(otherNode)
     otherNode.connect(this)
   }
@@ -202,25 +202,25 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    * Connects otherNode with this, see [[connect]] for details of the connection process
    * @param otherNode
    */
-  def connectFromOther(otherNode: LocalNode) = otherNode.connect(this)
+  def connectFromOther(otherNode: NodeAbstraction) = otherNode.connect(this)
 
   /**
    * Symbolic method for [[connectBidirectional]]
    * @param otherNode
    */
-  def <~>(otherNode: LocalNode) =  connectBidirectional(otherNode)
+  def <~>(otherNode: NodeAbstraction) =  connectBidirectional(otherNode)
 
   /**
    * Symbolic method for [[connect]]
    * @param otherNode
    */
-  def ~>(otherNode: LocalNode) = connect(otherNode)
+  def ~>(otherNode: NodeAbstraction) = connect(otherNode)
 
   /**
    * Symbolic methdo for [[connectFromOther]]
    * @param otherNode
    */
-  def <~(otherNode: LocalNode) = connectFromOther(otherNode)
+  def <~(otherNode: NodeAbstraction) = connectFromOther(otherNode)
 
 
   /**

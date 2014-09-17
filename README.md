@@ -18,14 +18,14 @@ For all the information about the installation of ccn-lite refer to [CCN-lite](h
 
 1. `git clone https://github.com/cn-uofbasel/ccn-lite`
 2. Set the ccn-lite env: `export CCNL_PATH="<path/to/ccnlite"` (don't forget to add it to your  bash profile if you want it to persist)
+
 3. Ubuntu: `sudo apt-get install libssl-dev`
 
    OSX: `brew install openssl` (assuming the [homebrew](http://brew.sh) packet manager is installed)
    OSX: `make clean all` in the `$CCNL_PATH` root directory
 
-3. Ubuntu: `make clean all` in the `$CCNL_PATH` root directory
+3. Optional (can also be done in the next step with sbt): `make clean all` in the `$CCNL_PATH` root directory
 
-   OSX: `make -f BSDmakefile clean all` in the `$CCNL_PATH` root directory
 
 ### nfn-scala
 
@@ -45,7 +45,7 @@ JDK 7 should be available, otherwise it can be downloaded directly from [oracle]
 ##Running NFN
 ### Starting sbt
 Set the `NFN_SCALA` variable with `export NFN_SCALA="<path/to/nfn-scala/"` and change to this directory.
-If you only want to use nfn-scala in the cli mode, you can just type `sbt`.
+If you only want to use nfn-scala in the cli mode, you can just type `sbt`. If you have not compile ccn-lite yet, type `compileCCNLite`
 For the jni mode run the `start_sbt.sh` script, this will launch sbt with the linked dynamic library (not yet compiled) in the classpath. 
 To compile this library, run the sbt command `compileJniNativelib`.
 
