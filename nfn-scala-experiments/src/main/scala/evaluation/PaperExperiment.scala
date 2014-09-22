@@ -6,6 +6,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import config.StaticConfig
 import lambdacalculus.parser.ast._
 import monitor.Monitor
+import myutil.IOHelper
 import nfn._
 import nfn.service._
 import nfn.service.impl._
@@ -81,14 +82,26 @@ object PaperExperiment extends App {
   node4 += Content(docname4, docdata4)
   node5 += Content(docname5, docdata5)
 
+  val wcName = "javaservice_impl_JavaWordCount"
+  val wcPrefix = CCNName(wcName)
+  val wcData = IOHelper.readByteArrayFromFile(s"./service-library/$wcName")
+  val wcContent =  Content(wcPrefix, wcData)
+
   // remove for exp6
   if(expNum != 6) {
-    node3.publishService(new WordCountService())
+    node3 += wcContent
   }
 
-  node4.publishService(new WordCountService())
+  node4 += wcContent
 
-  val wcPrefix = new WordCountService().ccnName
+//  // remove for exp6
+//  if(expNum != 6) {
+//    node3.publishService(new WordCountService())
+//  }
+//
+//  node4.publishService(new WordCountService())
+//
+//  val wcPrefix = new WordCountService().ccnName
 
   // remove for exp3
   if(expNum != 3 && expNum != 7) {
@@ -126,7 +139,8 @@ object PaperExperiment extends App {
   implicit val useThunks: Boolean = false
 
   val ts = new Translate().toString
-  val wc = new WordCountService().toString
+//  val wc = new WordCountService().toString
+  val wc = wcPrefix.toString
   val nack = new NackServ().toString
 
   val exp1 = wc appl docname1

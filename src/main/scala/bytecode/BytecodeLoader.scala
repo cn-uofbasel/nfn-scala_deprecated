@@ -43,8 +43,9 @@ object BytecodeLoader extends Logging {
     val baOut = new ByteArrayOutputStream()
     val jarOut = new JarOutputStream(baOut)
 
-    val startsWithFilters = List("scala", "java", "[Ljava")
-    val containFilters = List("impl")
+    val startsWithFilters = List("scala/", "java/", "[Ljava")
+//    val containFilters = List("impl")
+    val containFilters = List()
     var folders: Set[String] = Set()
     try {
       val javaClass = Repository.lookupClass(className)
