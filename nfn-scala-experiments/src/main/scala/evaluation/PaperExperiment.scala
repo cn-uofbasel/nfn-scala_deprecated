@@ -18,7 +18,7 @@ object PaperExperiment extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
-  val expNum = 3
+  val expNum = 1
 
   val node1 = LocalNodeAbstractionFactory.forId(1)
   val node2 = LocalNodeAbstractionFactory.forId(2, isCCNOnly = true)
@@ -128,9 +128,13 @@ object PaperExperiment extends App {
   val nack = new NackServ().toString
   val dyn = dynServ.toString
 
-  val exp1 = wc appl docname1
+//  val exp1 = wc appl docname1
+  val exp1: Expr = iif(1, 1 , 2)
 
-  val exp2 = wc appl docname5
+  val exp2: Call = wc appl docname5
+
+
+
 
   // cut 1 <-> 3:
   // remove <~>
