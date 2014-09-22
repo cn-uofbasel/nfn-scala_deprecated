@@ -1,11 +1,12 @@
 package bytecode
 
-import java.io.ByteArrayOutputStream
+import java.io.{File, ByteArrayOutputStream}
 import java.net.{URL, URLClassLoader}
 import java.util.jar.{JarEntry, JarFile, JarOutputStream}
 import java.util.zip.ZipEntry
 
 import com.typesafe.scalalogging.slf4j.Logging
+import myutil.IOHelper
 import org.apache.bcel.Repository
 import org.apache.bcel.classfile._
 
@@ -42,8 +43,9 @@ object BytecodeLoader extends Logging {
     val baOut = new ByteArrayOutputStream()
     val jarOut = new JarOutputStream(baOut)
 
-    val startsWithFilters = List("scala", "java", "[Ljava")
-    val containFilters = List("impl")
+    val startsWithFilters = List("scala/", "java/", "[Ljava")
+//    val containFilters = List("impl")
+    val containFilters = List()
     var folders: Set[String] = Set()
     try {
       val javaClass = Repository.lookupClass(className)

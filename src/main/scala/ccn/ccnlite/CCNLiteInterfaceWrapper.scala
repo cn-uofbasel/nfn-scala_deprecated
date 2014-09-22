@@ -1,17 +1,21 @@
 package ccn.ccnlite
 
 import ccn.NFNCCNLiteParser
+import ccn.ccnlite.ndntlv.ccnlitecontentformat._
 import ccn.packet._
-import java.io.{FileReader, FileOutputStream, File}
+import java.io.{FileOutputStream, File}
 import ccnliteinterface._
-import ccnliteinterface.cli.CCNLiteInterfaceCli
-import ccnliteinterface.jni.CCNLiteInterfaceCCNbJni
 import com.typesafe.scalalogging.slf4j.Logging
-import config.StaticConfig
-import myutil.IOHelper
+import myutil.FormattedOutput
+
+import scala.collection.mutable.ListBuffer
 
 
 object CCNLiteInterfaceWrapper {
+
+  val maxSegmentSize = 100
+  val segmentComponent = "s"
+
 
   def createCCNLiteInterfaceWrapper(wireFormat: CCNLiteWireFormat, ccnIfType: CCNLiteInterfaceType) =
     CCNLiteInterfaceWrapper(CCNLiteInterface.createCCNLiteInterface(wireFormat, ccnIfType))
@@ -31,23 +35,58 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
     }
   }
 
-  def mkBinaryContent(content: Content): Array[Byte] = {
-    val name = content.name.cmps.toArray
-    val data = content.data
-    ccnIf.mkBinaryContent(name, data)
+  def mkBinaryContent(content: Content): List[Array[Byte]] = {
+
+
+    val segmentSize = CCNLiteInterfaceWrapper.maxSegmentSize
+    val segmentComponent = CCNLiteInterfaceWrapper.segmentComponent
+
+    val dataSize = content.data.size
+
+    def singleContentData(data: Array[Byte]): Array[Byte] = {
+      SingleContent(None, None, Data(data.toList)).encodeData
+    }
+
+    content match {
+      case Content(name, data) if dataSize > segmentSize => {
+        val buf = ListBuffer[Array[Byte]]()
+        def go(segNum: Int, largeData: Array[Byte]): Unit = {
+          val (segData, largeDataTail) = largeData.splitAt(segmentSize)
+//          val segName = CCNName(content.name.cmps.init ++ Seq(content.name.cmps.last + segmentComponent + segNum.toString):_*)
+          val segName = content.name.append(segmentComponent + segNum.toString)
+          buf.append(ccnIf.mkBinaryContent(segName.cmps.toArray, singleContentData(segData)))
+          if (largeDataTail.nonEmpty) {
+            go(segNum + 1, largeDataTail)
+          }
+        }
+
+        val numberOfSegments = math.round(dataSize.toFloat / segmentSize + 0.5f)
+        val lastSegmentSize = dataSize % segmentSize
+        val multiSegmentContent = MultiSegmentContent(None, None, Some(SegmentName(segmentComponent)), NumberOfSegments(numberOfSegments), SegmentSize(segmentSize), LastSegmentSize(lastSegmentSize))
+        val metaContentData =  multiSegmentContent.encodeData
+
+        logger.info(s"Segmenting Content $content with meta information: $multiSegmentContent")
+        if(metaContentData.size > segmentSize) throw new Exception(s"MetaData is too large to fit into a segment of size $segmentSize")
+
+        buf.append(ccnIf.mkBinaryContent(content.name.cmps.toArray, metaContentData))
+        go(0, data)
+
+        buf.toList.reverse
+      }
+      case Content(name, data) => {
+        ccnIf.mkBinaryContent(name.cmps.toArray, singleContentData(data)) :: Nil
+      }
+    }
   }
 
-  def mkBinaryContent(name: Array[String], data: Array[Byte]): Array[Byte] = {
-    ccnIf.mkBinaryContent(name, data)
-  }
 
   def mkBinaryInterest(interest: Interest): Array[Byte] = {
     ccnIf.mkBinaryInterest(interest.name.cmps.toArray)
   }
 
-  def mkBinaryPacket(packet: CCNPacket): Array[Byte] = {
+  def mkBinaryPacket(packet: CCNPacket): List[Array[Byte]] = {
     packet match {
-      case i: Interest => mkBinaryInterest(i)
+      case i: Interest => mkBinaryInterest(i) :: Nil
       case c: Content => mkBinaryContent(c)
       case n: NAck => mkBinaryContent(n.toContent)
     }
@@ -58,43 +97,42 @@ case class CCNLiteInterfaceWrapper(ccnIf: CCNLiteInterface) extends Logging {
   }
 
 
-  def mkAddToCacheInterest(content: Content): Array[Byte] = {
 
-//    val ccnLiteCCNBIf = CCNLiteInterfaceWrapper.createCCNLiteInterfaceWrapper(CCNBWireFormat(), StaticConfig.ccnlitelibrarytype)
-//
-//    val binaryContent = ccnLiteCCNBIf.mkBinaryContent(content)
+  def mkAddToCacheInterest(content: Content): List[Array[Byte]] = {
 
-    // TODO this hack is required because even though the management operations can be written in CCNB,
-    // for the addToCache message the encoding must be in CCNB currently
-    val binaryContent = mkBinaryContent(content)
+    // TODO: content format
 
-    val servLibDir = new File("./service-library")
-    if(!servLibDir.exists) {
-      servLibDir.mkdir()
-    }
-    val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}.ccnb"
-    val file = new File(filename)
+    // TODO this is required because potentially several fies try to write to the same file, eve if it is very unlikely...
+    // no longer required when addToCache does no longer require to parse a file or is implemented directly in Scala
+    CCNLiteInterfaceWrapper.synchronized {
+      mkBinaryContent(content) map { binaryContent =>
 
-    // Just to be sure, if the file already exists, wait quickly and try again
-    if (file.exists) {
-      logger.warn(s"Temporary file already existed, this should never happen!")
-      Thread.sleep(1)
-      mkAddToCacheInterest(content)
-    } else {
-      file.createNewFile
-      val out = new FileOutputStream(file)
-      try {
-        out.write(binaryContent)
-      } finally {
-        if (out != null) out.close
+        val servLibDir = new File("./service-library")
+        if (!servLibDir.exists) {
+          servLibDir.mkdir()
+        }
+        val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}.ccnb"
+        val file = new File(filename)
+        file.delete()
+
+        // Just to be sure, if the file already exists, wait quickly and try again
+        file.createNewFile
+        val out = new FileOutputStream(file)
+        try {
+          out.write(binaryContent)
+        } finally {
+          if (out != null) out.close
+        }
+        val absoluteFilename = file.getCanonicalPath
+        val binaryInterest: Array[Byte] = ccnIf.mkAddToCacheInterest(absoluteFilename)
+
+        file.delete
+
+        binaryInterest
       }
-      val absoluteFilename = file.getCanonicalPath
-      val binaryInterest = ccnIf.mkAddToCacheInterest(absoluteFilename)
-
-      file.delete
-      binaryInterest
     }
   }
+
 
   def base64CCNBToPacket(base64ccnb: String): Option[CCNPacket] = {
     val xml = ccnIf.ccnbToXml(NFNCCNLiteParser.decodeBase64(base64ccnb))

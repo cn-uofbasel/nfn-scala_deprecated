@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 import akka.util.Timeout
 import nfn._
 import ccn.packet.{Content, CCNName}
-import node.NodeAbstraction
+import node.LocalNode
 import lambdacalculus.parser.ast.{Expr, LambdaDSL}
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,7 +32,7 @@ object SingeLocalAMNode extends App {
   implicit val useThunks = false
 
   val nodePrefix = CCNName("node", "node1")
-  val node = NodeAbstraction(
+  val node = LocalNode(
     RouterConfig("127.0.0.1", 10010, nodePrefix),
     Some(ComputeNodeConfig("127.0.0.1", 10011, nodePrefix, withLocalAM = true))
   )

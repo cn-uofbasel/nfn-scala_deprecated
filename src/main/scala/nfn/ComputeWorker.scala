@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorRef}
 import akka.event.Logging
 import akka.util.Timeout
 import ccn.ccnlite.CCNLiteInterfaceWrapper
+import ccn.ccnlite.ndntlv.ccnlitecontentformat.{Data, SingleContent}
 import ccn.packet.{CCNName, Interest, Content}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -78,7 +79,13 @@ case class ComputeWorker(ccnServer: ActorRef) extends Actor {
             case Success(callable) => {
               try {
                 val result: NFNValue = callable.exec
-                val content = Content(name.withoutThunkAndIsThunk._1, result.toStringRepresentation.getBytes)
+                val resultData = result.toStringRepresentation.getBytes
+
+//                if(resultData.size > CCNLiteInterfaceWrapper.maxSegmentSize) throw new Exception("computed result is only implemented for max seg sized results")
+//
+//                val encodedResultData = SingleContent(None, None, Data(resultData.toList)).encodeData
+//                val content = Content(name.withoutThunkAndIsThunk._1, encodedResultData)
+                val content = Content(name.withoutThunkAndIsThunk._1, resultData)
                 logger.info(s"Finished computation, result: $content")
                 senderCopy ! content
               } catch {

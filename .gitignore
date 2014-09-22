@@ -40,6 +40,7 @@ omnetreplay/omnetreplay
 omnetreplay/out*
 omnetreplay/NFNNetwork.ned
 omnetreplay/transmittedPackets.json
+omnetreplay/lib/rapidjson/
 
 *.dSYM/*
 
@@ -50,3 +51,6 @@ omnetreplay/transmittedPackets.json
 failed-messages
 service-library
 temp-bytecode-content
+
+# temp
+asdf_asdf.ndn

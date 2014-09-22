@@ -25,19 +25,19 @@ object IOHelper {
    * @param op
    * @return
    */
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit): Unit = {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
 
-  def printToFile(f: java.io.File, data: String) {
+  def printToFile(f: java.io.File, data: String): Unit = {
     printToFile(f)(_.println(data))
   }
 
   def readByteArrayFromFile(fileName: String): Array[Byte] = {
     val bis = new BufferedInputStream(new FileInputStream(fileName))
     try {
-      Stream.continually(bis.read).takeWhile(-1 !=).map(_.toByte).toArray
+      Stream.continually(bis.read).takeWhile(_ != -1 ).map(_.toByte).toArray
     } finally {
       bis.close()
     }

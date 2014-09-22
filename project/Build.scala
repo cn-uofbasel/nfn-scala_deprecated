@@ -11,17 +11,15 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ assemblySettings ++ Seq (
     version       := "0.1-SNAPSHOT",
     scalaVersion  := "2.10.3",
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "UTF-8"),
+    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-encoding", "-language:implicitConversions", "UTF-8"),
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
     addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
     MainBuild.compileJNI,
-    MainBuild.compileCCNLite,
     test in assembly := {}
   )
 }
-
 
 object MainBuild extends Build {
 
@@ -112,35 +110,6 @@ object MainBuild extends Build {
     val t = new Thread(processOutputReaderPrinter).start()
     process.waitFor()
     println(s"Compile JNI Process finished with return value ${process.exitValue()}")
-    process.destroy()
-  }
-
-  val compileCCNLiteTask = TaskKey[Unit]("compileCCNLite")
-  val compileCCNLite = compileCCNLiteTask := {
-    val ccnlPath = {
-      val p = System.getenv("CCNL_PATH")
-      if(p == null) throw new Exception("CCNL_PATH no set. Get a copy of the current ccn-lite version from 'https://github.com/cn-uofbasel/ccn-lite' and set the variable to its path.")
-      else p
-    }
-
-    val processBuilder = {
-      val cmds = List("make", "clean", "all")
-
-      new java.lang.ProcessBuilder(cmds:_*)
-    }
-    processBuilder.directory(new File(s"$ccnlPath"))
-    val e = processBuilder.environment()
-    e.put("USE_NFN", "1")
-    e.put("USE_NACKS", "1")
-    val process = processBuilder.start()
-    val processOutputReaderPrinter = new InputStreamToStdOut(process.getInputStream)
-    val t = new Thread(processOutputReaderPrinter).start()
-    process.waitFor()
-    val resVal = process.exitValue()
-    if(resVal == 0)
-      println(s"Compiled ccn-lite with return value ${process.exitValue()}")
-    else
-      throw new Exception("Error during compilation of ccn-lite")
     process.destroy()
   }
 }

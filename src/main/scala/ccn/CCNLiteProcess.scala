@@ -135,5 +135,5 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   def removePrefix(prefix: CCNName, gatewayHost: String, gatewayPort: Int) = {
     getOrCreateNetworkFace(host, port).unregisterPrefixPrefix(prefix.toString)
   }
-  
+
 }

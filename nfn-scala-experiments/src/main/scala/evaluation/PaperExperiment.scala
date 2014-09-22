@@ -6,10 +6,11 @@ import com.typesafe.config.{Config, ConfigFactory}
 import config.StaticConfig
 import lambdacalculus.parser.ast._
 import monitor.Monitor
+import myutil.IOHelper
 import nfn._
 import nfn.service._
 import nfn.service.impl._
-import node.LocalNodeAbstractionFactory
+import node.LocalNodeFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util._
@@ -20,13 +21,13 @@ object PaperExperiment extends App {
 
   val expNum = 1
 
-  val node1 = LocalNodeAbstractionFactory.forId(1)
-  val node2 = LocalNodeAbstractionFactory.forId(2, isCCNOnly = true)
+  val node1 = LocalNodeFactory.forId(1)
+  val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
 
-  val node3 = LocalNodeAbstractionFactory.forId(3)
+  val node3 = LocalNodeFactory.forId(3)
 
-  val node4 = LocalNodeAbstractionFactory.forId(4)
-  val node5 = LocalNodeAbstractionFactory.forId(5, isCCNOnly = true)
+  val node4 = LocalNodeFactory.forId(4)
+  val node5 = LocalNodeFactory.forId(5, isCCNOnly = true)
   val nodes = List(node1, node2, node3, node4, node5)
 
   val docname1 = node1.prefix.append("doc", "test1")
@@ -81,14 +82,26 @@ object PaperExperiment extends App {
   node4 += Content(docname4, docdata4)
   node5 += Content(docname5, docdata5)
 
+  val wcName = "javaservice_impl_JavaWordCount"
+  val wcPrefix = CCNName(wcName)
+  val wcData = IOHelper.readByteArrayFromFile(s"./service-library/$wcName")
+  val wcContent =  Content(wcPrefix, wcData)
+
   // remove for exp6
   if(expNum != 6) {
-    node3.publishService(new WordCountService())
+    node3 += wcContent
   }
 
-  node4.publishService(new WordCountService())
+  node4 += wcContent
 
-  val wcPrefix = new WordCountService().ccnName
+//  // remove for exp6
+//  if(expNum != 6) {
+//    node3.publishService(new WordCountService())
+//  }
+//
+//  node4.publishService(new WordCountService())
+//
+//  val wcPrefix = new WordCountService().ccnName
 
   // remove for exp3
   if(expNum != 3 && expNum != 7) {
@@ -111,30 +124,28 @@ object PaperExperiment extends App {
     node3.addPrefixFace(wcPrefix, node4)
   }
 
-  val dynServ = new NFNDynamicService {
-    override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (_, _) =>
-      println("yay")
-      NFNIntValue(42)
-    }
-  }
-  node1.publishService(dynServ)
+//  val dynServ = new NFNDynamicService {
+//    override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (_, _) =>
+//      println("yay")
+//      NFNIntValue(42)
+//    }
+//  }
+//  node1.publishService(dynServ)
+
+  Thread.sleep(2000)
 
   import lambdacalculus.parser.ast.LambdaDSL._
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
   val ts = new Translate().toString
-  val wc = new WordCountService().toString
+//  val wc = new WordCountService().toString
+  val wc = wcPrefix.toString
   val nack = new NackServ().toString
-  val dyn = dynServ.toString
 
-//  val exp1 = wc appl docname1
-  val exp1: Expr = iif(1, 1 , 2)
+  val exp1 = wc appl docname1
 
-  val exp2: Call = wc appl docname5
-
-
-
+  val exp2 = wc appl docname5
 
   // cut 1 <-> 3:
   // remove <~>
@@ -159,8 +170,6 @@ object PaperExperiment extends App {
 
   val exp8 = nack appl
 
-  val exp9 = dyn appl
-
   expNum match {
     case 1 => doExp(exp1)
     case 2 => doExp(exp2)
@@ -170,8 +179,7 @@ object PaperExperiment extends App {
     case 6 => doExp(exp6)
     case 7 => doExp(exp7)
     case 8 => doExp(exp8)
-    case 9 => doExp(exp9)
-    case _ => throw new Exception(s"expNum can only be 1 to 7 and not $expNum")
+    case _ => throw new Exception(s"expNum can only be 1 to 8 and not $expNum")
   }
 
   def doExp(exprToDo: Expr) = {
@@ -180,14 +188,19 @@ object PaperExperiment extends App {
       case Success(content) => {
         val totalTime = System.currentTimeMillis - startTime
         println(s"RESULT($totalTime): $content")
+        exit
       }
       case Failure(error) =>
+        exit
         throw error
 //        Monitor.monitor ! Monitor.Visualize()
     }
   }
-  Thread.sleep(StaticConfig.defaultTimeoutDuration.toMillis + 100)
-  Monitor.monitor ! Monitor.Visualize()
-  nodes foreach { _.shutdown() }
+
+  def exit = {
+    Monitor.monitor ! Monitor.Visualize()
+    nodes foreach { _.shutdown() }
+  }
+//  Thread.sleep(StaticConfig.defaultTimeoutDuration.toMillis + 100)
 }
 

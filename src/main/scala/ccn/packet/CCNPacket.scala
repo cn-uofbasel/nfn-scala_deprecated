@@ -99,6 +99,9 @@ case class CCNName(cmps: String *) extends Logging {
   def prepend(cmpsToPrepend:String*):CCNName = CCNName(cmpsToPrepend ++ cmps:_*)
   def append(nameToAppend:CCNName):CCNName = append(nameToAppend.cmps:_*)
   def prepend(nameToPrepend:CCNName):CCNName = prepend(nameToPrepend.cmps:_*)
+
+  // Helper to improve java interop
+  def cmpsList = cmps.toList
 }
 
 sealed trait CCNPacket extends Packet {

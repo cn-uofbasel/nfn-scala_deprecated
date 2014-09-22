@@ -10,7 +10,7 @@ import lambdacalculus.parser.ast._
 import monitor.Monitor
 import nfn.service.impl.{NackServ, Translate, WordCountService}
 import nfn.service.{NFNDynamicService, NFNIntValue, NFNValue}
-import node.{NodeAbstraction, LocalNodeAbstractionFactory}
+import node.{LocalNode, LocalNodeFactory}
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -34,13 +34,13 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
   }
   def doExp(expNum: Int) = {
 
-    val node1 = LocalNodeAbstractionFactory.forId(1)
-    val node2 = LocalNodeAbstractionFactory.forId(2, isCCNOnly = true)
+    val node1 = LocalNodeFactory.forId(1)
+    val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
 
-    val node3 = LocalNodeAbstractionFactory.forId(3)
+    val node3 = LocalNodeFactory.forId(3)
 
-    val node4 = LocalNodeAbstractionFactory.forId(4)
-    val node5 = LocalNodeAbstractionFactory.forId(5, isCCNOnly = true)
+    val node4 = LocalNodeFactory.forId(4)
+    val node5 = LocalNodeFactory.forId(5, isCCNOnly = true)
     val nodes = List(node1, node2, node3, node4, node5)
 
     val docdata1 = "one".getBytes
@@ -139,6 +139,8 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     }
     node1.publishService(dynServ)
 
+    Thread.sleep(1000)
+
     import lambdacalculus.parser.ast.LambdaDSL._
     import nfn.LambdaNFNImplicits._
     implicit val useThunks: Boolean = false
@@ -198,8 +200,6 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     }
 
     def doExp(exprToDo: Expr, res: String) = {
-      val startTime = System.currentTimeMillis()
-
       val f: Future[Content] = node1 ? exprToDo
       f.foreach { _ =>
         nodes foreach { _.shutdown() }

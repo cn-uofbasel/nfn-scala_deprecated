@@ -23,6 +23,9 @@ object LambdaNFNImplicits {
   implicit val lambdaPrinter: LambdaPrinter = LambdaNFNPrinter
 }
 
+/**
+ * Created by basil on 08/05/14.
+ */
 object LambdaNFNPrinter extends LambdaPrinter {
 //  def nfnNameComponents(expr: Expr): Array[String] = {
 //

@@ -4,6 +4,7 @@ import java.io._
 
 import ccnliteinterface._
 import com.typesafe.scalalogging.slf4j.Logging
+import org.omg.IOP.IORHelper
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -28,7 +29,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
     def futInToOut(is: InputStream, os: OutputStream): Future[Unit] = {
       Future(
         Iterator.continually(is.read)
-                .takeWhile(-1 !=)
+                .takeWhile(_ != -1)
                 .foreach(os.write)
       )
     }
@@ -100,11 +101,12 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
 
 
   override def mkAddToCacheInterest(ccnbAbsoluteFilename: String): Array[Byte] = {
+
     val ctrl = "ccn-lite-ctrl"
 
     val cmds = Array(utilFolderName+ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
 
-    val (res, _) = executeCommandToByteArray(cmds, None)
+    val (res, err) = executeCommandToByteArray(cmds, None)
 
     res
   }
