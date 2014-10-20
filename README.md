@@ -29,18 +29,21 @@ For all the information about the installation of ccn-lite refer to [CCN-lite](h
 
 ### nfn-scala
 
-Ubuntu:
+#### Ubuntu
 
 1. `sudo apt-get install openjdk-7-jdk`
 2. Set the java env: `export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64` (don't forget to add it to your bash profile if you want it to persist)
 3. Follow [instructions](http://www.scala-sbt.org/0.13.2/docs/Getting-Started/Setup.html) to install sbt
 
-OSX:
+#### OSX
 JDK 7 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
 
 1. `brew install openssl`
 2. `brew install sbt`
 3. `export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_07.jdk/Contents/Home/"`
+
+#### IDE
+If you want to use IntelliJ or eclipse you can use the tasks `gen-idea` or `eclipse`
 
 ##Running NFN
 ### Starting sbt
