@@ -11,7 +11,7 @@ object BuildSettings {
   val buildSettings = Defaults.defaultSettings ++ assemblySettings ++ Seq (
     version       := "0.1-SNAPSHOT",
     scalaVersion  := "2.10.3",
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "UTF-8"),
+    scalacOptions ++= Seq("-unchecked", "-encoding", "UTF-8"),
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
@@ -118,8 +118,8 @@ object MainBuild extends Build {
   val compileCCNLiteTask = TaskKey[Unit]("compileCCNLite")
   val compileCCNLite = compileCCNLiteTask := {
     val ccnlPath = {
-      val p = System.getenv("CCNL_PATH")
-      if(p == null) throw new Exception("CCNL_PATH no set. Get a copy of the current ccn-lite version from 'https://github.com/cn-uofbasel/ccn-lite' and set the variable to its path.")
+      val p = System.getenv("CCNL_HOME")
+      if(p == null) throw new Exception("CCNL_HOME no set. Get a copy of the current ccn-lite version from 'https://github.com/cn-uofbasel/ccn-lite' and set the variable to its path.")
       else p
     }
 

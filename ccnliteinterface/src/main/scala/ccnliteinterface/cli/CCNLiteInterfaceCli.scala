@@ -14,9 +14,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInterface with Logging {
 
   val ccnLiteEnv = {
-    val maybeCcnLiteEnv = System.getenv("CCNL_PATH")
+    val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
     if(maybeCcnLiteEnv == null) {
-      throw new Exception("CCNL_PATH system variable is not set. Set it to the root directory of ccn-lite.")
+      throw new Exception("CCNL_HOME system variable is not set. Set it to the root directory of ccn-lite.")
     }
     maybeCcnLiteEnv
   }
@@ -69,21 +69,21 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
 
     (result, err)
   }
-  def wireFormatNum(f: CCNLiteWireFormat) = wireFormat match {
-    case CCNBWireFormat() => 0
-    case NDNTLVWireFormat() => 2
-  }
+//  def wireFormatNum(f: CCNLiteWireFormat) = wireFormat match {
+//    case CCNBWireFormat() => 0
+//    case NDNTLVWireFormat() => 2
+//  }
 
   override def mkBinaryInterest(nameCmps: Array[String]): Array[Byte] = {
     val mkI = "ccn-lite-mkI"
-    val cmds = Array(utilFolderName+mkI, "-s", wireFormatNum(wireFormat).toString, nameCmps.mkString("|"))
+    val cmds = Array(utilFolderName+mkI, "-s", wireFormat.toString, nameCmps.mkString("|"))
     val (res, _) = executeCommandToByteArray(cmds, None)
     res
   }
 
   override def mkBinaryContent(name: Array[String], data: Array[Byte]): Array[Byte] = {
     val mkC = "ccn-lite-mkC"
-    val cmds = Array(utilFolderName+mkC, "-s", wireFormatNum(wireFormat).toString, name.mkString("|"))
+    val cmds = Array(utilFolderName+mkC, "-s", wireFormat.toString, name.mkString("|"))
     val (res, _) = executeCommandToByteArray(cmds, Some(data))
 
     res
@@ -91,7 +91,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
 
   override def ccnbToXml(binaryPacket: Array[Byte]): String = {
     val pktdump = "ccn-lite-pktdump"
-    val cmds = Array(utilFolderName+pktdump, "-f", "1", "-s", wireFormatNum(wireFormat).toString)
+    val cmds = Array(utilFolderName+pktdump, "-f", "1", "-s", wireFormat.toString)
 
     val (res, _) = executeCommandToByteArray(cmds, Some(binaryPacket))
 

@@ -12,9 +12,9 @@ object CCNLiteWireFormat {
 
 trait CCNLiteWireFormat
 case class CCNBWireFormat() extends CCNLiteWireFormat {
-  override def toString = "CCNB"
+  override def toString = "ccnb"
 }
 case class NDNTLVWireFormat() extends CCNLiteWireFormat {
-  override def toString = "NDNTLV"
+  override def toString = "ndntlv2013"
 }
 

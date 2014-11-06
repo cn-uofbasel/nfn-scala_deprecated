@@ -17,15 +17,15 @@ We suggest using cli as long as performance is not important because it is less 
 For all the information about the installation of ccn-lite refer to [CCN-lite](https://github.com/cn-uofbasel/ccn-lite), but for a quick start the following should work.
 
 1. `git clone https://github.com/cn-uofbasel/ccn-lite`
-2. Set the ccn-lite env: `export CCNL_PATH="<path/to/ccnlite"` (don't forget to add it to your  bash profile if you want it to persist)
+2. Set the ccn-lite env: `export CCNL_HOME="<path/to/ccnlite"` (don't forget to add it to your  bash profile if you want it to persist)
 3. Ubuntu: `sudo apt-get install libssl-dev`
 
    OSX: `brew install openssl` (assuming the [homebrew](http://brew.sh) packet manager is installed)
-   OSX: `make clean all` in the `$CCNL_PATH` root directory
+   OSX: `make clean all` in the `$CCNL_HOME` root directory
 
-3. Ubuntu: `make clean all` in the `$CCNL_PATH` root directory
+3. Ubuntu: `make clean all` in the `$CCNL_HOME` root directory
 
-   OSX: `make -f BSDmakefile clean all` in the `$CCNL_PATH` root directory
+   OSX: `make -f BSDmakefile clean all` in the `$CCNL_HOME` root directory
 
 ### nfn-scala
 
