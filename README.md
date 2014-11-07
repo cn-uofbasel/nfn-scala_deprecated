@@ -21,25 +21,27 @@ Refer to the installation information in [CCN-lite](https://github.com/cn-uofbas
 
    OSX: `brew install openssl` (assuming the [homebrew](http://brew.sh) packet manager is installed)
 
-3. Ubuntu: `make clean && make all` in the `$CCNL_PATH` root directory
+3. `make clean && make all` in the `$CCNL_PATH` root directory
 
-   OSX: `make clean && make -f BSDmakefile` in the `$CCNL_PATH` root directory
 
 ### nfn-scala
 
-Ubuntu:
+#### Ubuntu
 
 1. `sudo apt-get install openjdk-7-jdk`
 2. Set the java env: `export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64` (don't forget to add it to your bash profile if you want it to persist)
 3. Follow [instructions](http://www.scala-sbt.org/0.13.2/docs/Getting-Started/Setup.html) to install sbt
 
-OSX:
+#### OSX
 JDK 7 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
 
 1. `brew install openssl`
 2. `brew install sbt`
 3. `export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.7.0_07.jdk/Contents/Home/"`
 4. `make clean && make -f BSDmakefile` in the `ccn-lite` root directory
+
+#### IDE
+If you want to use IntelliJ or eclipse you can use the tasks `gen-idea` or `eclipse`
 
 ##Running NFN
 ### Starting sbt
@@ -59,5 +61,6 @@ Now you should be able to run the `make.sh` script which compiles and runs every
 From then on the simulation can be directly started with `./omentreplay`.
 
 ## Issues
+- Only content objects of max size supported and no chunking (workaround with local files).
 - The project is not yet setup to be easily used in an actual network (there is only the `LocalNode` wrapper which executes everything on localhost). However, all the functionality (except the hack for large data files) is prepared because communication happens over sockets.
 - Timeouts are not fully implemented when using NACKS.

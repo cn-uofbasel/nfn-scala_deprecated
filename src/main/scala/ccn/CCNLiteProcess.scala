@@ -63,8 +63,9 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     globalFaceId += 2
 
     def registerPrefix(prefixToRegister: String) = {
-      val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $faceId"
+      val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $faceId ndn2013"
       logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdPrefixReg")
+      logger.warn(s"hardcoded suite ndn2013") // TODO hardcoded suite
       Runtime.getRuntime.exec(cmdPrefixReg.split(" "))
       globalFaceId += 1
     }
@@ -99,7 +100,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 
       val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/ccn-lite-relay" else s"$ccnLiteEnv/ccn-nfn-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
-      val cmd = s"$ccnliteExecutable -v 99 -u $port -x $sockName"
+      val cmd = s"$ccnliteExecutable -v 99 -u $port -x $sockName -s ndn2013"
       logger.debug(s"$processName-$prefix: executing: '$cmd'")
       val processBuilder = new ProcessBuilder(cmd.split(" "): _*)
       processBuilder.redirectErrorStream(true)

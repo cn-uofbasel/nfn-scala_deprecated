@@ -59,9 +59,9 @@ object StaticConfig {
 
 object SystemEnvironment {
   val ccnLiteEnv: String = {
-    val maybeCcnLiteEnv = System.getenv("CCNL_PATH")
+    val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
     if(maybeCcnLiteEnv == null) {
-      throw new Exception("CCNL_PATH system variable is not set. Set it to the root directory of your local ccn-lite copy and compile it.")
+      throw new Exception("CCNL_HOME system variable is not set. Set it to the root directory of your local ccn-lite copy and compile it.")
     }
     maybeCcnLiteEnv
   }
