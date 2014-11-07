@@ -70,7 +70,21 @@ object NFNService extends Logging {
   def parseAndFindFromName(name: String, ccnServer: ActorRef): Future[CallableNFNService] = {
 
     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
-      (ccnServer ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
+
+      val futContent = (ccnServer ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
+
+
+      // TODO: hack to avoid chunk content
+      // load data from file if content is a valid filename
+      futContent map { content =>
+        val dataString = new String(content.data)
+        val f = new File(dataString)
+        if(f.exists()) {
+          val actualData = IOHelper.readByteArrayFromFile(f)
+          logger.debug(s"hack: loading content form file ${f.getCanonicalPath}")
+          Content(content.name, actualData)
+        } else { content }
+      }
     }
 
     def findService(fun: String): Future[NFNService] = {

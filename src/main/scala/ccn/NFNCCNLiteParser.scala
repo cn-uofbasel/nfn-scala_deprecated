@@ -15,7 +15,7 @@ object NFNCCNLiteParser extends Logging {
   def parseCCNPacket(xmlString: String): Option[CCNPacket] = {
     parsePacket(xmlString) match {
       case Some(ccnPacket:CCNPacket) => Some(ccnPacket)
-      case _ =>  None
+      case _ => None
     }
   }
 
@@ -127,8 +127,11 @@ object NFNCCNLiteParser extends Logging {
     } catch {
       case e:SAXParseException => {
 //        logger.error(s"SAXParseException (not printed) when parsing the xml message of ccnbToXml string:\n$cleanedXmlString")
-//        logger.error(s"SAXParseException when parsing the xml message of ccnbToXml string:\n$cleanedXmlString", e)
-        logger.error(s"SAXParseException when parsing the xml message of ccnbToXml string")
+        val addToCacheAckStringBase64 = "MCvi6qVsYXN0AAGqfsXy+qVjY254APqFAPr1YWRkY2FjaGVvYmplY3QAAAGaAf0EygHVQ29udGVudCBzdWNjZXNzZnVsbHkgYWRkZWQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        if(!cleanedXmlString.contains(addToCacheAckStringBase64)) {
+          logger.error(s"SAXParseException when parsing the xml message of ccnbToXml string:\n$cleanedXmlString", e)
+        }
+//        logger.error(s"SAXParseException when parsing the xml message of ccnbToXml string")
         None
       }
     }

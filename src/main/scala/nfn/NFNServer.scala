@@ -9,8 +9,6 @@ import akka.pattern._
 import akka.util.Timeout
 import ccn._
 import ccn.ccnlite.CCNLiteInterfaceWrapper
-import ccn.ccnlite.ndntlv.NDNTLVType.NDNTLVException
-import ccn.ccnlite.ndntlv.ccnlitecontentformat._
 import ccn.packet._
 import ccnliteinterface.CCNLiteInterface
 import com.typesafe.scalalogging.slf4j.Logging
@@ -79,13 +77,11 @@ class UDPConnectionContentInterest(local:InetSocketAddress,
         val binaryInterest = ccnLite.mkBinaryInterest(i)
         self.tell(UDPConnection.Send(binaryInterest), senderCopy)
       case c: Content =>
-        ccnLite.mkBinaryContent(c) foreach { binaryContent =>
-          self.tell(UDPConnection.Send(binaryContent), senderCopy)
-        }
+        val binaryContent = ccnLite.mkBinaryContent(c)
+        self.tell(UDPConnection.Send(binaryContent), senderCopy)
       case n: NAck =>
-        ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes)) foreach { binaryContent =>
-          self.tell(UDPConnection.Send(binaryContent), senderCopy)
-        }
+        val binaryContent = ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes))
+        self.tell(UDPConnection.Send(binaryContent), senderCopy)
     }
 
   def interestContentReceiveWithoutLog: Receive = {
@@ -151,52 +147,6 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   override def preStart() = {
       nfnGateway ! UDPConnection.Handler(self)
   }
-
-  // Check pit for an address to return content to, otherwise discard it
-  private def handleUnstrippedContent(unstrippedContent: Content, senderCopy: ActorRef) = {
-
-    try {
-
-      CCNLiteContentFormatParser.parse(unstrippedContent.data.toList) match {
-        case SingleContent(_, _, Data(data)) =>
-          handleContent(Content(unstrippedContent.name, data.toArray), senderCopy)
-        case msc @ MultiSegmentContent(_, _, segName, NumberOfSegments(numOfSegs), SegmentSize(segSize), LastSegmentSize(lastSegSize)) => {
-
-          logger.info(s"Received multi segment content: $msc")
-          implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
-          val futContentSegments: Future[List[Content]] =
-            Future.sequence(
-              (0L until numOfSegs).toList.map { (segNum: Long) =>
-  //              logger.debug(s"seg: $segNum")
-  //              val name = CCNName(unstrippedContent.name.cmps.init ++ Seq(unstrippedContent.name.cmps.last + segName.getOrElse(SegmentName.DefaultSegmentName).str + segNum.toString):_*)
-                val name = unstrippedContent.name.append(s"${segName.getOrElse(SegmentName.DefaultSegmentName).str}$segNum")
-                logger.debug(s"sendreceving: $name")
-                (self ? NFNApi.CCNSendReceive(Interest(name), useThunks = false)).mapTo[CCNPacket] map {
-                  case n: NAck => throw new Exception(":NACK")
-                  case c: Content => c
-                  case i: Interest => throw new Exception("An interest was returned, this should never happen")
-                }
-              }
-            )
-
-          futContentSegments map { contentSegments =>
-            val concatenatedSegmentData: List[Byte] =
-              contentSegments.foldRight(List.empty[Byte]) { (c, accData) =>
-                c.data.toList ::: accData
-              }
-            handleContent(Content(unstrippedContent.name, concatenatedSegmentData.toArray), senderCopy)
-          }
-        }
-        case StreamContent(_, _, _, _, _) => throw new Exception(s"StreamContent handling not yet implemented")
-      }
-    } catch {
-      case e: NDNTLVException => {
-        logger.warning(s"Could not parse content with ccn-lite content format, treating content $unstrippedContent!")
-        handleContent(unstrippedContent, senderCopy)
-      }
-    }
-  }
-
 
   private def handleContent(content: Content, senderCopy: ActorRef) = {
 
@@ -342,16 +292,6 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       }
     }
   }
-  def handleUnstrippedPacket(packet: CCNPacket, senderCopy: ActorRef) = {
-    packet match {
-      case i: Interest => handlePacket(i, senderCopy)
-      case c: Content => {
-        logger.info(s"Received unstripeed content: $c")
-        handleUnstrippedContent(c, senderCopy)
-      }
-      case n: NAck => handlePacket(n, senderCopy)
-    }
-  }
 
   override def receive: Actor.Receive = {
     // received Data from network
@@ -364,7 +304,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       maybePacket match {
         // Received an interest from the network (byte format) -> spawn a new worker which handles the messages (if it crashes we just assume a timeout at the moment)
         case Some(packet: CCNPacket) => {
-          handleUnstrippedPacket(packet, sender)
+          handlePacket(packet, sender)
         }
         case Some(AddToCache()) => ???
         case None => {
@@ -403,9 +343,8 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
     case NFNApi.AddToCCNCache(content) => {
       logger.info(s"sending add to cache for $content")
-      ccnIf.mkAddToCacheInterest(content) foreach { binaryAddToCacheReq =>
-        nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
-      }
+      val binaryAddToCacheReq = ccnIf.mkAddToCacheInterest(content)
+      nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
     }
 
     case NFNApi.AddToLocalCache(content, prependLocalPrefix) => {

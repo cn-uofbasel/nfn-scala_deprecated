@@ -35,7 +35,6 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
     }
     val rt = Runtime.getRuntime
 
-    logger.debug(s"Executing command: ${cmds.mkString(" _ ")}")
     val proc = rt.exec(cmds)
 
     val procIn = new BufferedInputStream(proc.getInputStream)
@@ -61,10 +60,11 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
     val result = resultOut.toByteArray
     val err = errorOut.toByteArray
 
-
 //    logger.debug(s"Res (ret=${proc.exitValue()},size=${result.size}): ${new String(result)}")
     if(err.size > 0) {
-      logger.error(s"${cmds.mkString(" ")}: ${new String(err)} (size=${err.size})")
+      val errString = s"${cmds.mkString(" ")}: ${new String(err)} (size=${err.size})"
+      if(proc.exitValue() == 0) { logger.debug(errString) }
+      else { logger.error(errString) }
     }
     proc.destroy()
 
@@ -77,7 +77,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
 
   def nameCmpsToRoutableNameAndNfnString(nameCmps: Array[String]): Array[String] = {
       if(nameCmps.last == "NFN") {
-        Array("", nameCmps.head)
+        Array(nameCmps.take(nameCmps.size - 2).mkString("/", "/", ""), nameCmps(nameCmps.size - 2))
       } else {
         Array(nameCmps.mkString("/", "/", ""))
       }

@@ -55,9 +55,33 @@ object NFNServiceLibrary extends Logging {
       if(serv.pinned) pinnedData
       else byteCodeData(serv)
 
+    val tempFileOrSingleContent =
+      if(serviceContent.size > 100) {
+
+        val tempBytecodeContentDirName = "./temp-bytecode-content"
+
+        val tempBytecodeContentDir = new File(tempBytecodeContentDirName)
+        if(!tempBytecodeContentDir.exists()) {
+          tempBytecodeContentDir.mkdir()
+        }
+        val bytecodeContentFileName = s"$tempBytecodeContentDirName/${serv.ccnName.cmps.mkString("+")}"
+
+        val bytecodeContentFile = new File(bytecodeContentFileName)
+        if(bytecodeContentFile.exists()) {
+          bytecodeContentFile.delete()
+          bytecodeContentFile.createNewFile()
+        }
+        val out = new FileOutputStream(bytecodeContentFile)
+        try{
+          out.write(serviceContent)
+        } finally { out.close() }
+
+        bytecodeContentFileName.getBytes
+      } else { serviceContent }
+
     val content = Content(
       serv.ccnName,
-      serviceContent
+      tempFileOrSingleContent
     )
 
     logger.debug(s"nfnPublish: Adding ${content.name} (size=${serviceContent.size}) to cache")

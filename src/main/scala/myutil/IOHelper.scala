@@ -1,6 +1,6 @@
 package myutil
 
-import java.io.{BufferedInputStream, FileInputStream, PrintWriter, StringWriter}
+import java.io._
 
 /**
  * Created by basil on 08/04/14.
@@ -35,7 +35,10 @@ object IOHelper {
   }
 
   def readByteArrayFromFile(fileName: String): Array[Byte] = {
-    val bis = new BufferedInputStream(new FileInputStream(fileName))
+    readByteArrayFromFile(new File(fileName))
+  }
+  def readByteArrayFromFile(file: File): Array[Byte] = {
+    val bis = new BufferedInputStream(new FileInputStream(file))
     try {
       Stream.continually(bis.read).takeWhile(_ != -1 ).map(_.toByte).toArray
     } finally {
