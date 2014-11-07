@@ -15,6 +15,6 @@ case class CCNBWireFormat() extends CCNLiteWireFormat {
   override def toString = "ccnb"
 }
 case class NDNTLVWireFormat() extends CCNLiteWireFormat {
-  override def toString = "ndntlv2013"
+  override def toString = "ndn2013"
 }
 
