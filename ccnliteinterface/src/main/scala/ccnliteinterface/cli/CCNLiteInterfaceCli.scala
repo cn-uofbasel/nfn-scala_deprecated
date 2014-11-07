@@ -86,6 +86,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
   override def mkBinaryInterest(nameCmps: Array[String]): Array[Byte] = {
     val mkI = "ccn-lite-mkI"
     val cmds: Array[String] = Array(utilFolderName+mkI, "-s", wireFormat.toString) ++ nameCmpsToRoutableNameAndNfnString(nameCmps)
+
     val (res, _) = executeCommandToByteArray(cmds, None)
     res
   }
