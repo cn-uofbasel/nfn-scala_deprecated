@@ -5,6 +5,7 @@ object CCNLiteWireFormat {
     possibleFormatName match {
       case "ccnb" => Some(CCNBWireFormat())
       case "ndntlv" => Some(NDNTLVWireFormat())
+      case "ccntlv" => Some(CCNTLVWireFormat())
       case _ => None
     }
   }
@@ -16,5 +17,8 @@ case class CCNBWireFormat() extends CCNLiteWireFormat {
 }
 case class NDNTLVWireFormat() extends CCNLiteWireFormat {
   override def toString = "ndn2013"
+}
+case class CCNTLVWireFormat() extends CCNLiteWireFormat {
+  override def toString = "ccnx2014"
 }
 

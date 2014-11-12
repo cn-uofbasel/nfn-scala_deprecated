@@ -35,6 +35,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
     }
     val rt = Runtime.getRuntime
 
+    logger.debug(s"Executing: ${cmds.mkString("'_'")}")
     val proc = rt.exec(cmds)
 
     val procIn = new BufferedInputStream(proc.getInputStream)
@@ -76,11 +77,19 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
 //  }
 
   def nameCmpsToRoutableNameAndNfnString(nameCmps: Array[String]): Array[String] = {
-      if(nameCmps.last == "NFN") {
-        Array(nameCmps.take(nameCmps.size - 2).mkString("/", "/", ""), nameCmps(nameCmps.size - 2))
+
+    logger.debug(s"nameCmpsToNFNName ${nameCmps.toList}")
+      val a = if(nameCmps.last == "NFN") {
+        Array(
+          nameCmps.take(nameCmps.size - 2).mkString("/", "/", ""),
+          nameCmps(nameCmps.size - 2)
+        )
       } else {
         Array(nameCmps.mkString("/", "/", ""))
       }
+
+    logger.debug(s"created: ${a.toList}")
+    a
   }
 
   override def mkBinaryInterest(nameCmps: Array[String]): Array[Byte] = {
@@ -100,7 +109,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNLiteWireFormat) extends CCNLiteInt
 
   override def ccnbToXml(binaryPacket: Array[Byte]): String = {
     val pktdump = "ccn-lite-pktdump"
-    val cmds = Array(utilFolderName+pktdump, "-f", "1", "-s", wireFormat.toString)
+    val cmds = Array(utilFolderName+pktdump, "-f", "1")
 
     val (res, _) = executeCommandToByteArray(cmds, Some(binaryPacket))
 

@@ -12,7 +12,6 @@ import myutil.IOHelper
 
 
 object CCNLiteInterfaceWrapper {
-
   def createCCNLiteInterfaceWrapper(wireFormat: CCNLiteWireFormat, ccnIfType: CCNLiteInterfaceType) =
     CCNLiteInterfaceWrapper(CCNLiteInterface.createCCNLiteInterface(wireFormat, ccnIfType))
 }
