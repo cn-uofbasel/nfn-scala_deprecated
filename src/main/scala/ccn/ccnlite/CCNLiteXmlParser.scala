@@ -1,29 +1,22 @@
-package ccn
+package ccn.ccnlite
 
 import javax.xml.bind.DatatypeConverter
 
 import ccn.packet._
 import com.typesafe.scalalogging.slf4j.Logging
-import myutil.FormattedOutput
 import org.xml.sax.SAXParseException
 
+import scala.util.{Failure, Success, Try}
 import scala.xml._
 
 
-object NFNCCNLiteParser extends Logging {
-
-  def parseCCNPacket(xmlString: String): Option[CCNPacket] = {
-    parsePacket(xmlString) match {
-      case Some(ccnPacket:CCNPacket) => Some(ccnPacket)
-      case _ => None
-    }
-  }
+object CCNLiteXmlParser extends Logging {
 
   def decodeBase64(data: String): Array[Byte] = DatatypeConverter.parseBase64Binary(data)
   def encodeBase64(bytes: Array[Byte]): String = DatatypeConverter.printBase64Binary(bytes)
 
 
-  def parsePacket(xmlString: String):Option[Packet] = {
+  def parseCCNPacket(xmlString: String):Try[CCNPacket] = {
 
 
     def parseComponentsCCNB(elem: Elem):Seq[String] = {
@@ -91,13 +84,19 @@ object NFNCCNLiteParser extends Logging {
 
 
     val cleanedXmlString = xmlString.trim.replace("&", "&amp;")
+    val addToCacheAckStringBase64 = "MCvi6qVsYXN0AAGqfsXy+qVjY254APqFAPr1YWRkY2FjaGVvYmplY3QAAAGaAf0EygHVQ29udGVudCBzdWNjZXNzZnVsbHkgYWRkZWQ"
+    val addToCacheAckStringBase642 ="8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgH9BMoB1UNvbnRlbnQgc3VjY2Vzc2Z1bGx5IGFkZGVk"
+    //        val addToCacheNackStringBase64 = "8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgH9BMoB1UNvbnRlbnQgc3VjY2Vzc2Z1bGx5IGFkZGVk"
+    val addToCacheFailedStringBase64 = "8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgHVBMoBrUZhaWxlZCB0byBhZGQgY29udGVud"
+    if(cleanedXmlString.contains(addToCacheAckStringBase64) || cleanedXmlString.contains(addToCacheAckStringBase642)) {
+      Try(AddToCacheAck(CCNName("/")))
+    } else if (cleanedXmlString.contains(addToCacheFailedStringBase64)) {
+      Try(AddToCacheNack(CCNName("/")))
+    } else {
 
-    val result =
-    try {
-      val xml: Elem = scala.xml.XML.loadString(cleanedXmlString)
-      Some(
-        xml match {
-
+      val triedParsePacket =
+      Try {
+        scala.xml.XML.loadString(cleanedXmlString) match {
           // CCNB interest
           case interest @ <interest>{_*}</interest>=> {
             val nameComponents = parseComponentsCCNB(interest)
@@ -108,7 +107,7 @@ object NFNCCNLiteParser extends Logging {
             val nameComponents = parseComponentsCCNB(content)
             val contentData = parseContentDataCCNB(content)
             if(contentData.startsWith(":NACK".getBytes)) {
-              NAck(CCNName(nameComponents :_*))
+              Nack(CCNName(nameComponents :_*))
             } else {
               Content(contentData, nameComponents :_*)
             }
@@ -122,11 +121,9 @@ object NFNCCNLiteParser extends Logging {
             val nameSegments  = name \ "NameSegment"
             val nameComponents =
               if(nameSegments.nonEmpty) {
-                logger.debug("ccnx interest")
                 nameSegments map { ns => new String(decodeBase64(ns.text.trim)) }
               }
               else {
-              logger.debug("ndn interest")
                 parseComponentsNDNTLV(interest) map { cmp => new String(cmp) }
               }
             Interest(nameComponents :_*)
@@ -150,7 +147,7 @@ object NFNCCNLiteParser extends Logging {
             val nameComponents = content \ "Name" \ "NameSegment" map { ns => new String(decodeBase64(ns.text.trim)) }
             val contentData = content \ "Payload" map {d => decodeBase64(d.text.trim) } reduceLeft(_ ++ _)
             if(contentData.startsWith(":NACK".getBytes)) {
-              NAck(CCNName(nameComponents :_*))
+              Nack(CCNName(nameComponents :_*))
             } else {
               Content(contentData, nameComponents :_*)
             }
@@ -160,27 +157,20 @@ object NFNCCNLiteParser extends Logging {
             val nameComponents = parseComponentsNDNTLV(content) map { new String(_) }
             val contentData = parseContentDataNDNTLV(content)
             if(contentData.startsWith(":NACK".getBytes)) {
-              NAck(CCNName(nameComponents :_*))
+              Nack(CCNName(nameComponents :_*))
             } else {
               Content(contentData, nameComponents :_*)
             }
           }
-
-          case _ => throw new Exception("XML parser cannot parse:\n" + xml)
+          case _ => throw new Exception("XML parser cannot parse:\n" + cleanedXmlString)
         }
-      )
-    } catch {
-      case e:SAXParseException => {
-        val addToCacheAckStringBase64 = "MCvi6qVsYXN0AAGqfsXy+qVjY254APqFAPr1YWRkY2FjaGVvYmplY3QAAAGaAf0EygHVQ29udGVudCBzdWNjZXNzZnVsbHkgYWRkZWQ"
-        val addToCacheNackStringBase64 = "8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgH9BMoB1UNvbnRlbnQgc3VjY2Vzc2Z1bGx5IGFkZGVk"
-        if(!cleanedXmlString.contains(addToCacheAckStringBase64) && !cleanedXmlString.contains(addToCacheNackStringBase64)) {
-          logger.error(s"SAXParseException when parsing the xml message of ccnbToXml string:\n$cleanedXmlString", e)
-        }
-        None
       }
+      // transform exception to print the original xml
+      triedParsePacket.transform (
+        s => Success(s),
+        e => Failure( new Exception(s"Could not parse $cleanedXmlString",e) )
+      )
     }
-
-    result
   }
 }
 

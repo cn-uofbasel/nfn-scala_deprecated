@@ -2,13 +2,6 @@ package ccn.packet
 
 import com.typesafe.scalalogging.slf4j.Logging
 
-sealed trait Packet
-
-/**
- * Marker trait for acknowledgement
- */
-trait Ack
-
 object CCNName {
   val thunkInterestKeyword = "THUNK"
   val thunkKeyword = "THUNK"
@@ -27,7 +20,6 @@ object CCNName {
 
 
 case class CCNName(cmps: String *) extends Logging {
-
 
   import CCNName.{thunkKeyword, nfnKeyword, computeKeyword}
 
@@ -104,7 +96,7 @@ case class CCNName(cmps: String *) extends Logging {
   def cmpsList = cmps.toList
 }
 
-sealed trait CCNPacket extends Packet {
+sealed trait CCNPacket {
   def name: CCNName
 }
 
@@ -120,8 +112,6 @@ case class Interest(name: CCNName) extends CCNPacket {
   def this(cmps: String *) = this(CCNName(cmps:_*))
 
   def thunkify: Interest = Interest(name.thunkify)
-
-
 }
 
 object Content {
@@ -151,11 +141,12 @@ case class Content(name: CCNName, data: Array[Byte]) extends CCNPacket {
   override def toString = s"Content('$name' => '$possiblyShortenedDataString' [size=${data.size}])"
 }
 
-case class NAck(name: CCNName) extends CCNPacket {
+case class Nack(name: CCNName) extends CCNPacket {
   val content: String = ":NACK"
 
   def toContent = Content(name, content.getBytes)
 }
 
-case class AddToCache() extends Packet with Ack
+case class AddToCacheAck(name: CCNName) extends CCNPacket
+case class AddToCacheNack(name: CCNName) extends CCNPacket
 

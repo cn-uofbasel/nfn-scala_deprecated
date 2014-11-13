@@ -2,9 +2,6 @@ package ccn.packet
 
 import org.scalatest.{Matchers, FlatSpec}
 
-/**
- * Created by basil on 09/05/14.
- */
 case class CCNPacketTest() extends FlatSpec with Matchers {
 
   "A CCNName beginning with 'COMPUTE'" should "yield true for isCompute" in {

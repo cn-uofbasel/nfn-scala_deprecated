@@ -2,8 +2,8 @@ package config
 
 import java.util.concurrent.TimeUnit
 
+import ccn.CCNWireFormat
 import ccn.packet.CCNName
-import ccnliteinterface._
 import com.typesafe.config.ConfigException.BadValue
 import com.typesafe.config.{Config, ConfigFactory}
 import monitor.Monitor.NodeLog
@@ -32,27 +32,15 @@ object StaticConfig {
 
   def debugLevel = config.getString("nfn-scala.debuglevel")
 
-  def packetformat: CCNLiteWireFormat = {
+  def packetformat: CCNWireFormat = {
     val path = "nfn-scala.packetformat"
     val wfName = config.getString(path)
-    CCNLiteWireFormat.fromName(wfName) match {
+    CCNWireFormat.fromName(wfName) match {
       case Some(wf) => wf
       case None => throw new BadValue(path,
         s"""
         | can only be "ccnb" or "ndn" and not "$wfName"
         """.stripMargin)
-    }
-  }
-
-  def ccnlitelibrarytype: CCNLiteInterfaceType = {
-    val path = "nfn-scala.ccnlitelibrarytype"
-    val ltName = config.getString(path)
-    CCNLiteInterfaceType.fromName(ltName) match {
-      case Some(lt) => lt
-      case None => throw new BadValue(path,
-        s"""
-        | can only be "jni" or "native" and not "$ltName"
-      """.stripMargin)
     }
   }
 }

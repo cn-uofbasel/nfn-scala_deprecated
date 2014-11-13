@@ -184,8 +184,8 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     val exp7 = (wc appl docname4) + (wc appl docname3)
     val res7 = "7"
 
-    val exp8 = nack appl
-    val res8 = NAck(CCNName("")).content
+    val exp8 = nack.appl
+    val res8 = Nack(CCNName("")).content
 
     expNum match {
       case 1 => doExp(exp1, res1)

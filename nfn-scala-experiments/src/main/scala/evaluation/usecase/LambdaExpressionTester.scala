@@ -17,7 +17,7 @@ import scala.Some
 
 object LambdaExpressionTester extends App {
 
-  val timeoutDuration: FiniteDuration = 5 seconds
+  val timeoutDuration: FiniteDuration = 5.seconds
   implicit val timeout = Timeout( timeoutDuration)
   implicit val config = ConfigFactory.load()
 

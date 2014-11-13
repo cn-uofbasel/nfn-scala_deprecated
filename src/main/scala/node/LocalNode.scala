@@ -5,13 +5,12 @@ import java.util.concurrent.TimeUnit
 import com.typesafe.config.Config
 import nfn._
 import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.ExecutionContext.Implicits.global
 import akka.util.Timeout
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern._
 import config.{ComputeNodeConfig, RouterConfig, StaticConfig, AkkaConfig}
 import ccn.packet._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import nfn.service.{NFNService, NFNServiceLibrary}
 import scala.collection.immutable.{Iterable, IndexedSeq}
@@ -48,7 +47,6 @@ object LocalNode {
     val N = nodes.size
     val roundedN = sqrt(N).toInt
     val n = roundedN + (if(N / roundedN > 0) 1 else 0)
-    println(s"n: $n N: $N")
 
     val horizontalLineNodes = nodes.grouped(n)
     horizontalLineNodes foreach { connectLine }
@@ -131,12 +129,16 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
 
   private var isDoingManagementOperations = false
 
-  val maybeNFNServer: Option[ActorRef] = {
-    maybeComputeNodeConfig map { computeNodeConfig =>
-      val system = ActorSystem(s"Sys${computeNodeConfig.prefix.toString.replace("/", "-")}", AkkaConfig.config(StaticConfig.debugLevel))
-      NFNServerFactory.nfnServer(system, routerConfig, computeNodeConfig)
+  val (maybeNFNServer: Option[ActorRef], maybeEc: Option[ExecutionContext]) =
+
+    maybeComputeNodeConfig match {
+      case Some(computeNodeConfig) =>
+        val system = ActorSystem(s"Sys${computeNodeConfig.prefix.toString.replace("/", "-")}", AkkaConfig.config(StaticConfig.debugLevel))
+        (Some(NFNServerFactory.nfnServer(system, routerConfig, computeNodeConfig)), Some(system.dispatcher))
+      case None => (None, None)
     }
-  }
+
+  implicit val ec = maybeEc getOrElse( scala.concurrent.ExecutionContext.Implicits.global)
 
   val ccnLiteProcess: CCNLiteProcess = {
     val ccnLiteNFNNetworkProcess: CCNLiteProcess = CCNLiteProcess(routerConfig)
@@ -266,9 +268,11 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    */
   def sendReceive(req: Interest)(implicit useThunks: Boolean): Future[Content] = {
     (nfnMaster ? NFNApi.CCNSendReceive(req, useThunks)).mapTo[CCNPacket] map {
-      case n: NAck => throw new Exception(":NACK")
+      case n: Nack => throw new Exception(":NACK")
       case c: Content => c
       case i: Interest => throw new Exception("An interest was returned, this should never happen")
+      case a: AddToCacheAck => ???
+      case a: AddToCacheNack => throw new Exception("Add content to cache failed!")
     }
   }
 

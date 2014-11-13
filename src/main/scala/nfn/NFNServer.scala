@@ -8,9 +8,8 @@ import akka.event.Logging
 import akka.pattern._
 import akka.util.Timeout
 import ccn._
-import ccn.ccnlite.CCNLiteInterfaceWrapper
+import ccn.ccnlite.CCNLiteInterfaceCli
 import ccn.packet._
-import ccnliteinterface.CCNLiteInterface
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import monitor.Monitor
@@ -19,9 +18,9 @@ import network._
 import nfn.NFNServer._
 import nfn.localAbstractMachine.LocalAbstractMachineWorker
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 
 object NFNServer {
@@ -46,52 +45,76 @@ object NFNApi {
 object NFNServerFactory extends Logging {
   def nfnServer(context: ActorRefFactory, nfnRouterConfig: RouterConfig, computeNodeConfig: ComputeNodeConfig) = {
 
-    val wireFormat = StaticConfig.packetformat
-    val ccnLiteIfType = StaticConfig.ccnlitelibrarytype
 
-    val ccnLiteIf = CCNLiteInterfaceWrapper(CCNLiteInterface.createCCNLiteInterface(wireFormat, ccnLiteIfType))
+    val wireFormat = StaticConfig.packetformat
+
+    implicit val execContext = context.dispatcher
+    val ccnLiteIf: CCNInterface = CCNLiteInterfaceCli(wireFormat)
 
     context.actorOf(networkProps(nfnRouterConfig, computeNodeConfig, ccnLiteIf), name = "NFNServer")
   }
-  def networkProps(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNodeConfig, ccnIf: CCNLiteInterfaceWrapper) =
+  def networkProps(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNodeConfig, ccnIf: CCNInterface) =
     Props(classOf[NFNServer], nfnNodeConfig, computeNodeConfig, ccnIf)
 }
 
 
 class UDPConnectionContentInterest(local:InetSocketAddress,
                                    target:InetSocketAddress,
-                                   ccnLite: CCNLiteInterfaceWrapper) extends UDPConnection(local, Some(target)) {
+                                   ccnLite: CCNInterface) extends UDPConnection(local, Some(target)) {
 
+  implicit val execContext = context.dispatcher
   def logPacket(packet: CCNPacket) = {
-    val ccnPacketLog = packet match {
-      case i: Interest => Monitor.InterestInfoLog("interest", i.name.toString)
-      case c: Content => Monitor.ContentInfoLog("content", c.name.toString, c.possiblyShortenedDataString)
-      case n: NAck => Monitor.ContentInfoLog("content", n.name.toString, ":NACK")
+    val maybePacketLog = packet match {
+      case i: Interest => Some(Monitor.InterestInfoLog("interest", i.name.toString))
+      case c: Content => Some(Monitor.ContentInfoLog("content", c.name.toString, c.possiblyShortenedDataString))
+      case n: Nack => Some(Monitor.ContentInfoLog("content", n.name.toString, ":NACK"))
+      case a: AddToCacheAck => None // Not Monitored for now
+      case a: AddToCacheNack => None // Not Monitored for now
     }
-    Monitor.monitor ! new PacketLogWithoutConfigs(local.getHostString, local.getPort, target.getHostString, target.getPort, true, ccnPacketLog)
+
+    maybePacketLog map { packetLog =>
+      Monitor.monitor ! new PacketLogWithoutConfigs(local.getHostString, local.getPort, target.getHostString, target.getPort, true, packetLog)
+    }
   }
 
   def handlePacket(packet: CCNPacket, senderCopy: ActorRef) =
     packet match {
       case i: Interest =>
-        val binaryInterest = ccnLite.mkBinaryInterest(i)
-        self.tell(UDPConnection.Send(binaryInterest), senderCopy)
+        logger.debug(s"going to send interest $i to network")
+        ccnLite.mkBinaryInterest(i) onComplete {
+          case Success(binaryInterest) =>
+            logger.debug(s"sending binary interest to network")
+            self.tell(UDPConnection.Send(binaryInterest), senderCopy)
+          case Failure(e) => logger.error(e, s"could not create binary interest for $i")
+        }
       case c: Content =>
-        val binaryContent = ccnLite.mkBinaryContent(c)
-        self.tell(UDPConnection.Send(binaryContent), senderCopy)
-      case n: NAck =>
-        val binaryContent = ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes))
-        self.tell(UDPConnection.Send(binaryContent), senderCopy)
+        ccnLite.mkBinaryContent(c) onComplete {
+          case Success(binaryContent) => self.tell(UDPConnection.Send(binaryContent), senderCopy)
+          case Failure(e) => logger.error(e, s"could not create binary content for $c")
+        }
+      case n: Nack =>
+        ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes)) onComplete {
+          case Success(binaryContent) => self.tell(UDPConnection.Send(binaryContent), senderCopy)
+          case Failure(e) => logger.error(e, s"could not create binary nack for $n")
+        }
+      case a: AddToCacheAck =>
+        logger.warning("received AddToCacheAck to send to a UDPConnection, dropping it")
+      case a: AddToCacheNack =>
+        logger.warning("received AddToCacheNack to send to a UDPConnection, dropping it!")
     }
 
   def interestContentReceiveWithoutLog: Receive = {
-    case p: CCNPacket => handlePacket(p, sender)
+    case p: CCNPacket => {
+      val senderCopy = sender
+      handlePacket(p, senderCopy)
+    }
   }
 
   def interestContentReceive: Receive = {
     case p: CCNPacket => {
       logPacket(p)
-      handlePacket(p, sender)
+      val senderCopy = sender
+      handlePacket(p, senderCopy)
     }
   }
 
@@ -112,9 +135,13 @@ class UDPConnectionContentInterest(local:InetSocketAddress,
  *  A NFNServer also maintains a socket which is connected to the actual CCNNetwork, usually an CCNLiteInterfaceWrapper instance encapsulated in a [[CCNLiteProcess]].
  */
 //case class NFNServer(maybeNFNNodeConfig: Option[RouterConfig], maybeComputeNodeConfig: Option[ComputeNodeConfig]) extends Actor {
-case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNodeConfig, ccnIf: CCNLiteInterfaceWrapper) extends Actor {
+case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNodeConfig, ccnIf: CCNInterface) extends Actor {
+
+  implicit val execContext = context.dispatcher
+
 
   val logger = Logging(context.system, this)
+  logger.debug(s"self: $self")
 
 //  nfnNodeConfig.config
 //  val ccnIf = new CCNLiteInterfaceWrapper()
@@ -259,7 +286,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     }
   }
 
-  def handleNack(nack: NAck, senderCopy: ActorRef) = {
+  def handleNack(nack: Nack, senderCopy: ActorRef) = {
     if(StaticConfig.isNackEnabled) {
       implicit val timeout = Timeout(defaultTimeoutDuration)
       (pit ? PIT.Get(nack.name)).mapTo[Option[Set[Face]]] onSuccess {
@@ -286,9 +313,15 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
         logger.info(s"Received content: $c")
         handleContent(c, senderCopy)
       }
-      case n: NAck => {
+      case n: Nack => {
         logger.info(s"Received NAck: $n")
         handleNack(n, senderCopy)
+      }
+      case a: AddToCacheAck => {
+        logger.debug(s"Received AddToCacheAck")
+      }
+      case a: AddToCacheNack => {
+        logger.error(s"Received AddToCacheNack")
       }
     }
   }
@@ -296,34 +329,15 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   override def receive: Actor.Receive = {
     // received Data from network
     // If it is an interest, start a compute request
-    case packet:CCNPacket => handlePacket(packet, sender)
+    case packet:CCNPacket => {
+      val senderCopy = sender
+      handlePacket(packet, senderCopy)
+    }
     case UDPConnection.Received(data, sendingRemote) => {
-
-      val maybePacket = ccnIf.byteStringToPacket(data)
-
-      maybePacket match {
-        // Received an interest from the network (byte format) -> spawn a new worker which handles the messages (if it crashes we just assume a timeout at the moment)
-        case Some(packet: CCNPacket) => {
-          handlePacket(packet, sender)
-        }
-        case Some(AddToCache()) => ???
-        case None => {
-          if(new String(data).contains("Content successfully added")) {
-            logger.debug(s"Received content add to cache ack")
-          } else {
-            val failedMessagesDir = "./failed-messages"
-            val failedMessagesDirFile= new File(failedMessagesDir)
-
-            if(!failedMessagesDirFile.exists) {
-              failedMessagesDirFile.mkdir
-            }
-            val f = new File(s"$failedMessagesDir/${System.nanoTime}")
-            val fos = new FileOutputStream(f)
-            fos.write(data)
-            fos.close()
-            logger.error(s"Received data which cannot be parsed to a ccn packet: ${new String(data)}")
-          }
-        }
+      val senderCopy = sender
+      ccnIf.wireFormatDataToXmlPacket(data) onComplete {
+        case Success(packet) => self.tell(packet, senderCopy)
+        case Failure(ex) => logger.error(ex, "could not parse data")
       }
     }
 
@@ -335,16 +349,19 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
      * Thunk interests get converted to normal interests, thunks need to be enabled with the boolean flag in the message
      */
     case NFNApi.CCNSendReceive(interest, useThunks) => {
+      val senderCopy = sender
       val maybeThunkInterest =
         if(interest.name.isNFN && useThunks) interest.thunkify
         else interest
-      handlePacket(maybeThunkInterest, sender)
+      handlePacket(maybeThunkInterest, senderCopy)
     }
 
     case NFNApi.AddToCCNCache(content) => {
       logger.info(s"sending add to cache for $content")
-      val binaryAddToCacheReq = ccnIf.mkAddToCacheInterest(content)
-      nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
+      ccnIf.mkAddToCacheInterest(content) onComplete {
+        case Success(binaryAddToCacheReq) =>  nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
+        case Failure(ex) => logger.error(ex, s"Could not add to CCN cache for $content")
+      }
     }
 
     case NFNApi.AddToLocalCache(content, prependLocalPrefix) => {

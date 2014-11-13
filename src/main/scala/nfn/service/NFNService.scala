@@ -15,7 +15,6 @@ import lambdacalculus.parser.ast._
 import myutil.IOHelper
 import nfn.NFNApi
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.Try
 
@@ -30,7 +29,6 @@ object NFNService extends Logging {
    * @return
    */
   def serviceFromContent(content: Content): Try[NFNService] = {
-    println(s"serviceFromContent: content size=${content.data.size}")
     val serviceLibraryDir = "./service-library"
     val serviceLibararyFile = new File(serviceLibraryDir)
 
@@ -55,7 +53,6 @@ object NFNService extends Logging {
 
       out.write(content.data)
       out.flush()
-      println(filePath)
     } finally {
       if (out != null) out.close
     }
@@ -67,7 +64,7 @@ object NFNService extends Logging {
     loadedService
   }
 
-  def parseAndFindFromName(name: String, ccnServer: ActorRef): Future[CallableNFNService] = {
+  def parseAndFindFromName(name: String, ccnServer: ActorRef)(implicit ec: ExecutionContext): Future[CallableNFNService] = {
 
     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
 

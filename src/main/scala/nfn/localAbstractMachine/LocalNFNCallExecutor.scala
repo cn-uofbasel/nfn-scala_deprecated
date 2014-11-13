@@ -1,17 +1,17 @@
 package nfn.localAbstractMachine
 
-import scala.concurrent.{Future, Await}
+import scala.concurrent.{ExecutionContext, Future, Await}
 import scala.concurrent.duration._
 import scala.util.Failure
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import akka.actor.ActorRef
 
 import lambdacalculus.machine._
 import nfn.service._
 import lambdacalculus.machine.CallByValue.VariableValue
 
-case class LocalNFNCallExecutor(ccnWorker: ActorRef) extends CallExecutor {
+case class LocalNFNCallExecutor(ccnWorker: ActorRef)(implicit execContext: ExecutionContext) extends CallExecutor {
+
   override def executeCall(call: String): Value = {
 
     val futValue: Future[Value] = {
@@ -22,7 +22,7 @@ case class LocalNFNCallExecutor(ccnWorker: ActorRef) extends CallExecutor {
         NFNValueToMachineValue.toMachineValue(result)
       }
     }
-    Await.result(futValue, 20 seconds)
+    Await.result(futValue, 20.seconds)
   }
 }
 

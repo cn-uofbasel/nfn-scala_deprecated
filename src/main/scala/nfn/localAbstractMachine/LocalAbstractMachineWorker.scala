@@ -14,6 +14,8 @@ import nfn.NFNApi
  */
 class LocalAbstractMachineWorker(ccnServer: ActorRef) extends Actor {
 
+  import context.dispatcher
+
   val logger = Logging(context.system, this)
   val lc = LambdaCalculus(execOrder = ExecutionOrder.CallByValue,
                           debug = true,

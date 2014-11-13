@@ -24,11 +24,11 @@ object UDPConnection {
 
 /**
  * A connection between a target socket and a remote socket.
- * Data is sent by passing an [[network.UDPConnection.Send]] message containing the data to be sent.
- * Receiving data is handled by the member worker actor.
+ * Data is sent by sending a [[network.UDPConnection.Send]] message containing the data to be sent.
+ * Received data is send to all registered workers. To register a worker send a [[Handler]] message.
  * This actor initializes itself on preStart by sending a bind message to the IO manager.
- * On receiving a Bound message, it sets the ready method s its new [[akka.actor.Actor.Receive]] handler,
- * which passes recieved data to the worker and sends data to the remote.
+ * On receiving a Bound message, it sets the ready method to its new [[akka.actor.Actor.Receive]] handler.
+ * All Send messages received before being ready are queued up in a buffer and send on being ready.
  *
  * @param local Socket to listen for data
  * @param maybeTarget If Some(addr), the connection sends data to the target on receiving [[Send]] messages

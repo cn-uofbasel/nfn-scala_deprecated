@@ -1,19 +1,20 @@
 package nfn
 
+import akka.event.Logging
 import ccn.packet.{CCNPacket, Interest, CCNName}
 import akka.actor.{Actor, ActorRef}
+import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.mutable
 import akka.actor.Actor.Receive
 import scala.concurrent.duration._
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import akka.event.Logging
 
 trait Face {
   def send(ccnPacket: CCNPacket)
 }
 
-case class ActorRefFace(actorRef: ActorRef) extends Face {
+case class ActorRefFace(actorRef: ActorRef) extends Face with Logging{
   def send(ccnPacket: CCNPacket) {
     actorRef ! ccnPacket
   }
@@ -42,6 +43,7 @@ object PIT {
 case class PIT() extends Actor {
 
   val logger = Logging(context.system, this)
+  implicit val execContext = context.dispatcher
 
   private case class Timeout(name: CCNName, face: Face)
 
@@ -49,7 +51,7 @@ case class PIT() extends Actor {
 
   override def receive: Receive = {
     case PIT.Add(name, face, timeout) => {
-      pit += name -> (pit.get(name).getOrElse(Set()) + face)
+      pit += name -> (pit.getOrElse(name, Set()) + face)
       context.system.scheduler.scheduleOnce(timeout) {
         self ! Timeout(name, face)
       }
