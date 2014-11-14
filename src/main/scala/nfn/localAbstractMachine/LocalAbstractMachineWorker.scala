@@ -52,7 +52,7 @@ class LocalAbstractMachineWorker(ccnServer: ActorRef) extends Actor {
       lc.substituteParseCompileExecute(expr) map {
         case List(result: Value) => {
           val resultString = computeResultToContent(result)
-          Content(interest.name, resultString.getBytes)
+          Content(interest.name, resultString.getBytes, MetaInfo.empty)
         }
         case results@_ => throw new Exception(s"Local abstract machine: Result of execution contains more or less than one element: $results")
       }

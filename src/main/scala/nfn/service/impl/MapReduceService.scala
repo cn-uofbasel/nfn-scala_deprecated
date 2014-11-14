@@ -3,7 +3,7 @@ package nfn.service.impl
 import scala.util.Try
 
 import nfn.service._
-import ccn.packet.Content
+import ccn.packet.{MetaInfo, Content}
 import akka.actor.ActorRef
 
 
@@ -18,7 +18,7 @@ class MapService() extends NFNService {
     (values: Seq[NFNValue], nfnMaster) => {
       values match {
         case Seq(NFNBinaryDataValue(servName, servData), args @ _*) => {
-          val tryExec = NFNService.serviceFromContent(Content(servName, servData)) map { (serv: NFNService) =>
+          val tryExec = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) map { (serv: NFNService) =>
             NFNListValue(
               (args map { arg =>
                 val execTime = serv.executionTimeEstimate flatMap { _ => this.executionTimeEstimate }
@@ -50,7 +50,7 @@ class ReduceService() extends NFNService {
           fun.serv.instantiateCallable(fun.serv.ccnName, argList.values, nfnMaster, None).get.exec
         }
         case Seq(NFNBinaryDataValue(servName, servData), args @ _*) => {
-          val tryExec: Try[NFNValue] = NFNService.serviceFromContent(Content(servName, servData)) flatMap {
+          val tryExec: Try[NFNValue] = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) flatMap {
             (serv: NFNService) =>
               // TODO exec time
               serv.instantiateCallable(serv.ccnName, args, nfnMaster, None) map {

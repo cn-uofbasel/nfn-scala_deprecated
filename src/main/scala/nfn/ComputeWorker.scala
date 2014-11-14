@@ -3,7 +3,7 @@ package nfn
 import akka.actor.{Actor, ActorRef}
 import akka.event.Logging
 import akka.util.Timeout
-import ccn.packet.{CCNName, Interest, Content}
+import ccn.packet.{MetaInfo, CCNName, Interest, Content}
 import scala.concurrent.{ExecutionContext, Future}
 import nfn.service.{NFNServiceExecutionException, NFNValue, NFNService, CallableNFNService}
 import scala.util.{Failure, Success}
@@ -56,7 +56,7 @@ case class ComputeWorker(ccnServer: ActorRef) extends Actor {
     if(useThunks) {
       futCallableServ foreach { callableServ =>
         // TODO: No default value for default time estimate
-        requestor ! Content(originalName, callableServ.executionTimeEstimate.fold("")(_.toString).getBytes)
+        requestor ! Content(originalName, callableServ.executionTimeEstimate.fold("")(_.toString).getBytes, MetaInfo.empty)
       }
     }
     maybeFutCallable = Some(futCallableServ)
@@ -78,13 +78,13 @@ case class ComputeWorker(ccnServer: ActorRef) extends Actor {
                 val result: NFNValue = callable.exec
                 val resultData = result.toStringRepresentation.getBytes
 
-                val content = Content(name.withoutThunkAndIsThunk._1, resultData)
+                val content = Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
                 logger.info(s"Finished computation, result: $content")
                 senderCopy ! content
               } catch {
                 case e: NFNServiceExecutionException => {
                   logger.error(e, s"Error when executing the service $name, return a NACK to the sender.")
-                  senderCopy ! Content(name, ":NACK".getBytes)
+                  senderCopy ! Content(name, ":NACK".getBytes, MetaInfo.empty)
                 }
               }
             }

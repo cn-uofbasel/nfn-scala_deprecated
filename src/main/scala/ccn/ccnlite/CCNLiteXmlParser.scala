@@ -6,6 +6,7 @@ import ccn.packet._
 import com.typesafe.scalalogging.slf4j.Logging
 import org.xml.sax.SAXParseException
 
+import scala.collection.immutable
 import scala.util.{Failure, Success, Try}
 import scala.xml._
 
@@ -82,6 +83,15 @@ object CCNLiteXmlParser extends Logging {
       parseDataNDNTLV(contents.head)
     }
 
+    def ccntlvParseName(packet: Node): CCNName = {
+      val nameComponents = packet \ "Name" \ "NameSegment" map { ns => new String(decodeBase64(ns.text.trim)) }
+      val chunkNum:Option[Int] =
+        (packet \ "Name" \ "Chunk").headOption map {
+          c => Integer.parseInt(c.text.trim)
+        }
+
+      CCNName(nameComponents.toList, chunkNum)
+    }
 
     val cleanedXmlString = xmlString.trim.replace("&", "&amp;")
     val addToCacheAckStringBase64 = "MCvi6qVsYXN0AAGqfsXy+qVjY254APqFAPr1YWRkY2FjaGVvYmplY3QAAAGaAf0EygHVQ29udGVudCBzdWNjZXNzZnVsbHkgYWRkZWQ"
@@ -116,50 +126,64 @@ object CCNLiteXmlParser extends Logging {
           // CCNTLV and NDNTLV both are pktdumped with <Interest><Name>
           // they differ by NameSegments and NameComponents
           case interest @ <Interest>{_*}</Interest> => {
-            val name: NodeSeq = interest \ "Name"
+            val nameNodes: NodeSeq = interest \ "Name"
 
-            val nameSegments  = name \ "NameSegment"
-            val nameComponents =
+            val nameSegments  = nameNodes \ "NameSegment"
+            val name =
               if(nameSegments.nonEmpty) {
-                nameSegments map { ns => new String(decodeBase64(ns.text.trim)) }
+                ccntlvParseName(interest)
               }
               else {
-                parseComponentsNDNTLV(interest) map { cmp => new String(cmp) }
+                CCNName(parseComponentsNDNTLV(interest).map( new String(_) ).toList, None)
               }
-            Interest(nameComponents :_*)
+            Interest(name)
           }
-          /*
+            /* CCNTLV object
             <Object>
               <Name>
                 <NameSegment size="4" dt="binary.base64">
                   Y2NueA==
                 </NameSegment>
-                <NameSegment size="6" dt="binary.base64">
-                  c2ltcGxl
+                <NameSegment size="7" dt="binary.base64">
+                  Y2h1bmtlZA==
                 </NameSegment>
+                <Chunk size="1" dt="binary.base64">
+                  Ag==
+                </Chunk>
               </Name>
-              <Payload size="12" dt="binary.base64">
-               dGVzdGNvbnRlbnQK
+              <MetaData>
+                <EndChunk size="1" dt="binary.base64">
+                  Aw==
+                </EndChunk>
+              </MetaData>
+              <Payload size="5" dt="binary.base64">
+                dGNvbnQ=
               </Payload>
             </Object>
-           */
+            */
           case content @ <Object>{_*}</Object> => {
-            val nameComponents = content \ "Name" \ "NameSegment" map { ns => new String(decodeBase64(ns.text.trim)) }
+
+            val name = ccntlvParseName(content)
             val contentData = content \ "Payload" map {d => decodeBase64(d.text.trim) } reduceLeft(_ ++ _)
+            val lastChunkNum = (content \ "MetaData" \ "EndChunk").headOption map {
+              c => Integer.parseInt(c.text.trim)
+            }
             if(contentData.startsWith(":NACK".getBytes)) {
-              Nack(CCNName(nameComponents :_*))
+              Nack(name)
             } else {
-              Content(contentData, nameComponents :_*)
+              Content(name, contentData, MetaInfo(lastChunkNum))
             }
           }
 
           case content @ <Data>{_*}</Data> => {
             val nameComponents = parseComponentsNDNTLV(content) map { new String(_) }
             val contentData = parseContentDataNDNTLV(content)
+            val chunkNum = Option.empty[Int]
+            val name = CCNName(nameComponents :_*)
             if(contentData.startsWith(":NACK".getBytes)) {
-              Nack(CCNName(nameComponents :_*))
+              Nack(name)
             } else {
-              Content(contentData, nameComponents :_*)
+              Content(name, contentData, MetaInfo(chunkNum))
             }
           }
           case _ => throw new Exception("XML parser cannot parse:\n" + cleanedXmlString)

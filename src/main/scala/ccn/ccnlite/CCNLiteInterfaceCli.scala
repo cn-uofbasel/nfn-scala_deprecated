@@ -12,6 +12,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Random, Failure, Success}
 
 case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {
+
+  val maxChunkSize = 100
+
   val ccnLiteEnv = {
     val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
     if(maybeCcnLiteEnv == null) {
@@ -36,7 +39,11 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
   override def mkBinaryInterest(interest: Interest)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
     val mkI = "ccn-lite-mkI"
-    val cmds: List[String] = List(utilFolderName+mkI, "-s", wireFormat.toString) ++ ccnNameToRoutableNameAndNfnString(interest.name)
+    val chunkCmps = interest.name.chunkNum match {
+      case Some(chunkNum) => List("-i", s"$chunkNum")
+      case None => Nil
+    }
+    val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ ccnNameToRoutableNameAndNfnString(interest.name)
     SystemCommandExecutor(cmds).execute map {
       case ExecutionSuccess(_, data) => data
       case execErr: ExecutionError =>
@@ -44,13 +51,35 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     }
   }
 
-  override def mkBinaryContent(content: Content)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
+  override def mkBinaryContent(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
     val mkC = "ccn-lite-mkC"
-    val cmds = List(utilFolderName+mkC, "-s", wireFormat.toString) ++ ccnNameToRoutableNameAndNfnString(content.name)
-    SystemCommandExecutor(cmds, Some(content.data)).execute map {
-      case ExecutionSuccess(_, data) => data
-      case execErr: ExecutionError =>
-        throw new Exception(s"Error when creating binary content for $content: $execErr")
+    val baseCmds = List(utilFolderName+mkC, "-s", s"$wireFormat")
+
+    // split into chunk size
+    val dataChunks = content.data.grouped(maxChunkSize).toList
+
+    val lastChunkNum = dataChunks.size - 1
+
+    if(dataChunks.size == 1) {
+      val cmds = baseCmds ++ ccnNameToRoutableNameAndNfnString(content.name)
+      SystemCommandExecutor(cmds, Some(content.data)).execute map {
+        case ExecutionSuccess(_, data) => List(data)
+        case execErr: ExecutionError =>
+          throw new Exception(s"Error when creating binary content for $content: $execErr")
+      }
+    } else {
+      // List[Future...] -> Future[List...]
+      Future.sequence {
+        dataChunks.zipWithIndex.map { case (chunkedData, chunkNum) =>
+          val cmds = baseCmds ++ List("-i", s"$chunkNum", "-l" , s"$lastChunkNum") ++ ccnNameToRoutableNameAndNfnString(content.name)
+          // create binary chunked content object for each
+          SystemCommandExecutor(cmds, Some(chunkedData)).execute map {
+            case ExecutionSuccess(_, data: Array[Byte]) => data
+            case execErr: ExecutionError =>
+              throw new Exception(s"Error when creating binary content for chunk $content: $execErr")
+          }
+        }
+      }
     }
   }
 
@@ -70,25 +99,29 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     }
   }
 
-  override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
-    mkBinaryContent(content) flatMap { binaryContent =>
-      val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"
-      val file = new File(filename)
+  override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
+    mkBinaryContent(content) flatMap { (binaryContents: List[Array[Byte]]) =>
+      Future.sequence {
+        binaryContents map { binaryContent =>
+          val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"
+          val file = new File(filename)
 
-      IOHelper.writeToFile(file, binaryContent)
-      val ccnbAbsoluteFilename: String = file.getCanonicalPath
+          IOHelper.writeToFile(file, binaryContent)
+          val ccnbAbsoluteFilename: String = file.getCanonicalPath
 
-      val ctrl = "ccn-lite-ctrl"
-      val cmds = List(utilFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
-      val futCacheInterest = SystemCommandExecutor(cmds).execute map {
-        case ExecutionSuccess(_, data) => data
-        case execErr: ExecutionError =>
-          throw new Exception(s"Error creating add to cache request: $execErr")
+          val ctrl = "ccn-lite-ctrl"
+          val cmds = List(utilFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
+          val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(cmds).execute map {
+            case ExecutionSuccess(_, data) => data
+            case execErr: ExecutionError =>
+              throw new Exception(s"Error creating add to cache request: $execErr")
+          }
+          futCacheInterest.onComplete {
+            case _ => file.delete()
+          }
+          futCacheInterest
+        }
       }
-      futCacheInterest.onComplete {
-        case _ => file.delete()
-      }
-      futCacheInterest
     }
   }
 }

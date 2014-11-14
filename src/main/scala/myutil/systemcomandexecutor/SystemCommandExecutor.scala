@@ -50,7 +50,10 @@ case class SystemCommandExecutor(cmds: List[String], inputData: Option[Array[Byt
         if (proc.exitValue() == 0) {
           ExecutionSuccess(cmds, result)
         } else {
-          ExecutionError(cmds, err, proc.exitValue())
+          val execErr = ExecutionError(cmds, err, proc.exitValue())
+
+          logger.error(s"Execution error: $execErr")
+          execErr
         }
       proc.destroy()
 

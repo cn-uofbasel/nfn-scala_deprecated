@@ -16,10 +16,12 @@ object CCNName {
       Some(CCNName(name.split("/").tail:_*))
     }
   }
+
+  def apply(cmps: String *): CCNName = CCNName(cmps.toList, None)
 }
 
 
-case class CCNName(cmps: String *) extends Logging {
+case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   import CCNName.{thunkKeyword, nfnKeyword, computeKeyword}
 
@@ -114,22 +116,27 @@ case class Interest(name: CCNName) extends CCNPacket {
   def thunkify: Interest = Interest(name.thunkify)
 }
 
-object Content {
 
+object MetaInfo {
+  val empty = MetaInfo(None)
+}
+case class MetaInfo(chunkNum: Option[Int])
+
+object Content {
   def apply(data: Array[Byte], cmps: String *): Content =
-    Content(CCNName(cmps :_*), data)
+    Content(CCNName(cmps :_*), data, MetaInfo.empty)
 
   def thunkForName(name: CCNName, executionTimeEstimated: Option[Int]) = {
     val thunkyfiedName = name.thunkify
     val thunkContentData = executionTimeEstimated.fold("")(_.toString)
-    Content(thunkyfiedName, thunkContentData.getBytes)
+    Content(thunkyfiedName, thunkContentData.getBytes, MetaInfo.empty)
   }
   def thunkForInterest(interest: Interest, executionTimeEstimate: Option[Int]): Content = {
     thunkForName(interest.name, executionTimeEstimate)
   }
 }
 
-case class Content(name: CCNName, data: Array[Byte]) extends CCNPacket {
+case class Content(name: CCNName, data: Array[Byte], metaInfo: MetaInfo = MetaInfo.empty) extends CCNPacket {
 
   def possiblyShortenedDataString: String = {
     val dataString = new String(data)
@@ -144,7 +151,7 @@ case class Content(name: CCNName, data: Array[Byte]) extends CCNPacket {
 case class Nack(name: CCNName) extends CCNPacket {
   val content: String = ":NACK"
 
-  def toContent = Content(name, content.getBytes)
+  def toContent = Content(name, content.getBytes, MetaInfo.empty)
 }
 
 case class AddToCacheAck(name: CCNName) extends CCNPacket

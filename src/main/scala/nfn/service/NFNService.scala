@@ -79,7 +79,7 @@ object NFNService extends Logging {
         if(f.exists()) {
           val actualData = IOHelper.readByteArrayFromFile(f)
           logger.debug(s"hack: loading content form file ${f.getCanonicalPath}")
-          Content(content.name, actualData)
+          Content(content.name, actualData, MetaInfo.empty)
         } else { content }
       }
     }

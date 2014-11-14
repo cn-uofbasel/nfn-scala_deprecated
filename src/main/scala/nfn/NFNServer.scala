@@ -1,12 +1,16 @@
 package nfn
 
-import java.io.{File, FileOutputStream}
 import java.net.InetSocketAddress
+
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 import akka.actor._
 import akka.event.Logging
 import akka.pattern._
 import akka.util.Timeout
+
 import ccn._
 import ccn.ccnlite.CCNLiteInterfaceCli
 import ccn.packet._
@@ -18,9 +22,6 @@ import network._
 import nfn.NFNServer._
 import nfn.localAbstractMachine.LocalAbstractMachineWorker
 
-import scala.concurrent.Future
-import scala.concurrent.duration._
-import scala.util.{Failure, Success}
 
 
 object NFNServer {
@@ -57,6 +58,20 @@ object NFNServerFactory extends Logging {
     Props(classOf[NFNServer], nfnNodeConfig, computeNodeConfig, ccnIf)
 }
 
+object UDPConnectionContentInterest {
+  def apply(context: ActorRefFactory, from: InetSocketAddress, to: InetSocketAddress, ccnIf: CCNInterface): ActorRef = {
+    context.actorOf(
+      Props(
+        classOf[UDPConnectionContentInterest],
+        from,
+        to,
+        ccnIf
+      ),
+      name = s"udpsocket-${from.getHostName}:${from.getPort}-${to.getHostName}:${to.getPort}"
+    )
+  }
+}
+
 
 class UDPConnectionContentInterest(local:InetSocketAddress,
                                    target:InetSocketAddress,
@@ -89,12 +104,20 @@ class UDPConnectionContentInterest(local:InetSocketAddress,
         }
       case c: Content =>
         ccnLite.mkBinaryContent(c) onComplete {
-          case Success(binaryContent) => self.tell(UDPConnection.Send(binaryContent), senderCopy)
+          case Success(binaryContents) => {
+            binaryContents foreach { binaryContent =>
+              self.tell(UDPConnection.Send(binaryContent), senderCopy)
+            }
+          }
           case Failure(e) => logger.error(e, s"could not create binary content for $c")
         }
       case n: Nack =>
-        ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes)) onComplete {
-          case Success(binaryContent) => self.tell(UDPConnection.Send(binaryContent), senderCopy)
+        ccnLite.mkBinaryContent(Content(n.name, n.content.getBytes, MetaInfo.empty)) onComplete {
+          case Success(binaryContents) => {
+            binaryContents foreach { binaryContent =>
+              self.tell(UDPConnection.Send(binaryContent), senderCopy)
+            }
+          }
           case Failure(e) => logger.error(e, s"could not create binary nack for $n")
         }
       case a: AddToCacheAck =>
@@ -161,15 +184,13 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   var cs: ActorRef = context.actorOf(Props(classOf[ContentStore]), name = "ContentStore")
 
   val nfnGateway: ActorRef =
-      context.actorOf(
-        Props(
-          classOf[UDPConnectionContentInterest],
-            new InetSocketAddress(computeNodeConfig.host, computeNodeConfig.port),
-            new InetSocketAddress(nfnNodeConfig.host, nfnNodeConfig.port),
-            ccnIf
-        ),
-        name = s"udpsocket-${computeNodeConfig.host}-${nfnNodeConfig.port}"
-      )
+    UDPConnectionContentInterest(
+      context.system,
+      new InetSocketAddress(computeNodeConfig.host, computeNodeConfig.port),
+      new InetSocketAddress(nfnNodeConfig.host, nfnNodeConfig.port),
+      ccnIf
+    )
+
 
   override def preStart() = {
       nfnGateway ! UDPConnection.Handler(self)
@@ -359,7 +380,10 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     case NFNApi.AddToCCNCache(content) => {
       logger.info(s"sending add to cache for $content")
       ccnIf.mkAddToCacheInterest(content) onComplete {
-        case Success(binaryAddToCacheReq) =>  nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
+        case Success(binaryAddToCacheReqs) =>
+        binaryAddToCacheReqs map { binaryAddToCacheReq =>
+          nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
+        }
         case Failure(ex) => logger.error(ex, s"Could not add to CCN cache for $content")
       }
     }
@@ -367,7 +391,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     case NFNApi.AddToLocalCache(content, prependLocalPrefix) => {
       val contentToAdd =
         if(prependLocalPrefix) {
-          Content(computeNodeConfig.prefix.append(content.name), content.data)
+          Content(computeNodeConfig.prefix.append(content.name), content.data, MetaInfo.empty)
         } else content
       logger.info(s"Adding content for ${contentToAdd.name} to local cache")
       cs ! ContentStore.Add(contentToAdd)

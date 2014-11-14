@@ -80,7 +80,8 @@ object NFNServiceLibrary extends Logging {
 
     val content = Content(
       serv.ccnName,
-      tempFileOrSingleContent
+      tempFileOrSingleContent,
+      MetaInfo.empty
     )
 
     logger.debug(s"nfnPublish: Adding ${content.name} (size=${serviceContent.size}) to cache")
