@@ -19,6 +19,8 @@ object CCNLiteXmlParser extends Logging {
 
   def parseCCNPacket(xmlString: String):Try[CCNPacket] = {
 
+    val chunkMarker: Byte = 0x00
+    val ndntlvMarkers: Set[Byte] = Set(chunkMarker)
 
     def parseComponentsCCNB(elem: Elem):Seq[String] = {
       val components = elem \ "name" \ "component"
@@ -26,12 +28,17 @@ object CCNLiteXmlParser extends Logging {
       components.map { parseDataCCNB }
     }
 
-    def parseComponentsNDNTLV(elem: Elem):Seq[Array[Byte]] = {
+    def ndntlvParseName(elem: Elem):CCNName = {
+
       val components = elem \ "Name" \ "NameComponent"
 
-      val cmps = components.map { parseDataNDNTLV }
+      val cmpsWithMarkers: List[Array[Byte]] = components.map( parseDataNDNTLV ).toList
 
-      cmps
+      val (cmps, markedCmps) = cmpsWithMarkers.partition { cmp: Array[Byte] => cmp.nonEmpty && ndntlvMarkers.contains(cmp(0)) }
+      val chunkComp = markedCmps.find { cmp => cmp(0) == chunkMarker}
+      val chunkNum = chunkComp map { cmp => Integer.parseInt(new String(cmp.tail)) }
+
+      CCNName(cmps map { new String(_) } toList, chunkNum)
     }
     def parseDataCCNB(elem: Node): String = {
 
@@ -96,7 +103,6 @@ object CCNLiteXmlParser extends Logging {
     val cleanedXmlString = xmlString.trim.replace("&", "&amp;")
     val addToCacheAckStringBase64 = "MCvi6qVsYXN0AAGqfsXy+qVjY254APqFAPr1YWRkY2FjaGVvYmplY3QAAAGaAf0EygHVQ29udGVudCBzdWNjZXNzZnVsbHkgYWRkZWQ"
     val addToCacheAckStringBase642 ="8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgH9BMoB1UNvbnRlbnQgc3VjY2Vzc2Z1bGx5IGFkZGVk"
-    //        val addToCacheNackStringBase64 = "8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgH9BMoB1UNvbnRlbnQgc3VjY2Vzc2Z1bGx5IGFkZGVk"
     val addToCacheFailedStringBase64 = "8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgHVBMoBrUZhaWxlZCB0byBhZGQgY29udGVud"
     if(cleanedXmlString.contains(addToCacheAckStringBase64) || cleanedXmlString.contains(addToCacheAckStringBase642)) {
       Try(AddToCacheAck(CCNName("/")))
@@ -134,11 +140,11 @@ object CCNLiteXmlParser extends Logging {
                 ccntlvParseName(interest)
               }
               else {
-                CCNName(parseComponentsNDNTLV(interest).map( new String(_) ).toList, None)
+                ndntlvParseName(interest)
               }
             Interest(name)
           }
-            /* CCNTLV object
+            /* CCNTLV Content Object (chunked)
             <Object>
               <Name>
                 <NameSegment size="4" dt="binary.base64">
@@ -175,15 +181,68 @@ object CCNLiteXmlParser extends Logging {
             }
           }
 
+          /* NDNTLV Content Object (chunked)
+
+            <Data>
+              <Name>
+                <NameComponent>
+                  <data size="3" dt="binary.base64">
+                    bmRu
+                  </data>
+                </NameComponent>
+                <NameComponent>
+                  <data size="7" dt="binary.base64">
+                    Y2h1bmtlZA==
+                  </data>
+                </NameComponent>
+                <NameComponent>
+                  <data size="2" dt="binary.base64">
+                    AAI=
+                  </data>
+                </NameComponent>
+              </Name>
+              <MetaInfo>
+                <FinalBlockId>
+                  <data size="4" dt="binary.base64">
+                    CAIAAw==
+                  </data>
+                </FinalBlockId>
+              </MetaInfo>
+              <Content>
+                <data size="5" dt="binary.base64">
+                  dGNvbnQ=
+                </data>
+              </Content>
+              <SignatureInfo>
+                <SignatureType>
+                  <data size="1" dt="binary.base64">
+                    AQ==
+                  </data>
+                </SignatureType>
+                <KeyLocator>
+                </KeyLocator>
+              </SignatureInfo>
+              <SignatureValue>
+              </SignatureValue>
+            </Data>
+          */
           case content @ <Data>{_*}</Data> => {
-            val nameComponents = parseComponentsNDNTLV(content) map { new String(_) }
+            val name = ndntlvParseName(content)
             val contentData = parseContentDataNDNTLV(content)
-            val chunkNum = Option.empty[Int]
-            val name = CCNName(nameComponents :_*)
+
+            // parse last chunk num
+            val lastChunkNum: Option[Int] = (content \ "MetaInfo" \ "FinalBlockId" \ "NameComponent").headOption flatMap { (lastChunkNumNode: Node) =>
+              val lastChunkNumData = parseDataNDNTLV(lastChunkNumNode)
+              if(lastChunkNumData.size == 0 || lastChunkNumData(0) != chunkMarker) {
+                None
+              } else {
+                Some(Integer.parseInt(new String(lastChunkNumData.tail)))
+              }
+            }
             if(contentData.startsWith(":NACK".getBytes)) {
               Nack(name)
             } else {
-              Content(name, contentData, MetaInfo(chunkNum))
+              Content(name, contentData, MetaInfo(lastChunkNum))
             }
           }
           case _ => throw new Exception("XML parser cannot parse:\n" + cleanedXmlString)

@@ -40,7 +40,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   override def mkBinaryInterest(interest: Interest)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
     val mkI = "ccn-lite-mkI"
     val chunkCmps = interest.name.chunkNum match {
-      case Some(chunkNum) => List("-i", s"$chunkNum")
+      case Some(chunkNum) => List("-n", s"$chunkNum")
       case None => Nil
     }
     val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ ccnNameToRoutableNameAndNfnString(interest.name)
@@ -60,18 +60,18 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
     val lastChunkNum = dataChunks.size - 1
 
-    if(dataChunks.size == 1) {
-      val cmds = baseCmds ++ ccnNameToRoutableNameAndNfnString(content.name)
-      SystemCommandExecutor(cmds, Some(content.data)).execute map {
-        case ExecutionSuccess(_, data) => List(data)
-        case execErr: ExecutionError =>
-          throw new Exception(s"Error when creating binary content for $content: $execErr")
-      }
-    } else {
+//    if(dataChunks.size == 1) {
+//      val cmds = baseCmds ++ ccnNameToRoutableNameAndNfnString(content.name)
+//      SystemCommandExecutor(cmds, Some(content.data)).execute map {
+//        case ExecutionSuccess(_, data) => List(data)
+//        case execErr: ExecutionError =>
+//          throw new Exception(s"Error when creating binary content for $content: $execErr")
+//      }
+//    } else {
       // List[Future...] -> Future[List...]
       Future.sequence {
         dataChunks.zipWithIndex.map { case (chunkedData, chunkNum) =>
-          val cmds = baseCmds ++ List("-i", s"$chunkNum", "-l" , s"$lastChunkNum") ++ ccnNameToRoutableNameAndNfnString(content.name)
+          val cmds = baseCmds ++ List("-n", s"$chunkNum", "-l" , s"$lastChunkNum") ++ ccnNameToRoutableNameAndNfnString(content.name)
           // create binary chunked content object for each
           SystemCommandExecutor(cmds, Some(chunkedData)).execute map {
             case ExecutionSuccess(_, data: Array[Byte]) => data
@@ -80,7 +80,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
           }
         }
       }
-    }
+//    }
   }
 
   override def wireFormatDataToXmlPacket(binaryPacket: Array[Byte])(implicit ec: ExecutionContext): Future[CCNPacket] = {

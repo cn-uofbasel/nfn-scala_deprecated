@@ -35,7 +35,6 @@ object NFNServiceLibrary extends Logging {
     }
   }
 
-
   def find(servName: CCNName):Option[NFNService] = find(servName.toString)
 
   def convertDollarToChf(dollar: Int): Int = ???
@@ -54,33 +53,33 @@ object NFNServiceLibrary extends Logging {
       if(serv.pinned) pinnedData
       else byteCodeData(serv)
 
-    val tempFileOrSingleContent =
-      if(serviceContent.size > 100) {
-
-        val tempBytecodeContentDirName = "./temp-bytecode-content"
-
-        val tempBytecodeContentDir = new File(tempBytecodeContentDirName)
-        if(!tempBytecodeContentDir.exists()) {
-          tempBytecodeContentDir.mkdir()
-        }
-        val bytecodeContentFileName = s"$tempBytecodeContentDirName/${serv.ccnName.cmps.mkString("+")}"
-
-        val bytecodeContentFile = new File(bytecodeContentFileName)
-        if(bytecodeContentFile.exists()) {
-          bytecodeContentFile.delete()
-          bytecodeContentFile.createNewFile()
-        }
-        val out = new FileOutputStream(bytecodeContentFile)
-        try{
-          out.write(serviceContent)
-        } finally { out.close() }
-
-        bytecodeContentFileName.getBytes
-      } else { serviceContent }
+//    val tempFileOrSingleContent =
+//      if(serviceContent.size > 100) {
+//
+//        val tempBytecodeContentDirName = "./temp-bytecode-content"
+//
+//        val tempBytecodeContentDir = new File(tempBytecodeContentDirName)
+//        if(!tempBytecodeContentDir.exists()) {
+//          tempBytecodeContentDir.mkdir()
+//        }
+//        val bytecodeContentFileName = s"$tempBytecodeContentDirName/${serv.ccnName.cmps.mkString("+")}"
+//
+//        val bytecodeContentFile = new File(bytecodeContentFileName)
+//        if(bytecodeContentFile.exists()) {
+//          bytecodeContentFile.delete()
+//          bytecodeContentFile.createNewFile()
+//        }
+//        val out = new FileOutputStream(bytecodeContentFile)
+//        try{
+//          out.write(serviceContent)
+//        } finally { out.close() }
+//
+//        bytecodeContentFileName.getBytes
+//      } else { serviceContent }
 
     val content = Content(
       serv.ccnName,
-      tempFileOrSingleContent,
+      serviceContent,
       MetaInfo.empty
     )
 
@@ -98,10 +97,6 @@ object NFNServiceLibrary extends Logging {
       nfnPublishService(serv, ccnWorker)
     }
   }
-
-  def convertChfToDollar(chf: Int): Int = ???
-  def toPdf(webpage: String): String = ???
-  def derp(foo: Int) = ???
 }
 
 case class NFNServiceExecutionException(msg: String) extends Exception(msg)

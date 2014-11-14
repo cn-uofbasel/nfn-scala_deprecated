@@ -70,18 +70,17 @@ object NFNService extends Logging {
 
       val futContent = (ccnServer ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
 
-
-      // TODO: hack to avoid chunk content
-      // load data from file if content is a valid filename
-      futContent map { content =>
-        val dataString = new String(content.data)
-        val f = new File(dataString)
-        if(f.exists()) {
-          val actualData = IOHelper.readByteArrayFromFile(f)
-          logger.debug(s"hack: loading content form file ${f.getCanonicalPath}")
-          Content(content.name, actualData, MetaInfo.empty)
-        } else { content }
-      }
+// hack to support large content objects
+//      futContent map { content =>
+//        val dataString = new String(content.data)
+//        val f = new File(dataString)
+//        if(f.exists()) {
+//          val actualData = IOHelper.readByteArrayFromFile(f)
+//          logger.debug(s"hack: loading content form file ${f.getCanonicalPath}")
+//          Content(content.name, actualData, MetaInfo.empty)
+//        } else { content }
+//      }
+      futContent
     }
 
     def findService(fun: String): Future[NFNService] = {
