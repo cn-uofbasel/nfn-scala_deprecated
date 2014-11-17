@@ -25,10 +25,9 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   import CCNName.{thunkKeyword, nfnKeyword, computeKeyword}
 
-  def to = toString.replaceAll("/", "_").replaceAll("[^a-zA-Z0-9]", "-")
+//  def to = toString.replaceAll("/", "_").replaceAll("[^a-zA-Z0-9]", "-")
   override def toString = {
-    if(cmps.size == 0) "/"
-    else cmps.toList.mkString("/", "/", "")
+    cmps.toList.mkString("/", "/", "") + chunkNum.map({ cn => s"/c=$cn" }).getOrElse("")
   }
 
   private def isThunkWithKeyword(keyword: String) = cmps.size >= 2 && cmps.last == nfnKeyword && !cmps.drop(cmps.size-2).forall(_ != keyword)
@@ -145,7 +144,7 @@ case class Content(name: CCNName, data: Array[Byte], metaInfo: MetaInfo = MetaIn
       dataString.take(50) + "..." + dataString.takeRight(10)
     else dataString
   }
-  override def toString = s"Content('$name' => '$possiblyShortenedDataString' [size=${data.size}])"
+  override def toString = s"Content[$metaInfo]('$name' => '$possiblyShortenedDataString' [size=${data.size}])"
 }
 
 case class Nack(name: CCNName) extends CCNPacket {

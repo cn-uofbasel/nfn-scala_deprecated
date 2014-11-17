@@ -2,61 +2,50 @@ package myutil.systemcomandexecutor
 
 import java.io._
 import com.typesafe.scalalogging.slf4j.Logging
+import myutil.IOHelper
 import scala.concurrent.{ExecutionContext, Future}
+import scala.sys.process._
 
-case class SystemCommandExecutor(cmds: List[String], inputData: Option[Array[Byte]] = None) extends Logging {
-
-  def inToOut(is: InputStream, os: OutputStream) = {
-    Iterator.continually(is.read)
-      .takeWhile(_ != -1)
-      .foreach(os.write)
-  }
+case class SystemCommandExecutor(cmds: List[String], maybeInputData: Option[Array[Byte]] = None) extends Logging {
 
   def execute()(implicit execContext: ExecutionContext): Future[ExecutionResult] = {
+    logger.debug(s"Executing: $this")
     Future({
-      val rt = Runtime.getRuntime
-      logger.debug(s"Executing: ${cmds.mkString("'_'")}")
-      val proc = rt.exec(cmds.toArray)
-
-      // pipe both stdout and stderr of the process to a ByteArrayOutputStream
-      // since this must be run until each stream is fully read we put it into a future
-      val procIn = new BufferedInputStream(proc.getInputStream)
+      val maybeInput =
+        maybeInputData map { inputData =>
+          new ByteArrayInputStream(inputData)
+        }
       val resultOut = new ByteArrayOutputStream()
-      val futResult = Future(inToOut(procIn, resultOut))
-
-      val procErrIn = new BufferedInputStream(proc.getErrorStream)
       val errorOut = new ByteArrayOutputStream()
-      val futError = Future(inToOut(procErrIn, errorOut))
 
-      // if this command executer has input data, pipe it into the process
-      inputData map { inputData =>
-        val procOut = new BufferedOutputStream(proc.getOutputStream)
-        procOut.write(inputData)
-        procOut.close()
+      def input(os: java.io.OutputStream) = {
+        maybeInput map { in =>
+          IOHelper.inToOut(in, os)
+        }
+        os.close()
       }
 
-      // block until process has finished running
-      proc.waitFor()
-
-      // make sure that buth the stdout and stderr is completely consumed
-      while (!(futResult.isCompleted && futError.isCompleted)) {
-        Thread.sleep(1)
+      def stdOut(in: java.io.InputStream): Unit = {
+        IOHelper.inToOut(in, resultOut)
+        in.close()
       }
 
-      val result = resultOut.toByteArray
-      val err = errorOut.toByteArray
-
+      def stdErr(errIn: java.io.InputStream): Unit = {
+        IOHelper.inToOut(errIn, errorOut)
+        errIn.close()
+      }
+      val proc = cmds run new ProcessIO(input, stdOut, stdErr)
+      val exitCode = proc.exitValue()
       val execRes =
-        if (proc.exitValue() == 0) {
-          ExecutionSuccess(cmds, result)
+        if (exitCode == 0) {
+          ExecutionSuccess(cmds, resultOut.toByteArray)
         } else {
-          val execErr = ExecutionError(cmds, err, proc.exitValue())
+          val execErr = ExecutionError(cmds, errorOut.toByteArray, exitCode)
 
           logger.error(s"Execution error: $execErr")
           execErr
         }
       proc.destroy()
-
       execRes
     })
   }

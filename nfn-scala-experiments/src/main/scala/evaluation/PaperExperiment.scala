@@ -121,7 +121,7 @@ object PaperExperiment extends App {
 //  }
 //  node1.publishService(dynServ)
 
-  Thread.sleep(2000)
+  Thread.sleep(5000)
 
   import lambdacalculus.parser.ast.LambdaDSL._
   import nfn.LambdaNFNImplicits._

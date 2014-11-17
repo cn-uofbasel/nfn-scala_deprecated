@@ -20,6 +20,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     if(maybeCcnLiteEnv == null) {
       throw new Exception("CCNL_HOME system variable is not set. Set it to the root directory of ccn-lite.")
     }
+
     maybeCcnLiteEnv
   }
   val utilFolderName = s"$ccnLiteEnv/util/"
@@ -27,7 +28,8 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
   private def ccnNameToRoutableNameAndNfnString(name: CCNName): List[String] = {
     val nameCmps = name.cmps
-    if(nameCmps.last == "NFN") {
+
+    if(nameCmps.size > 0 && nameCmps.last == "NFN") {
       List(
         nameCmps.take(nameCmps.size - 2).mkString("/", "/", ""),
         nameCmps(nameCmps.size - 2)
@@ -39,11 +41,12 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
   override def mkBinaryInterest(interest: Interest)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
     val mkI = "ccn-lite-mkI"
+
     val chunkCmps = interest.name.chunkNum match {
       case Some(chunkNum) => List("-n", s"$chunkNum")
       case None => Nil
     }
-    val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ ccnNameToRoutableNameAndNfnString(interest.name)
+    val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableNameAndNfnString(interest.name)
     SystemCommandExecutor(cmds).execute map {
       case ExecutionSuccess(_, data) => data
       case execErr: ExecutionError =>
@@ -60,15 +63,15 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
     val lastChunkNum = dataChunks.size - 1
 
-//    if(dataChunks.size == 1) {
-//      val cmds = baseCmds ++ ccnNameToRoutableNameAndNfnString(content.name)
-//      SystemCommandExecutor(cmds, Some(content.data)).execute map {
-//        case ExecutionSuccess(_, data) => List(data)
-//        case execErr: ExecutionError =>
-//          throw new Exception(s"Error when creating binary content for $content: $execErr")
-//      }
-//    } else {
-      // List[Future...] -> Future[List...]
+    if(dataChunks.size == 1) {
+      val cmds = baseCmds ++ ccnNameToRoutableNameAndNfnString(content.name)
+      SystemCommandExecutor(cmds, Some(content.data)).execute map {
+        case ExecutionSuccess(_, data) => List(data)
+        case execErr: ExecutionError =>
+          throw new Exception(s"Error when creating binary content for $content: $execErr")
+      }
+    } else {
+//      List[Future...] -> Future[List...]
       Future.sequence {
         dataChunks.zipWithIndex.map { case (chunkedData, chunkNum) =>
           val cmds = baseCmds ++ List("-n", s"$chunkNum", "-l" , s"$lastChunkNum") ++ ccnNameToRoutableNameAndNfnString(content.name)
@@ -80,7 +83,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
           }
         }
       }
-//    }
+    }
   }
 
   override def wireFormatDataToXmlPacket(binaryPacket: Array[Byte])(implicit ec: ExecutionContext): Future[CCNPacket] = {
@@ -100,6 +103,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   }
 
   override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
+    logger.debug(s"add to cache for $content")
     mkBinaryContent(content) flatMap { (binaryContents: List[Array[Byte]]) =>
       Future.sequence {
         binaryContents map { binaryContent =>

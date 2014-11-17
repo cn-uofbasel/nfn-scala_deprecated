@@ -1,5 +1,6 @@
 package ccn.ccnlite
 
+import java.nio.ByteBuffer
 import javax.xml.bind.DatatypeConverter
 
 import ccn.packet._
@@ -30,13 +31,15 @@ object CCNLiteXmlParser extends Logging {
 
     def ndntlvParseName(elem: Elem):CCNName = {
 
-      val components = elem \ "Name" \ "NameComponent"
+      val components = elem \ "Name" \ "NameComponent" \ "data"
 
-      val cmpsWithMarkers: List[Array[Byte]] = components.map( parseDataNDNTLV ).toList
+      val cmpsWithMarkers: List[Array[Byte]] = components.map({ cmp => decodeBase64(cmp.text) }).toList
 
-      val (cmps, markedCmps) = cmpsWithMarkers.partition { cmp: Array[Byte] => cmp.nonEmpty && ndntlvMarkers.contains(cmp(0)) }
+      val (cmps, markedCmps) = cmpsWithMarkers.partition { cmp: Array[Byte] => cmp.nonEmpty && !ndntlvMarkers.contains(cmp(0)) }
       val chunkComp = markedCmps.find { cmp => cmp(0) == chunkMarker}
-      val chunkNum = chunkComp map { cmp => Integer.parseInt(new String(cmp.tail)) }
+      val chunkNum = chunkComp map { cmp =>
+        cmp(1).toInt
+      }
 
       CCNName(cmps map { new String(_) } toList, chunkNum)
     }
@@ -70,7 +73,7 @@ object CCNLiteXmlParser extends Logging {
             nameData.getBytes
           case "binary.base64" =>
             decodeBase64(nameData)
-          case _ => throw new Exception(s"parseDataCCNB() does not support data of type: '$encoding'")
+          case _ => throw new Exception(s"parseDataNDNTLV() does not support data of type: '$encoding'")
         }
 
         curData ++ nextData
@@ -236,7 +239,8 @@ object CCNLiteXmlParser extends Logging {
               if(lastChunkNumData.size == 0 || lastChunkNumData(0) != chunkMarker) {
                 None
               } else {
-                Some(Integer.parseInt(new String(lastChunkNumData.tail)))
+                // TODO: this probably breaks for large numbers because it does ignore the NDNTLV encoding of includedNonNegInt
+                Some(lastChunkNumData(1))
               }
             }
             if(contentData.startsWith(":NACK".getBytes)) {
@@ -251,7 +255,7 @@ object CCNLiteXmlParser extends Logging {
       // transform exception to print the original xml
       triedParsePacket.transform (
         s => Success(s),
-        e => Failure( new Exception(s"Could not parse $cleanedXmlString",e) )
+        e => Failure( new Exception(s"Could not parse xml ('$cleanedXmlString')",e) )
       )
     }
   }

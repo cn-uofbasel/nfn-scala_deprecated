@@ -95,10 +95,8 @@ class UDPConnectionContentInterest(local:InetSocketAddress,
   def handlePacket(packet: CCNPacket, senderCopy: ActorRef) =
     packet match {
       case i: Interest =>
-        logger.debug(s"going to send interest $i to network")
         ccnLite.mkBinaryInterest(i) onComplete {
           case Success(binaryInterest) =>
-            logger.debug(s"sending binary interest to network")
             self.tell(UDPConnection.Send(binaryInterest), senderCopy)
           case Failure(e) => logger.error(e, s"could not create binary interest for $i")
         }
@@ -181,7 +179,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   val defaultTimeoutDuration = StaticConfig.defaultTimeoutDuration
 
   var pit: ActorRef = context.actorOf(Props(classOf[PIT]), name = "PIT")
-  var cs: ActorRef = context.actorOf(Props(classOf[ContentStore]), name = "ContentStore")
+  val cs = ContentStore()
 
   val nfnGateway: ActorRef =
     UDPConnectionContentInterest(
@@ -194,6 +192,30 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
   override def preStart() = {
       nfnGateway ! UDPConnection.Handler(self)
+  }
+
+
+  private def handleContentChunk(contentChunk: Content, senderCopy: ActorRef) = {
+    cs.add(contentChunk)
+    cs.getContentCompleteOrIncompletedChunks(contentChunk.name) match {
+      case Left(content) =>
+        logger.debug(s"unchunkified content $content")
+        handleContent(content, senderCopy)
+      case Right(chunkNums) => {
+        chunkNums match {
+          case chunkNum :: _ =>
+//            implicit val timeout = Timeout(defaultTimeoutDuration)
+//            (pit ? PIT.Get(CCNName(contentChunk.name.cmps, Some(chunkNum)))).mapTo[Option[Set[Face]]] onSuccess {
+//              case Some(_) => {
+              val chunkInterest = Interest(CCNName(contentChunk.name.cmps, Some(chunkNum)))
+              self ! NFNApi.CCNSendReceive(chunkInterest, contentChunk.name.isThunk)
+//              }
+//              case None => logger.error(s"Don't fetching chunks because interest for ${contentChunk.name} already timed out")
+//            }
+          case _ => logger.warning(s"chunk store was already removed or never existed in contentstore for contentname ${contentChunk.name}")
+        }
+      }
+    }
   }
 
   private def handleContent(content: Content, senderCopy: ActorRef) = {
@@ -239,7 +261,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
         case Some(pendingFaces) => {
 
           if (cacheContent) {
-            cs ! ContentStore.Add(content)
+            cs.add(content)
           }
 
           pendingFaces foreach { pendingSender => pendingSender.send(content) }
@@ -256,8 +278,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
 
     implicit val timeout = Timeout(defaultTimeoutDuration)
-    val f: Future[Unit] =
-    (cs ? ContentStore.Get(i.name)).mapTo[Option[Content]] map {
+    cs.get(i.name) match {
       case Some(contentFromLocalCS) =>
         logger.debug(s"Served $contentFromLocalCS from local CS")
         senderCopy ! contentFromLocalCS
@@ -332,7 +353,10 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       }
       case c: Content => {
         logger.info(s"Received content: $c")
-        handleContent(c, senderCopy)
+        c.name.chunkNum match {
+          case Some(chunknum) => handleContentChunk(c, senderCopy)
+          case _ => handleContent(c, senderCopy)
+        }
       }
       case n: Nack => {
         logger.info(s"Received NAck: $n")
@@ -378,12 +402,13 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     }
 
     case NFNApi.AddToCCNCache(content) => {
-      logger.info(s"sending add to cache for $content")
+      logger.info(s"creating add to cache messages for $content")
       ccnIf.mkAddToCacheInterest(content) onComplete {
         case Success(binaryAddToCacheReqs) =>
-        binaryAddToCacheReqs map { binaryAddToCacheReq =>
-          nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
-        }
+          logger.debug(s"sending ${binaryAddToCacheReqs.size} add to cache requests for ${content.name} to the network")
+          binaryAddToCacheReqs foreach { binaryAddToCacheReq =>
+            nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
+          }
         case Failure(ex) => logger.error(ex, s"Could not add to CCN cache for $content")
       }
     }
@@ -394,7 +419,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           Content(computeNodeConfig.prefix.append(content.name), content.data, MetaInfo.empty)
         } else content
       logger.info(s"Adding content for ${contentToAdd.name} to local cache")
-      cs ! ContentStore.Add(contentToAdd)
+      cs.add(contentToAdd)
     }
 
 

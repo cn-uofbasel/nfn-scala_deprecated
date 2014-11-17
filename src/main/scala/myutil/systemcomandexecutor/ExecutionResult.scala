@@ -6,11 +6,11 @@ sealed trait ExecutionResult {
 }
 case class ExecutionSuccess(cmds: List[String], data: Array[Byte]) extends ExecutionResult {
   override def toString = {
-    new String(s"ExecutionSuccess(cmds: $cmds, res: ${new String(data)}")
+    new String(s"ExecutionSuccess(cmds: $cmds, res(s=${data.size}): ${new String(data)}")
   }
 }
 case class ExecutionError(cmds: List[String], data: Array[Byte], errCode: Int) extends ExecutionResult {
   override def toString = {
-    new String(s"ExecutionError(cmds: $cmds, res: ${new String(data)}, errCode: $errCode")
+    new String(s"ExecutionError(cmds: $cmds, res(s=${data.size}): ${new String(data)}, errCode: $errCode")
   }
 }

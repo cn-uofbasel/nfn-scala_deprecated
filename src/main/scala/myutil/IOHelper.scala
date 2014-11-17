@@ -44,4 +44,9 @@ object IOHelper {
       bis.close()
     }
   }
+
+  def inToOut(is: InputStream, os: OutputStream) = {
+    Iterator.continually(is.read).takeWhile(_ != -1)
+                                 .foreach(os.write)
+  }
 }
