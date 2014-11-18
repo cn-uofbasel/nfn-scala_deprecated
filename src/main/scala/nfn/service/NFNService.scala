@@ -67,7 +67,6 @@ object NFNService extends Logging {
   def parseAndFindFromName(name: String, ccnServer: ActorRef)(implicit ec: ExecutionContext): Future[CallableNFNService] = {
 
     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
-
       val futContent = (ccnServer ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
 
 //  hack to support large content objects
@@ -93,8 +92,8 @@ object NFNService extends Logging {
         }
         case None => {
           CCNName.fromString(fun) match {
-            case Some(interestName) =>
-              val interest = Interest(interestName)
+            case Some(CCNName(cmps, _)) =>
+              val interest = Interest(CCNName(cmps, Some(0)))
               val futServiceContent: Future[Content] = loadFromCacheOrNetwork(interest)
 
               import myutil.Implicit.tryToFuture

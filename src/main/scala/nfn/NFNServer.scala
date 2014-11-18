@@ -284,6 +284,11 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           case None => {
             pit ! PIT.Add(i.name, senderFace, defaultTimeoutDuration)
 
+            // If the interest has a chunknum, make sure that the original interest (still) exists in the pit
+            i.name.chunkNum foreach { _ =>
+              pit ! PIT.Add(CCNName(i.name.cmps, None), senderFace, defaultTimeoutDuration)
+            }
+
             // /.../.../NFN
             // nfn interests are either:
             // - send to the compute server if they start with compute

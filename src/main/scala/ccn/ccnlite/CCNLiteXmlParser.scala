@@ -97,7 +97,7 @@ object CCNLiteXmlParser extends Logging {
       val nameComponents = packet \ "Name" \ "NameSegment" map { ns => new String(decodeBase64(ns.text.trim)) }
       val chunkNum:Option[Int] =
         (packet \ "Name" \ "Chunk").headOption map {
-          c => Integer.parseInt(c.text.trim)
+          c => decodeBase64(c.text.trim)(0).toInt
         }
 
       CCNName(nameComponents.toList, chunkNum)
@@ -175,7 +175,7 @@ object CCNLiteXmlParser extends Logging {
             val name = ccntlvParseName(content)
             val contentData = content \ "Payload" map {d => decodeBase64(d.text.trim) } reduceLeft(_ ++ _)
             val lastChunkNum = (content \ "MetaData" \ "EndChunk").headOption map {
-              c => Integer.parseInt(c.text.trim)
+              c => decodeBase64(c.text.trim)(0).toInt
             }
             if(contentData.startsWith(":NACK".getBytes)) {
               Nack(name)
