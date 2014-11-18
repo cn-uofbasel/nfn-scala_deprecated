@@ -31,11 +31,12 @@ class StandardLambdaParser extends LambdaParser with StdTokenParsers  with Packr
   val unaryLiteralsToParse = unaryLiterals.map(Parser[String](_)).reduce(_ | _ )
 
   lazy val expr:        P[Expr]       = let | application | notApp
-  lazy val notApp:      P[Expr]       = ifthenelse | call | binary | unary | variable | number | lambda | parens
+  lazy val notApp:      P[Expr]       = ifthenelse | call | binary | unary | str | variable | number | lambda | parens
 
   lazy val lambda:      P[Clos]       = positioned(("λ" | "\\")  ~> ident ~ ("." ~> expr) ^^ { case name ~ body => Clos(name, body) })
   lazy val application: P[Application]= positioned(expr ~ notApp ^^ { case left ~ right => Application(left, right) })
   lazy val parens:      P[Expr]       = "(" ~> expr <~ ")"
+  lazy val str:         P[Str]        = positioned(stringLit ^^ { case s => Str(s) })
   lazy val variable:    P[Variable]   = positioned(ident ^^ { case name => Variable(name) } )
   lazy val number:      P[Constant]   = negNumber | posNumber
   lazy val negNumber:   P[Constant]   = positioned(numericLit ^^ { case n => Constant(n.toInt) })
@@ -44,7 +45,7 @@ class StandardLambdaParser extends LambdaParser with StdTokenParsers  with Packr
     { case name ~ fun ~ code => Let(name, fun, Some(code))})
   lazy val ifthenelse:  P[IfElse]     = positioned(("if" ~> expr) ~ ("then" ~> expr) ~ ("else" ~> expr) ^^
     { case test ~ thenn ~ otherwise => IfElse(test, thenn, otherwise) })
-  lazy val call:       P[Call]      = positioned(("call" ~> numericLit) ~ ident ~ rep(notApp | let) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
+  lazy val call:       P[Call]        = positioned(("call" ~> numericLit) ~ ident ~ rep(expr) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
 
   // TODO take care of left/right evaluation order
   lazy val unary :      P[UnaryExpr]  = positioned( unaryLiteralsToParse ~ notApp ^^ { case lit ~ v => UnaryExpr(UnaryOp.withName(lit), v)})

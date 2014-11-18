@@ -120,9 +120,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
             case execErr: ExecutionError =>
               throw new Exception(s"Error creating add to cache request: $execErr")
           }
-          futCacheInterest.onComplete {
-            case _ => file.delete()
-          }
+          futCacheInterest.onComplete { _ =>  file.delete() }
           futCacheInterest
         }
       }

@@ -74,7 +74,7 @@ case class ContentStore() extends Logging {
     contentStore.get(name.cmps) match {
       case Some(content) => Left(content)
       case None =>
-        chunkStore.get(name.cmps) map { cs =>
+        chunkStore.get(name.cmps).map({ cs =>
           cs.getComplete match {
             case Some(completedContent) => {
               chunkStore -= name.cmps
@@ -83,7 +83,7 @@ case class ContentStore() extends Logging {
             }
             case None => Right(cs.getIncomplete)
           }
-        } getOrElse(Right(Nil))
+        }).getOrElse(Right(Nil))
     }
   }
 

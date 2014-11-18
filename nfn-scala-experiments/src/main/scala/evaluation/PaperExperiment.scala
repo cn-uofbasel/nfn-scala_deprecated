@@ -19,7 +19,7 @@ object PaperExperiment extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
-  val expNum = 3
+  val expNum = 1
 
   val node1 = LocalNodeFactory.forId(1)
   val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
@@ -131,7 +131,7 @@ object PaperExperiment extends App {
   val wc = wcPrefix.toString
   val nack = new NackServ().toString
 
-  val exp1 = wc appl docname1
+  val exp1 = wc appl (docname1, str("foo bar"))
 
   val exp2 = wc appl docname5
 

@@ -204,14 +204,8 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       case Right(chunkNums) => {
         chunkNums match {
           case chunkNum :: _ =>
-//            implicit val timeout = Timeout(defaultTimeoutDuration)
-//            (pit ? PIT.Get(CCNName(contentChunk.name.cmps, Some(chunkNum)))).mapTo[Option[Set[Face]]] onSuccess {
-//              case Some(_) => {
-              val chunkInterest = Interest(CCNName(contentChunk.name.cmps, Some(chunkNum)))
-              self ! NFNApi.CCNSendReceive(chunkInterest, contentChunk.name.isThunk)
-//              }
-//              case None => logger.error(s"Don't fetching chunks because interest for ${contentChunk.name} already timed out")
-//            }
+            val chunkInterest = Interest(CCNName(contentChunk.name.cmps, Some(chunkNum)))
+            self ! NFNApi.CCNSendReceive(chunkInterest, contentChunk.name.isThunk)
           case _ => logger.warning(s"chunk store was already removed or never existed in contentstore for contentname ${contentChunk.name}")
         }
       }

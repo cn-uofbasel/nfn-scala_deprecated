@@ -70,7 +70,7 @@ object NFNService extends Logging {
 
       val futContent = (ccnServer ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
 
-// hack to support large content objects
+//  hack to support large content objects
 //      futContent map { content =>
 //        val dataString = new String(content.data)
 //        val f = new File(dataString)
@@ -110,14 +110,9 @@ object NFNService extends Logging {
       Future.sequence(
         args map { (arg: Expr) =>
           arg match {
-            case Constant(i) => {
-              logger.debug(s"Arg '$arg' is a number")
-              Future(
-                NFNIntValue(i)
-              )
-            }
+            case Constant(i) =>  Future( NFNIntValue(i) )
+            case Str(s) => Future( NFNStringValue(s))
             case otherExpr @ _ => {
-
               import nfn.LambdaNFNImplicits._
               val maybeInterest = otherExpr match {
                 case Variable(varName, _) => {

@@ -31,6 +31,7 @@ object LambdaDSLTest extends App {
   val b: Call = "/WordCount" appl ("/doc/doc1" :: Nil)
 
   val l: Expr = ("derp" =: 'a) ~ ('derp)
+
 }
 
 object LambdaDSL {
@@ -43,6 +44,7 @@ object LambdaDSL {
   implicit def listOfStringToListOfExprs(listOfStr: List[String]): List[Expr] = listOfStr map { str => stringToExpr(str) }
 
   def iif(test: Expr, thenn: Expr, otherwise: Expr) = IfElse(test, thenn, otherwise)
+  def str(s: String): Str = Str(s)
 }
 
 sealed abstract class Expr extends Positional {
@@ -91,6 +93,7 @@ object Constant {
 }
 
 case class Constant(i: Int) extends Expr
+case class Str(s: String) extends Expr
 
 case class UnaryExpr(op: UnaryOp.UnaryOp, v: Expr) extends Expr
 case class BinaryExpr(op: BinaryOp.BinaryOp, v1: Expr, v2:Expr) extends Expr

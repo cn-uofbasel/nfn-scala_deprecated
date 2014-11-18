@@ -14,11 +14,21 @@ class NFNLambdaParser extends LambdaParser with StdTokenParsers  with PackratPar
   type Tokens = StdLexical
   val lexical: StdLexical =  new StdLexical {
     override def letter = elem("letter", c => (c.isLetter || c == '/') && c != '@')
+
+//    // We override the token and remove all " and ' parts from original implementation
+//    override def token: Parser[Token] = {
+//          (identChar ~ rep(identChar | digit) ^^ { case first ~ rest => processIdent(first :: rest mkString "")}
+//        | digit ~ rep(digit) ^^ { case first ~ rest => NumericLit(first :: rest mkString "")}
+//        | delim
+//        | failure("illegal character")
+//        )
+//    }
   }
 
   val keywords = Set("let", "endlet", "ifelse", "call")
   val unaryLiterals = UnaryOp.values.map(_.toString)
   val binaryLiterals: SortedSet[String] = BinaryOp.values.map(_.toString)
+
 
   lexical.delimiters ++= Seq("@", "(", ")", "=", ";", "-")
   lexical.reserved ++= keywords ++ binaryLiterals ++ unaryLiterals
@@ -28,11 +38,12 @@ class NFNLambdaParser extends LambdaParser with StdTokenParsers  with PackratPar
   val unaryLiteralsToParse = unaryLiterals.map(Parser[String](_)).reduce(_ | _ )
 
   lazy val expr:        P[Expr]       = let | application | notApp
-  lazy val notApp:      P[Expr]       = ifthenelse | call | binary | unary | variable | number | lambda | parens
+  lazy val notApp:      P[Expr]       = ifthenelse | call | binary | unary | variable | str | number | lambda | parens
 
   lazy val lambda:      P[Clos]       = positioned("@" ~> ident ~ expr ^^ { case name ~ body => Clos(name, body) })
   lazy val application: P[Application]= positioned(expr ~ notApp ^^ { case left ~ right => Application(left, right) })
   lazy val parens:      P[Expr]       = "(" ~> expr <~ ")"
+  lazy val str:         P[Str]        = positioned(stringLit ^^ { case s => Str(s) })
   lazy val variable:    P[Variable]   = positioned(ident ^^ { case name => Variable(name) } )
   lazy val number:      P[Constant]   = negNumber | posNumber
   lazy val negNumber:   P[Constant]   = positioned(numericLit ^^ { case n => Constant(n.toInt) })
@@ -41,7 +52,7 @@ class NFNLambdaParser extends LambdaParser with StdTokenParsers  with PackratPar
     { case name ~ fun ~ code => Let(name, fun, Some(code))})
   lazy val ifthenelse:  P[IfElse]     = positioned(("ifelse" ~> expr) ~ expr ~ expr ^^
     { case test ~ thenn ~ otherwise => IfElse(test, thenn, otherwise) })
-  lazy val call:       P[Call]      = positioned(("call" ~> numericLit) ~ ident ~ rep(notApp | let) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
+  lazy val call:       P[Call]      = positioned(("call" ~> numericLit) ~ ident ~ rep(expr) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
 
   // TODO take care of left/right evaluation order
   lazy val unary :      P[UnaryExpr]  = positioned( unaryLiteralsToParse ~ notApp ^^ { case lit ~ v => UnaryExpr(UnaryOp.withName(lit), v)})
@@ -54,3 +65,5 @@ class NFNLambdaParser extends LambdaParser with StdTokenParsers  with PackratPar
     phrase(expr)(tokens)
   }
 }
+
+

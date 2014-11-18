@@ -53,6 +53,7 @@ object LambdaNFNPrinter extends LambdaPrinter {
         case BinaryExpr(op, v1, v2) => op.toString.toLowerCase + " " + p"$v1" + " " + p"$v2"
         case Variable(name, _) => name
         case Constant(i) => i.toString
+        case Str(s) => s"'$s'"
         case Let(name, expr, maybeCodeExpr) =>
           s"let $name = " + p"$expr" + " endlet" + maybeCodeExpr.fold("")(e => p"$e")
         case IfElse(test, thenn, otherwise) => "ifelse " + p"$test " + p"$thenn " + p"$otherwise"
