@@ -99,8 +99,10 @@ object NFNServiceLibrary extends Logging {
   }
 }
 
-case class NFNServiceExecutionException(msg: String) extends Exception(msg)
-case class NFNServiceArgumentException(msg: String) extends Exception(msg)
+class ServiceException(msg: String) extends Exception(msg)
+
+case class NFNServiceExecutionException(msg: String) extends ServiceException(msg)
+case class NFNServiceArgumentException(msg: String) extends ServiceException(msg)
 
 case class CallableNFNService(name: CCNName, values: Seq[NFNValue], nfnMaster: ActorRef, function: (Seq[NFNValue], ActorRef) => NFNValue, executionTimeEstimate: Option[Int]) extends Logging {
   def exec:NFNValue = function(values, nfnMaster)

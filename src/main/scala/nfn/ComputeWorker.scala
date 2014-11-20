@@ -76,7 +76,7 @@ case class ComputeWorker(ccnServer: ActorRef) extends Actor {
             case Success(callable) => {
               try {
                 val result: NFNValue = callable.exec
-                val resultData = result.toStringRepresentation.getBytes
+                val resultData = result.toDataRepresentation
 
                 val content = Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
                 logger.info(s"Finished computation, result: $content")

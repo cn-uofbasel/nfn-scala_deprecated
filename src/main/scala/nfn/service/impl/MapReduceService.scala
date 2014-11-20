@@ -17,7 +17,7 @@ class MapService() extends NFNService {
   override def function: (Seq[NFNValue], ActorRef) => NFNValue = {
     (values: Seq[NFNValue], nfnMaster) => {
       values match {
-        case Seq(NFNBinaryDataValue(servName, servData), args @ _*) => {
+        case Seq(NFNContentObjectValue(servName, servData), args @ _*) => {
           val tryExec = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) map { (serv: NFNService) =>
             NFNListValue(
               (args map { arg =>
@@ -49,7 +49,7 @@ class ReduceService() extends NFNService {
           // TODO exec time
           fun.serv.instantiateCallable(fun.serv.ccnName, argList.values, nfnMaster, None).get.exec
         }
-        case Seq(NFNBinaryDataValue(servName, servData), args @ _*) => {
+        case Seq(NFNContentObjectValue(servName, servData), args @ _*) => {
           val tryExec: Try[NFNValue] = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) flatMap {
             (serv: NFNService) =>
               // TODO exec time

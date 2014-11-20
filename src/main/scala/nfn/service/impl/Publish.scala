@@ -9,7 +9,7 @@ import nfn.service.{NFNServiceArgumentException, _}
 class Publish() extends NFNService {
   override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (args, nfnServer) =>
     args match {
-      case Seq(NFNBinaryDataValue(contentName, contentData), NFNBinaryDataValue(_, publishPrefixNameData), _) => {
+      case Seq(NFNContentObjectValue(contentName, contentData), NFNContentObjectValue(_, publishPrefixNameData), _) => {
         val nameOfContentWithoutPrefixToAdd = CCNName(new String(publishPrefixNameData).split("/").tail:_*)
         nfnServer ! NFNApi.AddToLocalCache(Content(nameOfContentWithoutPrefixToAdd, contentData, MetaInfo.empty), prependLocalPrefix = true)
         NFNEmptyValue()

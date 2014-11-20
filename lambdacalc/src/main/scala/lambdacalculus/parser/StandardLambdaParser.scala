@@ -45,7 +45,7 @@ class StandardLambdaParser extends LambdaParser with StdTokenParsers  with Packr
     { case name ~ fun ~ code => Let(name, fun, Some(code))})
   lazy val ifthenelse:  P[IfElse]     = positioned(("if" ~> expr) ~ ("then" ~> expr) ~ ("else" ~> expr) ^^
     { case test ~ thenn ~ otherwise => IfElse(test, thenn, otherwise) })
-  lazy val call:       P[Call]        = positioned(("call" ~> numericLit) ~ ident ~ rep(expr) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
+  lazy val call:       P[Call]        = positioned(("call" ~> numericLit) ~ ident ~ rep(notApp) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
 
   // TODO take care of left/right evaluation order
   lazy val unary :      P[UnaryExpr]  = positioned( unaryLiteralsToParse ~ notApp ^^ { case lit ~ v => UnaryExpr(UnaryOp.withName(lit), v)})

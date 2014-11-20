@@ -13,7 +13,7 @@ class WordCountService() extends NFNService {
     Thread.sleep(500)
     NFNIntValue(
       docs.map({
-        case doc: NFNBinaryDataValue => splitString(new String(doc.data))
+        case doc: NFNContentObjectValue => splitString(new String(doc.data))
         case NFNStringValue(s) => splitString(s)
         case NFNIntValue(i) => 1
         case _ =>

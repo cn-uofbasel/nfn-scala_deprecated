@@ -15,7 +15,7 @@ class SumService() extends NFNService {
     (values: Seq[NFNValue], _) => {
       NFNIntValue(
         values.map({
-          case i: NFNIntValue => i.amount
+          case i: NFNIntValue => i.i
           case _ => throw  new NFNServiceArgumentException(s"SumService requires a sequence of NFNIntValue's and not $values")
         }).sum
       )

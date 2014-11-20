@@ -93,7 +93,7 @@ object NFNService extends Logging {
         case None => {
           CCNName.fromString(fun) match {
             case Some(CCNName(cmps, _)) =>
-              val interest = Interest(CCNName(cmps, Some(0)))
+              val interest = Interest(CCNName(cmps, None))
               val futServiceContent: Future[Content] = loadFromCacheOrNetwork(interest)
 
               import myutil.Implicit.tryToFuture
@@ -125,9 +125,9 @@ object NFNService extends Logging {
               maybeInterest match {
                 case Some(interest) => {
                   logger.debug(s"Arg '$arg' is a name, asking the ccnServer to find content for $interest")
-                  val foundContent: Future[NFNBinaryDataValue] = loadFromCacheOrNetwork(interest) map  { content =>
+                  val foundContent: Future[NFNContentObjectValue] = loadFromCacheOrNetwork(interest) map  { content =>
                     logger.debug(s"Found $content for arg $arg")
-                    NFNBinaryDataValue(content.name, content.data)
+                    NFNContentObjectValue(content.name, content.data)
                   }
 
                   foundContent.onFailure {

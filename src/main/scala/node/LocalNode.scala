@@ -231,8 +231,9 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    */
   def cache(content: Content) = {
     if(isConnecting)
-
-    nfnMaster ! NFNApi.AddToCCNCache(content)
+      nfnMaster ! NFNApi.AddToCCNCache(content)
+    else
+      throw new Exception("cannot add content with add to cache when already running")
   }
 
   /**

@@ -17,7 +17,7 @@ class ESIInclude() extends NFNService {
 
   override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (values: Seq[NFNValue], _) =>
     values match {
-      case Seq(xmlDoc: NFNBinaryDataValue, tagToReplace: NFNBinaryDataValue, contentToReplaceTagWith: NFNBinaryDataValue) => {
+      case Seq(xmlDoc: NFNContentObjectValue, tagToReplace: NFNContentObjectValue, contentToReplaceTagWith: NFNContentObjectValue) => {
         val doc = new String(xmlDoc.data)
         val tag = new String(tagToReplace.data)
         val replaceWith = new String(contentToReplaceTagWith.data)

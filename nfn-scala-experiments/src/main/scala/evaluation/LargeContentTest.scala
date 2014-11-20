@@ -11,11 +11,8 @@ object LargeContentTest extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
-  val expNum = 3
-
-
   val node1 = LocalNodeFactory.forId(1)
-  val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
+  val node2 = LocalNodeFactory.forId(2)
   val nodes = List(node1, node2)
   node1 <~> node2
 
@@ -40,15 +37,15 @@ object LargeContentTest extends App {
   node2 += largeContent2
 
 
-  Thread.sleep(100)
+  Thread.sleep(1000)
   import lambdacalculus.parser.ast.LambdaDSL._
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  sendAndPrintForName(contentNameLarge2)
+  sendAndPrintForName(contentNameLarge1)
 
   def sendAndPrintForName(name: CCNName) = {
-    node1 ? Interest(name)  onComplete {
+    node1 ? Interest(name) onComplete {
       case Success(resultContent) => {
         println(s"RESULT: $resultContent")
         nodes foreach { _.shutdown() }

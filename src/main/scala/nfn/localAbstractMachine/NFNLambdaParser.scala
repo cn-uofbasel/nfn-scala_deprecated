@@ -52,7 +52,7 @@ class NFNLambdaParser extends LambdaParser with StdTokenParsers  with PackratPar
     { case name ~ fun ~ code => Let(name, fun, Some(code))})
   lazy val ifthenelse:  P[IfElse]     = positioned(("ifelse" ~> expr) ~ expr ~ expr ^^
     { case test ~ thenn ~ otherwise => IfElse(test, thenn, otherwise) })
-  lazy val call:       P[Call]      = positioned(("call" ~> numericLit) ~ ident ~ rep(expr) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
+  lazy val call:       P[Call]      = positioned(("call" ~> numericLit) ~ ident ~ rep(notApp) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
 
   // TODO take care of left/right evaluation order
   lazy val unary :      P[UnaryExpr]  = positioned( unaryLiteralsToParse ~ notApp ^^ { case lit ~ v => UnaryExpr(UnaryOp.withName(lit), v)})
@@ -64,6 +64,12 @@ class NFNLambdaParser extends LambdaParser with StdTokenParsers  with PackratPar
     val tokens = new lexical.Scanner(code.stripLineEnd)
     phrase(expr)(tokens)
   }
+}
+
+object StringTestApp extends App {
+  val lp = new NFNLambdaParser()
+  val r = lp.parse("call 4 /nfn_service_impl_Pandoc /node/node1/doc/tutorial/tutorial_md 'markdown_github' 'latex'")
+  println(r)
 }
 
 

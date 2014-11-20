@@ -11,9 +11,11 @@ import myutil.systemcomandexecutor._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Random, Failure, Success}
 
-case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {
+object CCNLiteInterfaceCli {
+  val maxChunkSize = 4096
+}
 
-  val maxChunkSize = 100
+case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {
 
   val ccnLiteEnv = {
     val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
@@ -55,11 +57,14 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   }
 
   override def mkBinaryContent(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
+    mkBinaryContent(content, CCNLiteInterfaceCli.maxChunkSize)
+  }
+  def mkBinaryContent(content: Content, chunkSize: Int)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
     val mkC = "ccn-lite-mkC"
     val baseCmds = List(utilFolderName+mkC, "-s", s"$wireFormat")
 
     // split into chunk size
-    val dataChunks = content.data.grouped(maxChunkSize).toList
+    val dataChunks = content.data.grouped(chunkSize).toList
 
     val lastChunkNum = dataChunks.size - 1
 
@@ -103,8 +108,9 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   }
 
   override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
+    val chunkSize = 150
     logger.debug(s"add to cache for $content")
-    mkBinaryContent(content) flatMap { (binaryContents: List[Array[Byte]]) =>
+    mkBinaryContent(content, chunkSize) flatMap { (binaryContents: List[Array[Byte]]) =>
       Future.sequence {
         binaryContents map { binaryContent =>
           val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"

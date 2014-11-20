@@ -97,12 +97,14 @@ class UDPConnectionContentInterest(local:InetSocketAddress,
       case i: Interest =>
         ccnLite.mkBinaryInterest(i) onComplete {
           case Success(binaryInterest) =>
+            logger.debug(s"Sending binary interest for $i to network")
             self.tell(UDPConnection.Send(binaryInterest), senderCopy)
           case Failure(e) => logger.error(e, s"could not create binary interest for $i")
         }
       case c: Content =>
         ccnLite.mkBinaryContent(c) onComplete {
           case Success(binaryContents) => {
+            logger.debug(s"Sending ${binaryContents} binary content objects for $c to network")
             binaryContents foreach { binaryContent =>
               self.tell(UDPConnection.Send(binaryContent), senderCopy)
             }
