@@ -17,7 +17,7 @@ class Pandoc extends NFNService {
         val futResult =
           SystemCommandExecutor(cmds, Some(doc)).execute map {
             case ExecutionSuccess(_, translatedDoc) => {
-              NFNDataValue(translatedDoc.take(CCNLiteInterfaceCli.maxChunkSize))
+              NFNDataValue(translatedDoc.take(6000))
             }
             case err: ExecutionError => throw new ServiceException(s"Error when executing pandoc system command: $err")
         }

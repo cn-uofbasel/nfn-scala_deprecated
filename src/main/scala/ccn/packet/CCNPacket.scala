@@ -21,6 +21,7 @@ object CCNName {
 }
 
 
+
 case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   import CCNName.{thunkKeyword, nfnKeyword, computeKeyword}
@@ -50,6 +51,18 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
       if(cmps.last == nfnKeyword) CCNName(cmps.init:_*)
       else this
     } else this
+  }
+
+  def expression: Option[String] = {
+    if(cmps.size > 0) {
+      val expr = this.withoutCompute.withoutNFN
+      expr.cmps match {
+        case h :: Nil => Some(h)
+        case _ =>
+          logger.debug(s"name $this does not contain an expression")
+          None
+      }
+    } else None
   }
 
   private def withoutThunkAndIsThunkWithKeyword(keyword: String): (CCNName, Boolean) = {

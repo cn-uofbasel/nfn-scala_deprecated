@@ -2,7 +2,9 @@ package node
 
 import java.util.concurrent.TimeUnit
 
+import ccn.ccnlite.CCNLiteInterfaceCli
 import com.typesafe.config.Config
+import com.typesafe.scalalogging.slf4j.Logging
 import nfn._
 import scala.concurrent.duration.FiniteDuration
 import akka.util.Timeout
@@ -111,7 +113,7 @@ object LocalNode {
   }
 }
 
-case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[ComputeNodeConfig]){
+case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[ComputeNodeConfig]) extends Logging {
 
   implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
 
@@ -260,6 +262,16 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
   def send(req: Interest)(implicit useThunks: Boolean) = {
     isConnecting = false
     nfnMaster ! NFNApi.CCNSendReceive(req, useThunks)
+  }
+
+  def splitByteArray(ba: Array[Byte], s: Byte): List[Array[Byte]] = {
+    ba match {
+      case Array() => List(Array())
+      case _ => {
+        val (h, t) = ba.span(_ == s)
+        h :: splitByteArray(t, s)
+      }
+    }
   }
 
   /**

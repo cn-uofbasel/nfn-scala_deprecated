@@ -10,17 +10,17 @@ import scala.concurrent.duration._
 import scala.concurrent.duration._
 import akka.event.Logging
 
-trait Face {
-  def send(ccnPacket: CCNPacket)
-}
+//trait Face {
+//  def send(ccnPacket: CCNPacket)
+//}
+//
+//case class ActorRefFace(actorRef: ActorRef) extends Face with Logging{
+//  def send(ccnPacket: CCNPacket) {
+//    actorRef ! ccnPacket
+//  }
+//}
 
-case class ActorRefFace(actorRef: ActorRef) extends Face with Logging{
-  def send(ccnPacket: CCNPacket) {
-    actorRef ! ccnPacket
-  }
-}
-
-case class PendingInterest(name: CCNName, faces: List[Face], timeout: Long) extends Ordered[PendingInterest] {
+case class PendingInterest(name: CCNName, faces: List[ActorRef], timeout: Long) extends Ordered[PendingInterest] {
 
   val startTime = System.nanoTime
 
@@ -30,7 +30,7 @@ case class PendingInterest(name: CCNName, faces: List[Face], timeout: Long) exte
 }
 
 object PIT {
-  case class Add(name: CCNName, face: Face, timeout: FiniteDuration)
+  case class Add(name: CCNName, face: ActorRef, timeout: FiniteDuration)
 
   case class Remove(name: CCNName)
 
@@ -45,9 +45,9 @@ case class PIT() extends Actor {
   val logger = Logging(context.system, this)
   implicit val execContext = context.dispatcher
 
-  private case class Timeout(name: CCNName, face: Face)
+  private case class Timeout(name: CCNName, face: ActorRef)
 
-  private val pit = mutable.Map[CCNName, Set[Face]]()
+  private val pit = mutable.Map[CCNName, Set[ActorRef]]()
 
   override def receive: Receive = {
     case PIT.Add(name, face, timeout) => {

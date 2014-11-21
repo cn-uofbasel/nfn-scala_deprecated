@@ -171,7 +171,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
   val cacheContent: Boolean = true
 
-  val computeServer: ActorRef = context.actorOf(Props(classOf[ComputeServer]), name = "ComputeServer")
+  val computeServer: ActorRef = context.actorOf(Props(classOf[ComputeServer], computeNodeConfig.prefix), name = "ComputeServer")
 
   val maybeLocalAbstractMachine: Option[ActorRef] =
       if(computeNodeConfig.withLocalAM)
@@ -233,7 +233,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       }
 
       implicit val timeout = Timeout(timeoutFromContent)
-      (pit ? PIT.Get(content.name)).mapTo[Option[Set[Face]]] onSuccess {
+      (pit ? PIT.Get(content.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
           case Some(pendingFaces) => {
             val (contentNameWithoutThunk, isThunk) = content.name.withoutThunkAndIsThunk
 
@@ -251,18 +251,36 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           case None => logger.error(s"Discarding thunk content $content because there is no entry in pit")
         }
     }
+
     def handleNonThunkContent: Unit = {
       implicit val timeout = Timeout(defaultTimeoutDuration)
-      (pit ? PIT.Get(content.name)).mapTo[Option[Set[Face]]] onSuccess {
+      (pit ? PIT.Get(content.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
         case Some(pendingFaces) => {
 
           if (cacheContent) {
             cs.add(content)
           }
 
-          pendingFaces foreach { pendingSender => pendingSender.send(content) }
+          val redirect = "redirect:".getBytes
 
-          pit ! PIT.Remove(content.name)
+          // Check if content is a redirect
+          // if it is a redirect, send an interest for each pending face with the redirect name
+          // otherwise return the ocntent object to all pending faces
+          if(content.data.startsWith(redirect)) {
+            val nameCmps = new String(content.data).split("\n").toList.tail
+            logger.info(s"Redirect for $nameCmps")
+            Thread.sleep(500)
+            pendingFaces foreach { pendingSender =>
+              self.tell(
+                NFNApi.CCNSendReceive(Interest(CCNName(nameCmps, None)), useThunks = false),
+                pendingSender
+              )
+            }
+          } else {
+            pendingFaces foreach { pendingSender => pendingSender ! content }
+            pit ! PIT.Remove(content.name)
+          }
+
         }
         case None =>
           logger.warning(s"Discarding content $content because there is no entry in pit")
@@ -279,8 +297,8 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
         logger.debug(s"Served $contentFromLocalCS from local CS")
         senderCopy ! contentFromLocalCS
       case None => {
-        val senderFace = ActorRefFace(senderCopy)
-        (pit ? PIT.Get(i.name)).mapTo[Option[Set[Face]]] onSuccess {
+        val senderFace = senderCopy
+        (pit ? PIT.Get(i.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
           case Some(pendingFaces) =>
             pit ! PIT.Add(i.name, senderFace, defaultTimeoutDuration)
           case None => {
@@ -332,10 +350,11 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   def handleNack(nack: Nack, senderCopy: ActorRef) = {
     if(StaticConfig.isNackEnabled) {
       implicit val timeout = Timeout(defaultTimeoutDuration)
-      (pit ? PIT.Get(nack.name)).mapTo[Option[Set[Face]]] onSuccess {
+      (pit ? PIT.Get(nack.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
         case Some(pendingFaces) => {
           pendingFaces foreach {
-            _.send(nack)
+
+            _ ! nack
           }
           pit ! PIT.Remove(nack.name)
         }

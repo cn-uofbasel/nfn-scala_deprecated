@@ -19,11 +19,11 @@ object ComputeServer {
   case class EndComputation(name: CCNName)
 }
 
-case class ComputeServer() extends Actor {
+case class ComputeServer(nodePrefix: CCNName) extends Actor {
   val logger = Logging(context.system, this)
 
-  private def createComputeWorker(name: CCNName, ccnServer: ActorRef): ActorRef =
-    context.actorOf(Props(classOf[ComputeWorker], ccnServer), s"ComputeWorker-${name.hashCode}")
+  private def createComputeWorker(name: CCNName, ccnServer: ActorRef, nodePrefix: CCNName): ActorRef =
+    context.actorOf(Props(classOf[ComputeWorker], ccnServer, nodePrefix: CCNName), s"ComputeWorker-${name.hashCode}")
 
   var computeWorkers = Map[CCNName, ActorRef]()
 
@@ -36,7 +36,7 @@ case class ComputeServer() extends Actor {
         val nameWithoutThunk = name.withoutThunk
         if(!computeWorkers.contains(nameWithoutThunk)) {
           logger.debug(s"Started new computation with thunks for $nameWithoutThunk")
-          val computeWorker = createComputeWorker(nameWithoutThunk, sender)
+          val computeWorker = createComputeWorker(nameWithoutThunk, sender, nodePrefix)
           computeWorkers += nameWithoutThunk -> computeWorker
           computeWorker.tell(computeMsg, sender)
         } else {
@@ -56,7 +56,7 @@ case class ComputeServer() extends Actor {
           }
           case None => {
             logger.debug(s"Started new computation without thunks for $name")
-            val computeWorker = createComputeWorker(name, sender)
+            val computeWorker = createComputeWorker(name, sender, nodePrefix)
             computeWorkers += name -> computeWorker
             computeWorker.tell(computeMsg, sender)
           }

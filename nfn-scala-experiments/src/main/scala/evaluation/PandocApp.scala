@@ -44,13 +44,13 @@ object PandocApp extends App {
 
   val expr: Expr = pandoc appl(tutorialMdName, str("markdown_github"), str("latex"))
 
-  sendAndPrintForName(Interest(CCNName("call 4 /nfn_service_impl_Pandoc /node/node1/doc/tutorial/tutorialmd 'markdown_github' 'latex'", "NFN")))
-//  sendAndPrintForName(expr)
+//  sendAndPrintForName(Interest(CCNName("call 4 /nfn_service_impl_Pandoc /node/node1/doc/tutorial/tutorialmd 'markdown_github' 'latex'", "NFN")))
+  sendAndPrintForName(expr)
 
   def sendAndPrintForName(interest: Interest) = {
     node1 ? interest onComplete {
       case Success(resultContent) => {
-        println(s"RESULT: $resultContent")
+        println(s"RESULT: ${new String(resultContent.data)}")
         nodes foreach { _.shutdown() }
       }
       case Failure(e) => println(s"Could not receive content for $interest")

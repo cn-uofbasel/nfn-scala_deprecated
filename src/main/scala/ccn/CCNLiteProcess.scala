@@ -4,6 +4,7 @@ import java.io._
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{SystemEnvironment, RouterConfig, StaticConfig}
 import ccn.packet.CCNName
+import myutil.systemcomandexecutor.SystemCommandExecutor
 
 /**
  * Pipes a [[InputStream]] to a file with the given name into ./log/<name>.log.
@@ -68,6 +69,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
       val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $faceId $wireFormat"
       logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdPrefixReg")
       Runtime.getRuntime.exec(cmdPrefixReg.split(" "))
+
       globalFaceId += 1
     }
 
@@ -101,7 +103,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 
       val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/ccn-lite-relay" else s"$ccnLiteEnv/ccn-nfn-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
-      val cmd = s"$ccnliteExecutable -v 98 -u $port -x $sockName -s $wireFormat"
+      val cmd = s"$ccnliteExecutable -v 99 -u $port -x $sockName -s $wireFormat"
       logger.debug(s"$processName-$prefix: executing: '$cmd'")
       val processBuilder = new ProcessBuilder(cmd.split(" "): _*)
       processBuilder.redirectErrorStream(true)

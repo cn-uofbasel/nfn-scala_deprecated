@@ -13,6 +13,10 @@ import scala.util.{Random, Failure, Success}
 
 object CCNLiteInterfaceCli {
   val maxChunkSize = 4096
+
+  def escapeCmp(cmp: String): String =  cmp.replace("/", "%" + Integer.toHexString('/'))
+
+  def escapeCmps(cmps: List[String]): List[String] = cmps map { escapeCmp }
 }
 
 case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {
@@ -27,18 +31,21 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   }
   val utilFolderName = s"$ccnLiteEnv/util/"
 
-
-  private def ccnNameToRoutableNameAndNfnString(name: CCNName): List[String] = {
+  private def ccnNameToRoutableCmpsAndNfnString(name: CCNName): List[String] = {
     val nameCmps = name.cmps
+    val (routableCmps: List[String], nfnString: Option[String]) =
+      if(nameCmps.size > 0 && nameCmps.last == "NFN") {
+        (
+          nameCmps.take(nameCmps.size - 2),
+          Some(nameCmps(nameCmps.size - 2))
+        )
+      } else {
+        (nameCmps, None)
+      }
 
-    if(nameCmps.size > 0 && nameCmps.last == "NFN") {
-      List(
-        nameCmps.take(nameCmps.size - 2).mkString("/", "/", ""),
-        nameCmps(nameCmps.size - 2)
-      )
-    } else {
-      List(nameCmps.mkString("/", "/", ""))
-    }
+    val escapedRoutableCmps = CCNLiteInterfaceCli.escapeCmps(routableCmps)
+
+    List(escapedRoutableCmps.mkString("/", "/", "")) ++ nfnString
   }
 
   override def mkBinaryInterest(interest: Interest)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
@@ -48,7 +55,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
       case Some(chunkNum) => List("-n", s"$chunkNum")
       case None => Nil
     }
-    val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableNameAndNfnString(interest.name)
+    val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableCmpsAndNfnString(interest.name)
     SystemCommandExecutor(cmds).execute map {
       case ExecutionSuccess(_, data) => data
       case execErr: ExecutionError =>
@@ -69,7 +76,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     val lastChunkNum = dataChunks.size - 1
 
     if(dataChunks.size == 1) {
-      val cmds = baseCmds ++ ccnNameToRoutableNameAndNfnString(content.name)
+      val cmds = baseCmds ++ ccnNameToRoutableCmpsAndNfnString(content.name)
       SystemCommandExecutor(cmds, Some(content.data)).execute map {
         case ExecutionSuccess(_, data) => List(data)
         case execErr: ExecutionError =>
@@ -79,7 +86,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 //      List[Future...] -> Future[List...]
       Future.sequence {
         dataChunks.zipWithIndex.map { case (chunkedData, chunkNum) =>
-          val cmds = baseCmds ++ List("-n", s"$chunkNum", "-l" , s"$lastChunkNum") ++ ccnNameToRoutableNameAndNfnString(content.name)
+          val cmds = baseCmds ++ List("-n", s"$chunkNum", "-l" , s"$lastChunkNum") ++ ccnNameToRoutableCmpsAndNfnString(content.name)
           // create binary chunked content object for each
           SystemCommandExecutor(cmds, Some(chunkedData)).execute map {
             case ExecutionSuccess(_, data: Array[Byte]) => data
@@ -108,7 +115,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   }
 
   override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
-    val chunkSize = 150
+    val chunkSize = 110
     logger.debug(s"add to cache for $content")
     mkBinaryContent(content, chunkSize) flatMap { (binaryContents: List[Array[Byte]]) =>
       Future.sequence {

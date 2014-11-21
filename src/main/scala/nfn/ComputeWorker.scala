@@ -3,6 +3,7 @@ package nfn
 import akka.actor.{Actor, ActorRef}
 import akka.event.Logging
 import akka.util.Timeout
+import ccn.ccnlite.CCNLiteInterfaceCli
 import ccn.packet.{MetaInfo, CCNName, Interest, Content}
 import scala.concurrent.{ExecutionContext, Future}
 import nfn.service.{NFNServiceExecutionException, NFNValue, NFNService, CallableNFNService}
@@ -18,7 +19,7 @@ object ComputeWorker {
 /**
  *
  */
-case class ComputeWorker(ccnServer: ActorRef) extends Actor {
+case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor {
   import context.dispatcher
 
   val logger = Logging(context.system, this)
@@ -63,6 +64,23 @@ case class ComputeWorker(ccnServer: ActorRef) extends Actor {
 
   }
 
+  def resultDataOrRedirect(data: Array[Byte], name: CCNName, ccnServer: ActorRef): Array[Byte] = {
+    if(data.size > CCNLiteInterfaceCli.maxChunkSize) {
+      name.expression match {
+        case Some(expr) =>
+          val name = nodePrefix.cmps ++ List(expr)
+          val redirectComponents: List[String] = "redirect:" :: name
+
+          ccnServer ! NFNApi.AddToCCNCache {
+            Content(CCNName(CCNLiteInterfaceCli.escapeCmps(name), None), data)
+          }
+
+          redirectComponents.mkString("\n").getBytes
+        case None => throw new Exception(s"Name $name could not be transformed to an expression")
+      }
+    } else data
+  }
+
   override def receive: Actor.Receive = {
     case ComputeServer.Thunk(name) => {
       receivedComputeRequest(name, useThunks = true, sender)
@@ -76,9 +94,11 @@ case class ComputeWorker(ccnServer: ActorRef) extends Actor {
             case Success(callable) => {
               try {
                 val result: NFNValue = callable.exec
-                val resultData = result.toDataRepresentation
+
+                val resultData = resultDataOrRedirect(result.toDataRepresentation, name, ccnServer)
 
                 val content = Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
+
                 logger.info(s"Finished computation, result: $content")
                 senderCopy ! content
               } catch {
