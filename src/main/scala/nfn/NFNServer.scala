@@ -166,17 +166,17 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   val logger = Logging(context.system, this)
   logger.debug(s"self: $self")
 
-//  nfnNodeConfig.config
-//  val ccnIf = new CCNLiteInterfaceWrapper()
+  //  nfnNodeConfig.config
+  //  val ccnIf = new CCNLiteInterfaceWrapper()
 
   val cacheContent: Boolean = true
 
   val computeServer: ActorRef = context.actorOf(Props(classOf[ComputeServer], computeNodeConfig.prefix), name = "ComputeServer")
 
   val maybeLocalAbstractMachine: Option[ActorRef] =
-      if(computeNodeConfig.withLocalAM)
-        Some(context.actorOf(Props(classOf[LocalAbstractMachineWorker], self), "LocalAM"))
-      else None
+    if(computeNodeConfig.withLocalAM)
+      Some(context.actorOf(Props(classOf[LocalAbstractMachineWorker], self), "LocalAM"))
+    else None
 
   val defaultTimeoutDuration = StaticConfig.defaultTimeoutDuration
 
@@ -193,7 +193,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
 
   override def preStart() = {
-      nfnGateway ! UDPConnection.Handler(self)
+    nfnGateway ! UDPConnection.Handler(self)
   }
 
 
@@ -236,11 +236,11 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
         case Some(pendingFaces) => {
           val (contentNameWithoutThunk, isThunk) = content.name.withoutThunkAndIsThunk
 
-          assert(isThunk, s"handleInterstThunkContent received the content object $content which is not a thunk")
+          assert(isThunk, s"handleInterestThunkContent received the content object $content which is not a thunk")
 
           val interest = Interest(contentNameWithoutThunk)
           logger.debug(s"Received usethunk $content, sending actual interest $interest")
-//          logger.debug(s"Timeout duration: ${timeout.duration}")
+          //          logger.debug(s"Timeout duration: ${timeout.duration}")
           val timeout = Timeout(timeoutFromContent)
           pendingFaces foreach { pf =>
             pit.add(contentNameWithoutThunk, pf, timeout.duration)
@@ -254,7 +254,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     }
 
     def handleNonThunkContent: Unit = {
-//      implicit val timeout = Timeout(defaultTimeoutDuration)
+      //      implicit val timeout = Timeout(defaultTimeoutDuration)
       pit.get(content.name) match {
         case Some(pendingFaces) => {
           if (cacheContent) {
@@ -269,15 +269,17 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           if(content.data.startsWith(redirect)) {
             val nameCmps = new String(content.data).split("\n").toList.tail
             logger.info(s"Redirect for $nameCmps")
-            Thread.sleep(500)
-            pendingFaces foreach { pendingSender =>
-              self.tell(
-                NFNApi.CCNSendReceive(Interest(CCNName(nameCmps, None)), useThunks = false),
-                pendingSender
-              )
+            implicit val timeout = Timeout(defaultTimeoutDuration)
+            (self ? NFNApi.CCNSendReceive(Interest(CCNName(nameCmps, None)), useThunks = false)).mapTo[CCNPacket] map {
+              case c: Content => {
+                pendingFaces foreach { pendingFace => pendingFace ! c }
+                pit.remove(content.name)
+              }
+              case nonContent @ _ =>
+                logger.warning(s"Received $nonContent when fetching a redirected content, dropping it")
             }
           } else {
-            pendingFaces foreach { pendingSender => pendingSender ! content }
+            pendingFaces foreach { pendingFace => pendingFace ! content }
             pit.remove(content.name)
           }
 
@@ -291,7 +293,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
 
-//    implicit val timeout = Timeout(defaultTimeoutDuration)
+    //    implicit val timeout = Timeout(defaultTimeoutDuration)
     cs.get(i.name) match {
       case Some(contentFromLocalCS) =>
         logger.debug(s"Served $contentFromLocalCS from local CS")
@@ -366,11 +368,11 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   def handlePacket(packet: CCNPacket, senderCopy: ActorRef) = {
     packet match {
       case i: Interest => {
-        logger.info(s"Received interest: $i")
+        logger.info(s"Received interest: $i (f=$senderCopy)")
         handleInterest(i, senderCopy)
       }
       case c: Content => {
-        logger.info(s"Received content: $c")
+        logger.info(s"Received content: $c (f=$senderCopy)")
         c.name.chunkNum match {
           case Some(chunknum) => handleContentChunk(c, senderCopy)
           case _ => handleContent(c, senderCopy)
@@ -413,6 +415,8 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
      */
     case NFNApi.CCNSendReceive(interest, useThunks) => {
       val senderCopy = sender
+
+      logger.debug(s"Sending interest $interest (f=$senderCopy)")
       val maybeThunkInterest =
         if(interest.name.isNFN && useThunks) interest.thunkify
         else interest

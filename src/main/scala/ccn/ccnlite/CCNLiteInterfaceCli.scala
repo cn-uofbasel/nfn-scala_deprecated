@@ -115,10 +115,11 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   }
 
   override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
-    val chunkSize = 110
+    val chunkSize = 100
     logger.debug(s"add to cache for $content")
     mkBinaryContent(content, chunkSize) flatMap { (binaryContents: List[Array[Byte]]) =>
-      Future.sequence {
+
+      val listFutBinaryContents =
         binaryContents map { binaryContent =>
           val filename = s"./service-library/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"
           val file = new File(filename)
@@ -136,6 +137,16 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
           futCacheInterest.onComplete { _ =>  file.delete() }
           futCacheInterest
         }
+
+//      listFutBinaryContents.foldLeft(Future { List[Array[Byte]]() }) {
+//        case (futTail: Future[List[Array[Byte]]], futHead: Future[Array[Byte]]) => futHead flatMap { h =>
+//          futTail map { t =>
+//            h :: t
+//          }
+//        }
+//      }
+      Future.sequence {
+        listFutBinaryContents
       }
     }
   }

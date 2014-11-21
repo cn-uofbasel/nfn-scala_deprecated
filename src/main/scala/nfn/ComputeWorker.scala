@@ -3,9 +3,12 @@ package nfn
 import akka.actor.{Actor, ActorRef}
 import akka.event.Logging
 import akka.util.Timeout
+import akka.pattern._
 import ccn.ccnlite.CCNLiteInterfaceCli
 import ccn.packet.{MetaInfo, CCNName, Interest, Content}
-import scala.concurrent.{ExecutionContext, Future}
+import nfn.NFNApi.AddToCCNCache
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
 import nfn.service.{NFNServiceExecutionException, NFNValue, NFNService, CallableNFNService}
 import scala.util.{Failure, Success}
 import myutil.IOHelper
@@ -64,21 +67,26 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
 
   }
 
-  def resultDataOrRedirect(data: Array[Byte], name: CCNName, ccnServer: ActorRef): Array[Byte] = {
+  def resultDataOrRedirect(data: Array[Byte], name: CCNName, ccnServer: ActorRef): Future[Array[Byte]] = {
     if(data.size > CCNLiteInterfaceCli.maxChunkSize) {
       name.expression match {
         case Some(expr) =>
-          val name = nodePrefix.cmps ++ List(expr)
-          val redirectComponents: List[String] = "redirect:" :: name
+          val redirectName = nodePrefix.cmps ++ List(expr)
+          val redirectComponents: List[String] = "redirect:" :: redirectName
 
-          ccnServer ! NFNApi.AddToCCNCache {
-            Content(CCNName(CCNLiteInterfaceCli.escapeCmps(name), None), data)
-          }
+          implicit val timeout: Timeout = Timeout(10.seconds)
 
-          redirectComponents.mkString("\n").getBytes
+          val fut = ccnServer ? NFNApi.AddToCCNCache(Content(CCNName(redirectName, None), data))
+//          Await.result(fut, 10 seconds)
+          // TODO: Fix this sleep!
+          Thread.sleep(1000)
+
+//          fut map { _ =>
+            Future(redirectComponents.mkString("\n").getBytes)
+//          }
         case None => throw new Exception(s"Name $name could not be transformed to an expression")
       }
-    } else data
+    } else Future(data)
   }
 
   override def receive: Actor.Receive = {
@@ -93,14 +101,17 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
           futCallable onComplete {
             case Success(callable) => {
               try {
-                val result: NFNValue = callable.exec
+                val resultValue: NFNValue = callable.exec
 
-                val resultData = resultDataOrRedirect(result.toDataRepresentation, name, ccnServer)
+                val futResultData = resultDataOrRedirect(resultValue.toDataRepresentation, name, ccnServer)
 
-                val content = Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
+                futResultData map { resultData =>
 
-                logger.info(s"Finished computation, result: $content")
-                senderCopy ! content
+                  val content = Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
+
+                  logger.info(s"Finished computation, result: $content")
+                  senderCopy ! content
+                }
               } catch {
                 case e: NFNServiceExecutionException => {
                   logger.error(e, s"Error when executing the service $name, return a NACK to the sender.")

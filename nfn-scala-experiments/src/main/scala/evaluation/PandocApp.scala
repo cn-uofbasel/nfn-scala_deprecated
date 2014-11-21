@@ -27,7 +27,7 @@ object PandocApp extends App {
   val tutorialMdName = node1.prefix.append(CCNName(ccnlTutorialMdPath.split("/").toList.map{ n => n.replace(".", "")}, None))
   val ccnlHome = System.getenv("CCNL_HOME")
   val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
-  val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
+  val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile).take(4200)
   val tutorialMdContent = Content(tutorialMdName, tutorialMdData)
 
   val pandocServ = new Pandoc()

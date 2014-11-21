@@ -28,6 +28,7 @@ object IOHelper {
     try { op(fos) } finally { fos.close() }
   }
 
+
   def writeToFile(f: File, data: Array[Byte]): Unit = {
     writeToFile(f) { _.write(data) }
   }

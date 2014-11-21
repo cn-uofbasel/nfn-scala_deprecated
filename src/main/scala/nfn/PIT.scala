@@ -22,15 +22,27 @@ case class PIT(context: ActorContext) extends Logging {
   private val pit = mutable.Map[CCNName, Set[ActorRef]]()
 
   def add(name: CCNName, face: ActorRef, timeout: FiniteDuration) = {
+    pit.get(name) match {
+      case Some(_) => logger.debug(s"PIT: adding $name -> $face")
+      case None => logger.debug(s"PIT: creating entry for $name -> $face")
+    }
     pit += name -> (pit.getOrElse(name, Set()) + face)
 //    context.system.scheduler.scheduleOnce(timeout) {
 //      context.self ! Timeout(name, face)
 //    }
   }
 
-  def get(name: CCNName): Option[Set[ActorRef]] = pit.get(name)
+  def get(name: CCNName): Option[Set[ActorRef]] = {
+    val r = pit.get(name)
+    logger.debug(s"PIT: get $name -> $r")
 
-  def remove(name: CCNName): Option[Set[ActorRef]] = pit.remove(name)
+    r
+  }
+
+  def remove(name: CCNName): Option[Set[ActorRef]] = {
+    logger.debug(s"PIT: removing $name")
+    pit.remove(name)
+  }
 
 //  def case Timeout(name, face) => {
 //      pit.get(name) map { pendingFaces =>
