@@ -180,7 +180,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
   val defaultTimeoutDuration = StaticConfig.defaultTimeoutDuration
 
-  var pit: ActorRef = context.actorOf(Props(classOf[PIT]), name = "PIT")
+  var pit: PIT = PIT(context)
   val cs = ContentStore()
 
   val nfnGateway: ActorRef =
@@ -232,31 +232,31 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
         }
       }
 
-      implicit val timeout = Timeout(timeoutFromContent)
-      (pit ? PIT.Get(content.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
-          case Some(pendingFaces) => {
-            val (contentNameWithoutThunk, isThunk) = content.name.withoutThunkAndIsThunk
+      pit.get(content.name) match {
+        case Some(pendingFaces) => {
+          val (contentNameWithoutThunk, isThunk) = content.name.withoutThunkAndIsThunk
 
-            assert(isThunk, s"handleInterstThunkContent received the content object $content which is not a thunk")
+          assert(isThunk, s"handleInterstThunkContent received the content object $content which is not a thunk")
 
-            val interest = Interest(contentNameWithoutThunk)
-            logger.debug(s"Received usethunk $content, sending actual interest $interest")
-
-            logger.debug(s"Timeout duration: ${timeout.duration}")
-            pendingFaces foreach { pf => pit ! PIT.Add(contentNameWithoutThunk, pf, timeout.duration) }
-            nfnGateway ! interest
-              // else it was a thunk interest, which means we can now send the actual interest
-            pit ! PIT.Remove(content.name)
+          val interest = Interest(contentNameWithoutThunk)
+          logger.debug(s"Received usethunk $content, sending actual interest $interest")
+//          logger.debug(s"Timeout duration: ${timeout.duration}")
+          val timeout = Timeout(timeoutFromContent)
+          pendingFaces foreach { pf =>
+            pit.add(contentNameWithoutThunk, pf, timeout.duration)
           }
-          case None => logger.error(s"Discarding thunk content $content because there is no entry in pit")
+
+          nfnGateway ! interest
+          pit.remove(content.name)
         }
+        case None => logger.error(s"Discarding thunk content $content because there is no entry in pit")
+      }
     }
 
     def handleNonThunkContent: Unit = {
-      implicit val timeout = Timeout(defaultTimeoutDuration)
-      (pit ? PIT.Get(content.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
+//      implicit val timeout = Timeout(defaultTimeoutDuration)
+      pit.get(content.name) match {
         case Some(pendingFaces) => {
-
           if (cacheContent) {
             cs.add(content)
           }
@@ -278,7 +278,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
             }
           } else {
             pendingFaces foreach { pendingSender => pendingSender ! content }
-            pit ! PIT.Remove(content.name)
+            pit.remove(content.name)
           }
 
         }
@@ -291,22 +291,21 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
 
-    implicit val timeout = Timeout(defaultTimeoutDuration)
+//    implicit val timeout = Timeout(defaultTimeoutDuration)
     cs.get(i.name) match {
       case Some(contentFromLocalCS) =>
         logger.debug(s"Served $contentFromLocalCS from local CS")
         senderCopy ! contentFromLocalCS
       case None => {
         val senderFace = senderCopy
-        (pit ? PIT.Get(i.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
-          case Some(pendingFaces) =>
-            pit ! PIT.Add(i.name, senderFace, defaultTimeoutDuration)
+        pit.get(i.name) match {
+          case Some(pendingFaces) => pit.add(i.name, senderFace, defaultTimeoutDuration)
           case None => {
-            pit ! PIT.Add(i.name, senderFace, defaultTimeoutDuration)
+            pit.add(i.name, senderFace, defaultTimeoutDuration)
 
             // If the interest has a chunknum, make sure that the original interest (still) exists in the pit
             i.name.chunkNum foreach { _ =>
-              pit ! PIT.Add(CCNName(i.name.cmps, None), senderFace, defaultTimeoutDuration)
+              pit.add(CCNName(i.name.cmps, None), senderFace, defaultTimeoutDuration)
             }
 
             // /.../.../NFN
@@ -350,13 +349,12 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   def handleNack(nack: Nack, senderCopy: ActorRef) = {
     if(StaticConfig.isNackEnabled) {
       implicit val timeout = Timeout(defaultTimeoutDuration)
-      (pit ? PIT.Get(nack.name)).mapTo[Option[Set[ActorRef]]] onSuccess {
+      pit.get(nack.name) match {
         case Some(pendingFaces) => {
           pendingFaces foreach {
-
             _ ! nack
           }
-          pit ! PIT.Remove(nack.name)
+          pit.remove(nack.name)
         }
         case None => logger.warning(s"Received nack for name which is not in PIT: $nack")
       }
