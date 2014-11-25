@@ -24,7 +24,7 @@ object LocalNodeFactory {
   def forId(id: Int, isCCNOnly: Boolean = false)(implicit config: Config): LocalNode = {
     val nodePrefix = CCNName("node", s"node$id")
     LocalNode(
-      RouterConfig("127.0.0.1", 10000 + id * 10, nodePrefix, isCCNOnly = isCCNOnly),
+      RouterConfig("127.0.0.1", 10000 + id * 10, nodePrefix, isCCNOnly = isCCNOnly, isAlreadyRunning = false),
       Some(ComputeNodeConfig("127.0.0.1", 10000 + id * 10 + 1, nodePrefix, withLocalAM = false))
     )
   }
@@ -132,10 +132,10 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
   private var isDoingManagementOperations = false
 
   val (maybeNFNServer: Option[ActorRef], maybeEc: Option[ExecutionContext]) =
-
     maybeComputeNodeConfig match {
       case Some(computeNodeConfig) =>
         val system = ActorSystem(s"Sys${computeNodeConfig.prefix.toString.replace("/", "-")}", AkkaConfig.config(StaticConfig.debugLevel))
+
         (Some(NFNServerFactory.nfnServer(system, routerConfig, computeNodeConfig)), Some(system.dispatcher))
       case None => (None, None)
     }
@@ -280,7 +280,7 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    * @return
    */
   def sendReceive(req: Interest)(implicit useThunks: Boolean): Future[Content] = {
-    (nfnMaster ? NFNApi.CCNSendReceive(req, useThunks)).mapTo[CCNPacket] flatMap {
+    (nfnMaster ? NFNApi.CCNSendReceive(req, useThunks)).mapTo[CCNPacket] map {
       case n: Nack => throw new Exception(":NACK")
       case c: Content => {
 
@@ -290,7 +290,7 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
 //          logger.info(s"Redirect for $nameCmps")
 //          sendReceive(Interest(CCNName(nameCmps, None)))
 //        } else Future(c)
-        Future(c)
+        c
       }
       case i: Interest => throw new Exception("An interest was returned, this should never happen")
       case a: AddToCacheAck => ???

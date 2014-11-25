@@ -4,7 +4,7 @@ import java.io._
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{SystemEnvironment, RouterConfig, StaticConfig}
 import ccn.packet.CCNName
-import myutil.systemcomandexecutor.SystemCommandExecutor
+import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
 
 /**
  * Pipes a [[InputStream]] to a file with the given name into ./log/<name>.log.
@@ -56,21 +56,37 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   val wireFormat = StaticConfig.packetformat
 
   case class NetworkFace(toHost: String, toPort: Int) {
-    private val cmdUDPFace = s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName newUDPface any $toHost $toPort"
-    logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdUDPFace")
+    val cmdUDPFace = List(s"$ccnLiteEnv/util/ccn-lite-ctrl", "-x", s"$sockName", "newUDPface", "any", s"$toHost", s"$toPort")
+    val cmdMgmtToXml = List(s"$ccnLiteEnv/util/ccn-lite-ccnb2xml")
+//    val cmdGrep = List("grep", "FACEID")
+//    val cmdExtractFaceId = List("sed", "-e", """s/.*\([0-9][0-9]*\).*/\1/""")
 
-    Runtime.getRuntime.exec(cmdUDPFace.split(" "))
+    val faceId: Int =
+      SystemCommandExecutor(List(cmdUDPFace, cmdMgmtToXml)).execute() match {
+        case ExecutionSuccess(_, faceIdData) => {
+          val faceIdStr = new String(faceIdData)
+          if(faceIdStr.contains("failed")) {
+            throw new Exception(s"Error when registering new udp face")
+          } else {
+            val start = faceIdStr.indexOf("<FACEID>") + "<FACEID>".length
+            val end = faceIdStr.indexOf("</FACEID>")
+            val faceId = Integer.parseInt(faceIdStr.substring(start, end))
+            logger.info(s"Registered udp face with faceid $faceId")
+            faceId
+          }
+        }
+        case err: ExecutionError => throw new Exception(s"Error when registering new udp face: $err")
+      }
+
     udpFaces += (toHost -> toPort) -> this
 
-    val faceId: Int = globalFaceId
-    globalFaceId += 2
 
     def registerPrefix(prefixToRegister: String) = {
-      val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixreg $prefixToRegister $faceId $wireFormat"
-      logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdPrefixReg")
-      Runtime.getRuntime.exec(cmdPrefixReg.split(" "))
-
-      globalFaceId += 1
+      val cmdPrefixReg =  List(s"$ccnLiteEnv/util/ccn-lite-ctrl", "-x", s"$sockName", "prefixreg", s"$prefixToRegister", s"$faceId", s"$wireFormat")
+      SystemCommandExecutor(List(cmdPrefixReg)).execute() match {
+        case ExecutionSuccess(_, xml) => logger.info("Registered prefix")
+        case err: ExecutionError => logger.error(s"Error when registering prefix: $err")
+      }
     }
 
     def unregisterPrefixPrefix(prefixToRegister: String) = {
@@ -85,7 +101,6 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   val ccnLiteEnv = SystemEnvironment.ccnLiteEnv
 
   private var process: Process = null
-  private var globalFaceId = 2
 
   val host = nodeConfig.host
   val port = nodeConfig.port
@@ -99,11 +114,10 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 
   def start() = {
 
-//    if(port != 10010) {
-
+    if(!nodeConfig.isAlreadyRunning) {
       val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/ccn-lite-relay" else s"$ccnLiteEnv/ccn-nfn-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
-      val cmd = s"$ccnliteExecutable -v 99 -u $port -x $sockName -s $wireFormat"
+      val cmd = s"$ccnliteExecutable -v 100 -u $port -x $sockName -s $wireFormat"
       logger.debug(s"$processName-$prefix: executing: '$cmd'")
       val processBuilder = new ProcessBuilder(cmd.split(" "): _*)
       processBuilder.redirectErrorStream(true)
@@ -112,8 +126,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
       val lsr = new LogStreamReaderToFile(process.getInputStream, s"ccnlite-$host-$port", appendTimestamp = true)
       val thread = new Thread(lsr, s"LogStreamReader-$prefix")
       thread.start()
-//    }
-    globalFaceId = 2
+    }
   }
 
   def stop() = {
