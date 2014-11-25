@@ -1,14 +1,12 @@
-package nfn.service.impl
+package nfn.service
 
-import scala.util.Try
-import nfn.service._
 import akka.actor.ActorRef
 
 class WordCountService() extends NFNService {
 
   override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (docs, _) =>
 
-    def splitString(s: String) = s.split(" ").size
+    def splitString(s: String): Int = s.split(" ").size
 
     Thread.sleep(500)
     NFNIntValue(

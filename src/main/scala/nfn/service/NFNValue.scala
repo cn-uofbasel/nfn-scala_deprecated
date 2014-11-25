@@ -44,7 +44,7 @@ case class NFNIntValue(i: Int) extends NFNValue {
 
   override def toCCNName: CCNName = CCNName("Int")
 
-  override def toDataRepresentation: Array[Byte] = ByteBuffer.allocate(4).putInt(i).array()
+  override def toDataRepresentation: Array[Byte] = i.toString.getBytes
 }
 
 case class NFNStringValue(str: String) extends NFNValue {

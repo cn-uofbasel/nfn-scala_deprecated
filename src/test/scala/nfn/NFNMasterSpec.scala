@@ -8,8 +8,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import config.StaticConfig
 import lambdacalculus.parser.ast._
 import monitor.Monitor
-import nfn.service.impl.{NackServ, Translate, WordCountService}
-import nfn.service.{NFNDynamicService, NFNIntValue, NFNValue}
+import nfn.service.WordCountService
+import nfn.service._
 import node.{LocalNode, LocalNodeFactory}
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures

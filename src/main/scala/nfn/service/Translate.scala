@@ -1,7 +1,6 @@
-package nfn.service.impl
+package nfn.service
 
 import akka.actor.ActorRef
-import nfn.service.{NFNContentObjectValue, NFNService, NFNServiceArgumentException, NFNValue}
 
 class Translate() extends NFNService {
 

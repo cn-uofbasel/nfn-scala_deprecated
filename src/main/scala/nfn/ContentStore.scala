@@ -9,8 +9,8 @@ case class ChunkStore(size: Int, name: List[String]) extends Logging {
   val cs = Array.fill(size)(Option.empty[Array[Byte]])
 
   def add(chunkNum: Int, chunkData: Array[Byte]): Unit = {
-    logger.debug(s"chunkNum: $chunkNum, size: $size")
     if(cs(chunkNum).isEmpty) {
+      logger.debug(s"new chunk with chunkNum: $chunkNum / ${size - 1}")
       cs(chunkNum) = Some(chunkData)
     } else {
       logger.warn(s"Received chunk is already in chunk store, ignoring chunk with num $chunkNum")

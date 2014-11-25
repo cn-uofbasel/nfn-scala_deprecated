@@ -9,7 +9,7 @@ import monitor.Monitor
 import myutil.IOHelper
 import nfn._
 import nfn.service._
-import nfn.service.impl._
+import nfn.service._
 import node.LocalNodeFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global

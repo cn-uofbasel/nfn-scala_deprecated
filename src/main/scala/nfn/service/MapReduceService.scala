@@ -1,10 +1,9 @@
-package nfn.service.impl
+package nfn.service
+
+import akka.actor.ActorRef
+import ccn.packet.{Content, MetaInfo}
 
 import scala.util.Try
-
-import nfn.service._
-import ccn.packet.{MetaInfo, Content}
-import akka.actor.ActorRef
 
 
 /**

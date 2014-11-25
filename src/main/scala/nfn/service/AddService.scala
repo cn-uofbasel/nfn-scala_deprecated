@@ -1,7 +1,6 @@
-package nfn.service.impl
+package nfn.service
 
 import akka.actor.ActorRef
-import nfn.service.{NFNServiceArgumentException, _}
 
 
 class AddService() extends  NFNService {

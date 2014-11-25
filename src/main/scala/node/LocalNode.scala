@@ -21,10 +21,15 @@ import monitor.Monitor
 import ccn.CCNLiteProcess
 
 object LocalNodeFactory {
+
+  def defaultMgmtSockNameForPrefix(prefix: CCNName): String = {
+    s"/tmp/mgmt.${prefix.cmps.mkString(".")}.sock"
+  }
+
   def forId(id: Int, isCCNOnly: Boolean = false)(implicit config: Config): LocalNode = {
     val nodePrefix = CCNName("node", s"node$id")
     LocalNode(
-      RouterConfig("127.0.0.1", 10000 + id * 10, nodePrefix, isCCNOnly = isCCNOnly, isAlreadyRunning = false),
+      RouterConfig("127.0.0.1", 10000 + id * 10, nodePrefix, defaultMgmtSockNameForPrefix(nodePrefix), isCCNOnly = isCCNOnly, isAlreadyRunning = false),
       Some(ComputeNodeConfig("127.0.0.1", 10000 + id * 10 + 1, nodePrefix, withLocalAM = false))
     )
   }
@@ -112,6 +117,17 @@ object LocalNode {
     }
   }
 }
+
+//object LogLevel {
+//  import org.slf4j.LoggerFactory
+//  import ch.qos.logback.classic.Level
+//  import ch.qos.logback.classic.Logger
+//
+//  def setLoggingLevel(level: Level) {
+//    val rootLogger = LoggerFactory.getLogger(Logger.FQCN)
+//    rootLogger.setLevel(level)
+//  }
+//}
 
 case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[ComputeNodeConfig]) extends Logging {
 

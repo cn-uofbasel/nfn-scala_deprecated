@@ -3,18 +3,17 @@ package evaluation
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.ConfigFile
 import com.typesafe.config.ConfigFactory
 import config.{ComputeNodeConfig, RouterConfig, CombinedNodeConfig}
+import nfn.service.{WordCountService, Translate}
 
 import scala.concurrent.duration._
 import akka.util.Timeout
 import nfn._
 import ccn.packet.{Content, CCNName}
-import node.LocalNode
+import node.{LocalNodeFactory, LocalNode}
 import lambdacalculus.parser.ast.{Expr, LambdaDSL}
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
-import nfn.service.impl.{Translate, WordCountService}
-import nfn.service.impl.Translate
-import nfn.service.impl.WordCountService
+import nfn.service.WordCountService
 import scala.util.Success
 import scala.util.Failure
 import scala.Some
@@ -33,7 +32,7 @@ object SingeLocalAMNode extends App {
 
   val nodePrefix = CCNName("node", "node1")
   val node = LocalNode(
-    RouterConfig("127.0.0.1", 10010, nodePrefix),
+    RouterConfig("127.0.0.1", 10010, nodePrefix, LocalNodeFactory.defaultMgmtSockNameForPrefix(nodePrefix)),
     Some(ComputeNodeConfig("127.0.0.1", 10011, nodePrefix, withLocalAM = true))
   )
 

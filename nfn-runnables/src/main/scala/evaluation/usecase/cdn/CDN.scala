@@ -8,7 +8,7 @@ import lambdacalculus.parser.ast._
 import monitor.Monitor
 import nfn._
 import nfn.service._
-import node.LocalNode
+import node.{LocalNodeFactory, LocalNode}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util._
@@ -50,12 +50,12 @@ object CDN extends App {
 
   val node1Prefix = CCNName("node", "node2")
   val node1 = LocalNode(
-    RouterConfig("127.0.0.1", 10020, node1Prefix),
+    RouterConfig("127.0.0.1", 10020, node1Prefix, LocalNodeFactory.defaultMgmtSockNameForPrefix(node1Prefix)),
     Some(ComputeNodeConfig("127.0.0.1", 10021, node1Prefix))
   )
   val node2Prefix = CCNName("node", "node2")
   val node2 = LocalNode(
-    RouterConfig("127.0.0.1", 10020, node2Prefix),
+    RouterConfig("127.0.0.1", 10020, node2Prefix, LocalNodeFactory.defaultMgmtSockNameForPrefix(node2Prefix)),
     Some(ComputeNodeConfig("127.0.0.1", 10021, node2Prefix))
   )
 

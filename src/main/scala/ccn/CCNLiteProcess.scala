@@ -107,7 +107,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 //  val computePort = nodeConfig.computePort
   val prefix = nodeConfig.prefix.toString
 
-  val sockName = s"/tmp/mgmt.${nodeConfig.prefix.cmps.mkString(".")}.sock"
+  val sockName = nodeConfig.mgmntSocket
 
   var udpFaces:Map[(String, Int), NetworkFace] = Map()
   val processName = if(nodeConfig.isCCNOnly) "CCNLiteNFNProcess" else "CCNLiteProcess"

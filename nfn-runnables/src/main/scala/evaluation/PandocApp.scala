@@ -6,7 +6,7 @@ import ccn.packet.{NFNInterest, Interest, CCNName, Content}
 import com.typesafe.config.{ConfigFactory, Config}
 import lambdacalculus.parser.ast.Expr
 import myutil.IOHelper
-import nfn.service.impl.Pandoc
+import nfn.service.PandocService
 import node.LocalNodeFactory
 import concurrent.ExecutionContext.Implicits.global
 
@@ -30,7 +30,7 @@ object PandocApp extends App {
   val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
   val tutorialMdContent = Content(tutorialMdName, tutorialMdData)
 
-  val pandocServ = new Pandoc()
+  val pandocServ = new PandocService()
   val pandoc = pandocServ.ccnName.toString
   node1.publishService(pandocServ)
   node1 += tutorialMdContent

@@ -2,7 +2,7 @@ package bytecode
 
 import java.io.{BufferedOutputStream, FileOutputStream, File}
 
-import nfn.service.NFNService
+import nfn.service.{WordCountService, NFNService}
 import org.scalatest.{Matchers, FlatSpec}
 import scala.util.{Failure, Success}
 
@@ -14,7 +14,7 @@ class BytecodeLoaderTest extends FlatSpec with Matchers {
 
     val fw = new BufferedOutputStream(new FileOutputStream(tempBcFile))
     try {
-      val cl = new nfn.service.impl.WordCountService()
+      val cl = new WordCountService()
       val bc: Array[Byte] = BytecodeLoader.byteCodeForClass(cl).get
       fw.write(bc)
       fw.flush()

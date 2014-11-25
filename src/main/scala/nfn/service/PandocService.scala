@@ -1,15 +1,9 @@
-package nfn.service.impl
+package nfn.service
 
 import akka.actor.ActorRef
-import ccn.ccnlite.CCNLiteInterfaceCli
 import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
-import nfn.service._
 
-import scala.concurrent.duration._
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
-
-class Pandoc extends NFNService {
+class PandocService extends NFNService {
   override def function: (Seq[NFNValue], ActorRef) => NFNValue = {
     (args, _) => args match {
       case Seq(NFNContentObjectValue(_, doc), NFNStringValue(from), NFNStringValue(to)) =>

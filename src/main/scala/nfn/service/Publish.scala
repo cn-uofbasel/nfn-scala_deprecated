@@ -1,10 +1,8 @@
-package nfn.service.impl
+package nfn.service
 
 import akka.actor.ActorRef
-import ccn.packet.{MetaInfo, CCNName, Content}
-import config.AkkaConfig
+import ccn.packet.{CCNName, Content, MetaInfo}
 import nfn.NFNApi
-import nfn.service.{NFNServiceArgumentException, _}
 
 class Publish() extends NFNService {
   override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (args, nfnServer) =>

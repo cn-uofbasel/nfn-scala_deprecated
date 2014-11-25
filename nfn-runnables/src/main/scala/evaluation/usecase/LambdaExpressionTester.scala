@@ -3,7 +3,7 @@ package evaluation.usecase
 import com.typesafe.config.ConfigFactory
 import config.{ComputeNodeConfig, RouterConfig, CombinedNodeConfig}
 import nfn._
-import node.LocalNode
+import node.{LocalNodeFactory, LocalNode}
 import ccn.packet._
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,7 +24,7 @@ object LambdaExpressionTester extends App {
   val nodePrefix = CCNName("node1")
 
   val node = LocalNode(
-    RouterConfig("127.0.0.1", 10010, nodePrefix),
+    RouterConfig("127.0.0.1", 10010, nodePrefix, LocalNodeFactory.defaultMgmtSockNameForPrefix(nodePrefix)),
     Some(ComputeNodeConfig("127.0.0.1", 10021, nodePrefix))
   )
 
