@@ -162,12 +162,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
 
   implicit val execContext = context.dispatcher
 
-
   val logger = Logging(context.system, this)
-  logger.debug(s"self: $self")
-
-  //  nfnNodeConfig.config
-  //  val ccnIf = new CCNLiteInterfaceWrapper()
 
   val cacheContent: Boolean = true
 
@@ -266,7 +261,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           // Check if content is a redirect
           // if it is a redirect, send an interest for each pending face with the redirect name
           // otherwise return the ocntent object to all pending faces
-          if(content.data.startsWith(redirect)) {
+          if(!content.name.isCompute && content.data.startsWith(redirect)) {
             val nameCmps = new String(content.data).split("\n").toList.tail
             logger.info(s"Redirect for $nameCmps")
             implicit val timeout = Timeout(defaultTimeoutDuration)

@@ -12,6 +12,8 @@ case class ChunkStore(size: Int, name: List[String]) extends Logging {
     logger.debug(s"chunkNum: $chunkNum, size: $size")
     if(cs(chunkNum).isEmpty) {
       cs(chunkNum) = Some(chunkData)
+    } else {
+      logger.warn(s"Received chunk is already in chunk store, ignoring chunk with num $chunkNum")
     }
   }
 

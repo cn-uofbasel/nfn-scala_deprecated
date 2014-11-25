@@ -27,7 +27,7 @@ object PandocApp extends App {
   val tutorialMdName = node1.prefix.append(CCNName(ccnlTutorialMdPath.split("/").toList.map{ n => n.replace(".", "")}, None))
   val ccnlHome = System.getenv("CCNL_HOME")
   val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
-  val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile).take(4200)
+  val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
   val tutorialMdContent = Content(tutorialMdName, tutorialMdData)
 
   val pandocServ = new Pandoc()
@@ -48,9 +48,11 @@ object PandocApp extends App {
   sendAndPrintForName(expr)
 
   def sendAndPrintForName(interest: Interest) = {
+    val startTime = System.currentTimeMillis
     node1 ? interest onComplete {
       case Success(resultContent) => {
-        println(s"RESULT: ${new String(resultContent.data)}")
+        val runTime = System.currentTimeMillis - startTime
+        println(s"RESULT:\n${new String(resultContent.data)}\nTIME: (${runTime}ms)")
         nodes foreach { _.shutdown() }
       }
       case Failure(e) => println(s"Could not receive content for $interest")

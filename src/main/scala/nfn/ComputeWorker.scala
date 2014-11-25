@@ -79,7 +79,9 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
           val fut = ccnServer ? NFNApi.AddToCCNCache(Content(CCNName(redirectName, None), data))
 //          Await.result(fut, 10 seconds)
           // TODO: Fix this sleep!
-          Thread.sleep(1000)
+          logger.debug("going to sleep")
+          Thread.sleep(500)
+          logger.debug("slept 1 second")
 
 //          fut map { _ =>
             Future(redirectComponents.mkString("\n").getBytes)
