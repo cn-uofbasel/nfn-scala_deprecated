@@ -56,7 +56,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
       case None => Nil
     }
     val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableCmpsAndNfnString(interest.name)
-    SystemCommandExecutor(cmds).execute map {
+    SystemCommandExecutor(List(cmds)).futExecute() map {
       case ExecutionSuccess(_, data) => data
       case execErr: ExecutionError =>
         throw new Exception(s"Error when creating binary interest for $interest: $execErr")
@@ -77,7 +77,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
     if(dataChunks.size == 1) {
       val cmds = baseCmds ++ ccnNameToRoutableCmpsAndNfnString(content.name)
-      SystemCommandExecutor(cmds, Some(content.data)).execute map {
+      SystemCommandExecutor(List(cmds), Some(content.data)).futExecute map {
         case ExecutionSuccess(_, data) => List(data)
         case execErr: ExecutionError =>
           throw new Exception(s"Error when creating binary content for $content: $execErr")
@@ -88,7 +88,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
         dataChunks.zipWithIndex.map { case (chunkedData, chunkNum) =>
           val cmds = baseCmds ++ List("-n", s"$chunkNum", "-l" , s"$lastChunkNum") ++ ccnNameToRoutableCmpsAndNfnString(content.name)
           // create binary chunked content object for each
-          SystemCommandExecutor(cmds, Some(chunkedData)).execute map {
+          SystemCommandExecutor(List(cmds), Some(chunkedData)).futExecute() map {
             case ExecutionSuccess(_, data: Array[Byte]) => data
             case execErr: ExecutionError =>
               throw new Exception(s"Error when creating binary content for chunk $content: $execErr")
@@ -102,7 +102,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     val pktdump = "ccn-lite-pktdump"
     val cmds = List(utilFolderName+pktdump, "-f", "1")
 
-    SystemCommandExecutor(cmds, Some(binaryPacket)).execute map {
+    SystemCommandExecutor(List(cmds), Some(binaryPacket)).futExecute() map {
       case ExecutionSuccess(_, data) =>
         val xmlPacket = new String(data)
         CCNLiteXmlParser.parseCCNPacket(xmlPacket) match {
@@ -129,7 +129,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
           val ctrl = "ccn-lite-ctrl"
           val cmds = List(utilFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
-          val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(cmds).execute map {
+          val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(List(cmds)).futExecute() map {
             case ExecutionSuccess(_, data) => data
             case execErr: ExecutionError =>
               throw new Exception(s"Error creating add to cache request: $execErr")
@@ -138,13 +138,6 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
           futCacheInterest
         }
 
-//      listFutBinaryContents.foldLeft(Future { List[Array[Byte]]() }) {
-//        case (futTail: Future[List[Array[Byte]]], futHead: Future[Array[Byte]]) => futHead flatMap { h =>
-//          futTail map { t =>
-//            h :: t
-//          }
-//        }
-//      }
       Future.sequence {
         listFutBinaryContents
       }
