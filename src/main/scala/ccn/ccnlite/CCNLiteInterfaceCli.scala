@@ -52,7 +52,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     val mkI = "ccn-lite-mkI"
 
     val chunkCmps = interest.name.chunkNum match {
-      case Some(chunkNum) => List("-n", s"$chunkNum")
+      case Some(chunkNum) => List("-n", s"$chunkNum", "-e", s"${System.nanoTime().toInt}")
       case None => Nil
     }
     val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableCmpsAndNfnString(interest.name)

@@ -58,8 +58,6 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   case class NetworkFace(toHost: String, toPort: Int) {
     val cmdUDPFace = List(s"$ccnLiteEnv/util/ccn-lite-ctrl", "-x", s"$sockName", "newUDPface", "any", s"$toHost", s"$toPort")
     val cmdMgmtToXml = List(s"$ccnLiteEnv/util/ccn-lite-ccnb2xml")
-//    val cmdGrep = List("grep", "FACEID")
-//    val cmdExtractFaceId = List("sed", "-e", """s/.*\([0-9][0-9]*\).*/\1/""")
 
     val faceId: Int =
       SystemCommandExecutor(List(cmdUDPFace, cmdMgmtToXml)).execute() match {
