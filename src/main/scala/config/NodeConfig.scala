@@ -2,6 +2,7 @@ package config
 
 import java.util.concurrent.TimeUnit
 
+import akka.event.Logging.LogLevel
 import ccn.CCNWireFormat
 import ccn.packet.CCNName
 import com.typesafe.config.ConfigException.BadValue
@@ -15,6 +16,8 @@ case class ConfigException(msg: String) extends Exception(msg)
 object StaticConfig {
 
   private var maybeConfig: Option[Config] = None
+
+  private var maybeDebugLevel: Option[String] = Option.empty[String]
 
   def config: Config = maybeConfig match {
     case Some(config) => config
@@ -30,7 +33,16 @@ object StaticConfig {
 
   def defaultTimeoutDuration = Duration(config.getInt("nfn-scala.defaulttimeoutmillis"), TimeUnit.MILLISECONDS)
 
-  def debugLevel = config.getString("nfn-scala.debuglevel")
+  def debugLevel = {
+    val lvl =  maybeDebugLevel.getOrElse(config.getString("nfn-scala.debuglevel"))
+    LogLevelSLF4J.setLogLevel(lvl)
+    lvl
+  }
+
+  def setDebugLevel(lvl: String) = {
+    maybeDebugLevel = Some(lvl)
+    LogLevelSLF4J.setLogLevel(lvl)
+  }
 
   def packetformat: CCNWireFormat = {
     val path = "nfn-scala.packetformat"
@@ -42,6 +54,32 @@ object StaticConfig {
         | can only be "ccnb" or "ndn" and not "$wfName"
         """.stripMargin)
     }
+  }
+}
+
+object LogLevelSLF4J {
+  import org.slf4j.LoggerFactory
+  import ch.qos.logback.classic.{Level, Logger}
+  def setLogLevel(str: String) = {
+    val slf4jLevel =
+      str.toUpperCase match {
+        case "DEBUG" =>
+          Level.DEBUG
+        case "INFO" =>
+          Level.INFO
+        case "WARNING" =>
+          Level.WARN
+        case "ERROR" =>
+          Level.ERROR
+        case _ =>
+          Level.INFO
+      }
+
+    setSLF4J(slf4jLevel)
+  }
+  def setSLF4J(level: Level) {
+    val rootLogger = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[Logger]
+    rootLogger.setLevel(level)
   }
 }
 

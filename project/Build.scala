@@ -57,21 +57,21 @@ object MainBuild extends Build {
     )
   )
 
-  lazy val lambdaMacros: Project = {
-    val paradiseVersion = "2.0.0-M3"
-    Project(
-      "lambda-macros",
-      file("lambda-macros"),
-      settings = buildSettings ++ Seq(
-        addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
-        libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-compiler" % _),
-        libraryDependencies ++= (
-          if (scalaVersion.value.startsWith("2.10")) List("org.scalamacros" % "quasiquotes"  % paradiseVersion cross CrossVersion.full)
-          else Nil
-          )
-      )
-    ).dependsOn(lambdaCalculus)
-  }
+//  lazy val lambdaMacros: Project = {
+//    val paradiseVersion = "2.0.0-M3"
+//    Project(
+//      "lambda-macros",
+//      file("lambda-macros"),
+//      settings = buildSettings ++ Seq(
+//        addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
+//        libraryDependencies <+ (scalaVersion)("org.scala-lang" % "scala-compiler" % _),
+//        libraryDependencies ++= (
+//          if (scalaVersion.value.startsWith("2.10")) List("org.scalamacros" % "quasiquotes"  % paradiseVersion cross CrossVersion.full)
+//          else Nil
+//          )
+//      )
+//    ).dependsOn(lambdaCalculus)
+//  }
 
   lazy val nfnRunnables: Project = Project(
     "nfn-runnables",

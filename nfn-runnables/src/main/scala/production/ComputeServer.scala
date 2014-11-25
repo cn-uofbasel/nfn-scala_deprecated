@@ -1,23 +1,28 @@
 package production
 
 import ccn.packet.CCNName
-import config.{ComputeNodeConfig, RouterConfig}
+import com.typesafe.scalalogging.slf4j.Logging
+import config.{StaticConfig, ComputeNodeConfig, RouterConfig}
 import nfn.service.{WordCountService, PandocService}
 import nfn.service.WordCountService
 import node.LocalNode
-import node.LocalNodeFactory.defaultMgmtSockNameForPrefix
 
-object ComputeServer {
+
+
+
+object ComputeServer extends Logging {
+
+
 
   def printUsageAndExit = {
 
-    println("Usage: <prefix> <mgmtsocket> <ccn-lite-port> <compute-server-port> (e.g. /ndn/ch/unibas/ccn-lite 9000 9001)")
+    println("Usage: <prefix> <mgmtsocket> <ccn-lite-port> <compute-server-port> <loglevel> (e.g. /ndn/ch/unibas/ccn-lite /tmp/ccn-lite-1.sock 9000 9001 info)")
 
     sys.exit(1)
   }
   def main(args: Array[String]) = {
       args match {
-        case Array(prefixStr, mgmtSocket, ccnlPortStr, computeServerPortStr) => {
+        case Array(prefixStr, mgmtSocket, ccnlPortStr, computeServerPortStr, loglevel) => {
           val (prefix: CCNName, ccnlPort: Int, computeServerPort: Int) =
           try {
             (
@@ -30,6 +35,10 @@ object ComputeServer {
               sys.error(e.getMessage)
               printUsageAndExit
           }
+
+          StaticConfig.setDebugLevel(loglevel)
+
+          logger.info("Starting standalone ComputeServer")
           val routerConfig = RouterConfig("127.0.0.1", ccnlPort, prefix, mgmtSocket ,isCCNOnly = false, isAlreadyRunning = true)
 
           val computeNodeConfig = ComputeNodeConfig("127.0.0.1", computeServerPort, prefix, withLocalAM = false)

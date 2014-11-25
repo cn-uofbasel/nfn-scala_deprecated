@@ -84,7 +84,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     def registerPrefix(prefixToRegister: String) = {
       val cmdPrefixReg =  List(s"$ccnLiteEnv/util/ccn-lite-ctrl", "-x", s"$sockName", "prefixreg", s"$prefixToRegister", s"$faceId", s"$wireFormat")
       SystemCommandExecutor(List(cmdPrefixReg)).execute() match {
-        case ExecutionSuccess(_, xml) => logger.info("Registered prefix")
+        case ExecutionSuccess(_, xml) => logger.info(s"Registered prefix for $prefixToRegister")
         case err: ExecutionError => logger.error(s"Error when registering prefix: $err")
       }
     }
