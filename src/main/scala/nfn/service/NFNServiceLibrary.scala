@@ -39,7 +39,7 @@ object NFNServiceLibrary extends Logging {
 
   def convertDollarToChf(dollar: Int): Int = ???
 
-  def nfnPublishService(serv: NFNService, ccnWorker: ActorRef) = {
+  def nfnPublishService(serv: NFNService, prefix: CCNName, ccnWorker: ActorRef) = {
     def pinnedData = "pinnedfunction".getBytes
 
     def byteCodeData(serv: NFNService):Array[Byte] = {
@@ -53,32 +53,8 @@ object NFNServiceLibrary extends Logging {
       if(serv.pinned) pinnedData
       else byteCodeData(serv)
 
-//    val tempFileOrSingleContent =
-//      if(serviceContent.size > 100) {
-//
-//        val tempBytecodeContentDirName = "./temp-bytecode-content"
-//
-//        val tempBytecodeContentDir = new File(tempBytecodeContentDirName)
-//        if(!tempBytecodeContentDir.exists()) {
-//          tempBytecodeContentDir.mkdir()
-//        }
-//        val bytecodeContentFileName = s"$tempBytecodeContentDirName/${serv.ccnName.cmps.mkString("+")}"
-//
-//        val bytecodeContentFile = new File(bytecodeContentFileName)
-//        if(bytecodeContentFile.exists()) {
-//          bytecodeContentFile.delete()
-//          bytecodeContentFile.createNewFile()
-//        }
-//        val out = new FileOutputStream(bytecodeContentFile)
-//        try{
-//          out.write(serviceContent)
-//        } finally { out.close() }
-//
-//        bytecodeContentFileName.getBytes
-//      } else { serviceContent }
-
     val content = Content(
-      serv.ccnName,
+      prefix.append(serv.ccnName),
       serviceContent,
       MetaInfo.empty
     )
@@ -87,16 +63,6 @@ object NFNServiceLibrary extends Logging {
     ccnWorker ! NFNApi.AddToCCNCache(content)
   }
 
-  /**
-   * Advertises all locally available services to nfn by sending a 'addToCache' Interest,
-   * containing a content object with the name of the service (and optionally also the bytecode * of the service).
-   * @param ccnWorker
-   */
-  def nfnPublish(ccnWorker: ActorRef) = {
-    for((_, serv) <- services) {
-      nfnPublishService(serv, ccnWorker)
-    }
-  }
 }
 
 class ServiceException(msg: String) extends Exception(msg)

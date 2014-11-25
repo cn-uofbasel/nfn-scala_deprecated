@@ -260,13 +260,9 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    */
   def +=(content: Content) = cache(content)
 
-  /**
-   * Advertises the services to the network.
-   */
-  def publishServices = NFNServiceLibrary.nfnPublish(nfnMaster)
 
   def publishService(serv: NFNService) = {
-    NFNServiceLibrary.nfnPublishService(serv, nfnMaster)
+    NFNServiceLibrary.nfnPublishService(serv, prefix, nfnMaster)
   }
 
   def removeLocalServices = NFNServiceLibrary.removeAll()

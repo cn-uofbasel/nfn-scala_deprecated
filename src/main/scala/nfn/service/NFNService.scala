@@ -57,7 +57,7 @@ object NFNService extends Logging {
       if (out != null) out.close
     }
 
-    val servName = content.name.cmps.head.replace("_", ".")
+    val servName = content.name.cmps.last.replace("_", ".")
     val loadedService: Try[NFNService] = BytecodeLoader.loadClass[NFNService](filePath, servName)
     logger.debug(s"Dynamically loaded class $servName from content")
     if (file.exists) file.delete
@@ -67,19 +67,7 @@ object NFNService extends Logging {
   def parseAndFindFromName(name: String, ccnServer: ActorRef)(implicit ec: ExecutionContext): Future[CallableNFNService] = {
 
     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
-      val futContent = (ccnServer ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
-
-//  hack to support large content objects
-//      futContent map { content =>
-//        val dataString = new String(content.data)
-//        val f = new File(dataString)
-//        if(f.exists()) {
-//          val actualData = IOHelper.readByteArrayFromFile(f)
-//          logger.debug(s"hack: loading content form file ${f.getCanonicalPath}")
-//          Content(content.name, actualData, MetaInfo.empty)
-//        } else { content }
-//      }
-      futContent
+      (ccnServer ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
     }
 
     def findService(fun: String): Future[NFNService] = {

@@ -31,7 +31,7 @@ object PandocApp extends App {
   val tutorialMdContent = Content(tutorialMdName, tutorialMdData)
 
   val pandocServ = new PandocService()
-  val pandoc = pandocServ.ccnName.toString
+  val pandoc = node1.prefix.append(pandocServ.ccnName).toString
   node1.publishService(pandocServ)
   node1 += tutorialMdContent
 
