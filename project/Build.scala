@@ -7,7 +7,7 @@ import sbtassembly.Plugin.AssemblyKeys._
 import sbtassembly.Plugin.assemblySettings
 
 object BuildSettings {
-  val buildSettings = assemblySettings ++ Seq (
+  val buildSettings: Seq[Def.Setting[_]] = assemblySettings ++ Seq (
     version       := "0.1-SNAPSHOT",
     scalaVersion  := "2.10.3",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-encoding", "UTF-8", "-language:implicitConversions"),
@@ -37,6 +37,8 @@ object MainBuild extends Build {
         "net.liftweb" %% "lift-json" % "2.5.1",
         "org.apache.bcel" % "bcel" % "5.2"
       )
+//      mainClass in "nfn-scala-experiments" in Compile := Some("production.ComputeServer")
+//      mainClass in (Compile, run) := Some("production.ComputeServer")
     )
   ).dependsOn(lambdaCalculus)
 
@@ -50,8 +52,8 @@ object MainBuild extends Build {
         "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
         "org.slf4j" % "slf4j-api" % "1.7.5"
       ),
-      resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
-      mainClass in (Compile, run) := Some("lambdacalculus.LambdaCalculus")
+      resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+//      mainClass in (Compile, run) := Some("lambdacalculus.LambdaCalculus")
     )
   )
 
@@ -71,9 +73,9 @@ object MainBuild extends Build {
     ).dependsOn(lambdaCalculus)
   }
 
-  lazy val nfnScalaExperiments: Project = Project(
-    "nfn-scala-experiments",
-    file("nfn-scala-experiments"),
+  lazy val nfnRunnables: Project = Project(
+    "nfn-runnables",
+    file("nfn-runnables"),
     settings = buildSettings
   ).dependsOn(nfn)
 
