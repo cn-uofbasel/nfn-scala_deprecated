@@ -2,6 +2,8 @@ package myutil
 
 import java.io._
 
+import scala.util.Random
+
 /**
  * Created by basil on 08/04/14.
  */
@@ -49,5 +51,9 @@ object IOHelper {
   def inToOut(is: InputStream, os: OutputStream) = {
     Iterator.continually(is.read).takeWhile(_ != -1)
                                  .foreach(os.write)
+  }
+
+  def uniqueFileName(prefix: String): String = {
+    s"$prefix-${System.nanoTime()}${Random.nextLong()}"
   }
 }

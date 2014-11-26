@@ -1,10 +1,13 @@
 package production
 
-import ccn.packet.CCNName
+import java.io.File
+
+import ccn.packet.{Content, CCNName}
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{StaticConfig, ComputeNodeConfig, RouterConfig}
-import nfn.service.{WordCountService, PandocService}
-import nfn.service.WordCountService
+import myutil.IOHelper
+import nfn.service.{WordCount, Pandoc}
+import nfn.service.WordCount
 import node.LocalNode
 
 
@@ -45,10 +48,23 @@ object ComputeServer extends Logging {
 
           val node = LocalNode(routerConfig, Some(computeNodeConfig))
 
-          val wc = new WordCountService()
-          val pandoc = new PandocService
+          val wc = new WordCount()
+          val pandoc = new Pandoc
           node.publishService(wc)
           node.publishService(pandoc)
+          node += Content(node.prefix.append("docs", "tinymd"),
+            """
+              |# TODO List
+              |* ~~NOTHING~~
+            """.stripMargin.getBytes)
+
+          val ccnlTutorialMdPath = "doc/tutorial/tutorial.md"
+
+          val tutorialMdName = node.prefix.append(CCNName("docs", "tutorialmd"))
+          val ccnlHome = System.getenv("CCNL_HOME")
+          val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
+          val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
+          node += Content(tutorialMdName, tutorialMdData)
         }
         case _ => printUsageAndExit
       }

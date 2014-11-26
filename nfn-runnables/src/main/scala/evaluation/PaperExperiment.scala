@@ -85,12 +85,12 @@ object PaperExperiment extends App {
 
   // remove for exp6
   if(expNum != 6) {
-    node3.publishService(new WordCountService())
+    node3.publishService(new WordCount())
   }
 
-  node4.publishService(new WordCountService())
+  node4.publishService(new WordCount())
 
-  val wcPrefix = new WordCountService().ccnName
+  val wcPrefix = new WordCount().ccnName
 
   // remove for exp3
   if(expNum != 3 && expNum != 7) {

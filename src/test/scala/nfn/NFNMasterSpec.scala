@@ -8,7 +8,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import config.StaticConfig
 import lambdacalculus.parser.ast._
 import monitor.Monitor
-import nfn.service.WordCountService
+import nfn.service.WordCount
 import nfn.service._
 import node.{LocalNode, LocalNodeFactory}
 import org.scalatest._
@@ -103,12 +103,12 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
 
     // remove for exp6
     if (expNum != 6) {
-      node3.publishService(new WordCountService())
+      node3.publishService(new WordCount())
     }
 
-    node4.publishService(new WordCountService())
+    node4.publishService(new WordCount())
 
-    val wcPrefix = new WordCountService().ccnName
+    val wcPrefix = new WordCount().ccnName
 
     // remove for exp3
     if (expNum != 3 && expNum != 7) {
@@ -146,7 +146,7 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     implicit val useThunks: Boolean = false
 
     val ts = new Translate().toString
-    val wc = new WordCountService().toString
+    val wc = new WordCount().toString
     val nack = new NackServ().toString
 
     val exp1 = wc appl docname1

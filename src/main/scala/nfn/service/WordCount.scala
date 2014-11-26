@@ -2,13 +2,11 @@ package nfn.service
 
 import akka.actor.ActorRef
 
-class WordCountService() extends NFNService {
-
+class WordCount() extends NFNService {
   override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (docs, _) =>
 
-    def splitString(s: String): Int = s.split(" ").size
+    def splitString(s: String) = s.split(" ").size
 
-    Thread.sleep(500)
     NFNIntValue(
       docs.map({
         case doc: NFNContentObjectValue => splitString(new String(doc.data))
@@ -20,3 +18,4 @@ class WordCountService() extends NFNService {
     )
   }
 }
+

@@ -262,10 +262,14 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
           // if it is a redirect, send an interest for each pending face with the redirect name
           // otherwise return the ocntent object to all pending faces
           if(!content.name.isCompute && content.data.startsWith(redirect)) {
-            val nameCmps = new String(content.data).split("\n").toList.tail
-            logger.info(s"Redirect for $nameCmps")
+
+            val nameCmps: List[String] = new String(content.data).split("redirect:")(1).split("/").tail.toList
+
+            val unescapedNameCmps = CCNLiteInterfaceCli.unescapeCmps(nameCmps)
+
+            logger.info(s"Redirect for $unescapedNameCmps")
             implicit val timeout = Timeout(defaultTimeoutDuration)
-            (self ? NFNApi.CCNSendReceive(Interest(CCNName(nameCmps, None)), useThunks = false)).mapTo[CCNPacket] map {
+            (self ? NFNApi.CCNSendReceive(Interest(CCNName(unescapedNameCmps, None)), useThunks = false)).mapTo[CCNPacket] map {
               case c: Content => {
                 pendingFaces foreach { pendingFace => pendingFace ! c }
                 pit.remove(content.name)

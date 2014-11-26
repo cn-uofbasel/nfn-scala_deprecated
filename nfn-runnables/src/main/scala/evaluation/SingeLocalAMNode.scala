@@ -3,7 +3,7 @@ package evaluation
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.ConfigFile
 import com.typesafe.config.ConfigFactory
 import config.{ComputeNodeConfig, RouterConfig, CombinedNodeConfig}
-import nfn.service.{WordCountService, Translate}
+import nfn.service.{WordCount, Translate}
 
 import scala.concurrent.duration._
 import akka.util.Timeout
@@ -13,7 +13,7 @@ import node.{LocalNodeFactory, LocalNode}
 import lambdacalculus.parser.ast.{Expr, LambdaDSL}
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
-import nfn.service.WordCountService
+import nfn.service.WordCount
 import scala.util.Success
 import scala.util.Failure
 import scala.Some
@@ -42,7 +42,7 @@ object SingeLocalAMNode extends App {
 
   node cache content
 
-  val wc = new WordCountService().toString
+  val wc = new WordCount().toString
 
   val translate = new Translate().toString
 

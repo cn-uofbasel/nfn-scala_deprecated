@@ -14,9 +14,15 @@ import scala.util.{Random, Failure, Success}
 object CCNLiteInterfaceCli {
   val maxChunkSize = 4096
 
-  def escapeCmp(cmp: String): String =  cmp.replace("/", "%" + Integer.toHexString('/'))
+  def charToHex(char: Char) =  Integer.toHexString('/')
+
+  def escapeCmp(cmp: String): String =  cmp.replace("/", "%" + charToHex('/'))
 
   def escapeCmps(cmps: List[String]): List[String] = cmps map { escapeCmp }
+
+  def unescapeCmps(cmps: List[String]): List[String] = cmps map { unescapeCmp }
+
+  def unescapeCmp(cmp: String): String =  cmp.replace("%2f", "/")
 }
 
 case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {

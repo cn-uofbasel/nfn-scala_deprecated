@@ -294,16 +294,7 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
   def sendReceive(req: Interest)(implicit useThunks: Boolean): Future[Content] = {
     (nfnMaster ? NFNApi.CCNSendReceive(req, useThunks)).mapTo[CCNPacket] map {
       case n: Nack => throw new Exception(":NACK")
-      case c: Content => {
-
-//        val redirect = "redirect:".getBytes
-//        if(c.data.startsWith(redirect)) {
-//          val nameCmps = new String(c.data).split("\n").toList.tail
-//          logger.info(s"Redirect for $nameCmps")
-//          sendReceive(Interest(CCNName(nameCmps, None)))
-//        } else Future(c)
-        c
-      }
+      case c: Content =>  c
       case i: Interest => throw new Exception("An interest was returned, this should never happen")
       case a: AddToCacheAck => ???
       case a: AddToCacheNack => throw new Exception("Add content to cache failed!")

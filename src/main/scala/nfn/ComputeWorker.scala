@@ -72,20 +72,13 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
       name.expression match {
         case Some(expr) =>
           val redirectName = nodePrefix.cmps ++ List(expr)
-          val redirectComponents: List[String] = "redirect:" :: redirectName
+          ccnServer ! NFNApi.AddToCCNCache(Content(CCNName(redirectName, None), data))
 
-          implicit val timeout: Timeout = Timeout(10.seconds)
+          Thread.sleep(1000)
 
-          val fut = ccnServer ? NFNApi.AddToCCNCache(Content(CCNName(redirectName, None), data))
-//          Await.result(fut, 10 seconds)
-          // TODO: Fix this sleep!
-          logger.debug("going to sleep")
-          Thread.sleep(500)
-          logger.debug("slept 1 second")
-
-//          fut map { _ =>
-            Future(redirectComponents.mkString("\n").getBytes)
-//          }
+          val escapedComponents = CCNLiteInterfaceCli.escapeCmps(redirectName)
+          val redirectResult: String = "redirect:" + escapedComponents.mkString("/", "/", "")
+          Future(redirectResult.getBytes)
         case None => throw new Exception(s"Name $name could not be transformed to an expression")
       }
     } else Future(data)
