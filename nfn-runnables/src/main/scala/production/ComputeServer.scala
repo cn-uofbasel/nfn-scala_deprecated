@@ -52,7 +52,7 @@ object ComputeServer extends Logging {
           val pandoc = new Pandoc
           node.publishService(wc)
           node.publishService(pandoc)
-          node += Content(node.prefix.append("docs", "tinymd"),
+          node += Content(node.prefix.append("docs", "tiny_md"),
             """
               |# TODO List
               |* ~~NOTHING~~
@@ -60,7 +60,7 @@ object ComputeServer extends Logging {
 
           val ccnlTutorialMdPath = "doc/tutorial/tutorial.md"
 
-          val tutorialMdName = node.prefix.append(CCNName("docs", "tutorialmd"))
+          val tutorialMdName = node.prefix.append(CCNName("docs", "tutorial_md"))
           val ccnlHome = System.getenv("CCNL_HOME")
           val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
           val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
