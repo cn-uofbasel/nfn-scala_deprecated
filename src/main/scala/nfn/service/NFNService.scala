@@ -16,7 +16,7 @@ import myutil.IOHelper
 import nfn.NFNApi
 
 import scala.concurrent._
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object NFNService extends Logging {
 
@@ -138,37 +138,41 @@ object NFNService extends Logging {
 
     val lc = lambdacalculus.LambdaCalculus()
 
-    val res: Try[Future[CallableNFNService]] =
-      lc.parse(name) map { (parsedExpr: Expr) =>
-        val r: Future[CallableNFNService] =
-          parsedExpr match {
-            case Call(funName, argExprs) => {
+    try {
+      lc.parse(name) match {
+        case Success(parsedExpr) =>
+            parsedExpr match {
+              case Call(funName, argExprs) => {
 
-              // find service
-              val futServ: Future[NFNService] = findService(funName)
+                // find service
+                val futServ: Future[NFNService] = findService(funName)
 
-              // create or find values for args
-              val futArgs: Future[List[NFNValue]] = findArgs(argExprs)
+                // create or find values for args
+                val futArgs: Future[List[NFNValue]] = findArgs(argExprs)
 
-              import myutil.Implicit.tryToFuture
-              val futCallableServ: Future[CallableNFNService] =
-                for {
-                  args <- futArgs
-                  serv <- futServ
-                  callable <- serv.instantiateCallable(serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
-                } yield callable
+                import myutil.Implicit.tryToFuture
+                val futCallableServ: Future[CallableNFNService] =
+                  for {
+                    args <- futArgs
+                    serv <- futServ
+                    callable <- serv.instantiateCallable(serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
+                  } yield callable
 
-              futCallableServ onSuccess {
-                case callableServ => logger.info(s"Instantiated callable serv: '$name' -> $callableServ")
+                futCallableServ onSuccess {
+                  case callableServ => logger.info(s"Instantiated callable serv: '$name' -> $callableServ")
+                }
+                futCallableServ
               }
-              futCallableServ
+              case _ => throw new Exception("call is the only valid expression for a COMPUTE request")
             }
-            case _ => throw new Exception("call is the only valid expression for a COMPUTE request")
-          }
-        r
+        case Failure(ex) => {
+          Future.failed(ex)
+        }
       }
-    import myutil.Implicit.tryFutureToFuture
-    res
+    } catch {
+      case e: Exception => logger.error("somtehitng went wrong", e)
+      Future.failed(e)
+    }
   }
 }
 

@@ -58,6 +58,8 @@ case class ComputeServer(nodePrefix: CCNName) extends Actor {
             logger.debug(s"Started new computation without thunks for $name")
             val computeWorker = createComputeWorker(name, sender, nodePrefix)
             computeWorkers += name -> computeWorker
+
+            // forward the compute message to the newly created compute worker
             computeWorker.tell(computeMsg, sender)
           }
         }

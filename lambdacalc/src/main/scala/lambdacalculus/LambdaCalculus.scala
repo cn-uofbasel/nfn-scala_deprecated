@@ -118,10 +118,9 @@ case class LambdaCalculus(execOrder: ExecutionOrder.ExecutionOrder = ExecutionOr
 
     parser(code) match {
       case Success(res: Expr, _) => Try(res)
-      case NoSuccess(err, next) => {
+      case NoSuccess(err, next) =>
         val msg = s"\n$err:\n${next.pos.longString}\n"
         throw new ParseException(msg)
-      }
     }
   }
 

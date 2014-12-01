@@ -43,7 +43,7 @@ object CCNLiteXmlParser extends Logging {
         unsignedByteToInt(cmp(1))
       }
 
-      CCNName(cmps map { new String(_) } toList, chunkNum)
+      CCNName(cmps.map(new String(_)).toList, chunkNum)
     }
     def parseDataCCNB(elem: Node): String = {
 

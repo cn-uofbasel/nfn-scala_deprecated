@@ -2,26 +2,18 @@ package nfn
 
 import akka.actor.{Actor, ActorRef}
 import akka.event.Logging
-import akka.util.Timeout
-import akka.pattern._
 import ccn.ccnlite.CCNLiteInterfaceCli
-import ccn.packet.{MetaInfo, CCNName, Interest, Content}
-import nfn.NFNApi.AddToCCNCache
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
-import nfn.service.{NFNServiceExecutionException, NFNValue, NFNService, CallableNFNService}
+import ccn.packet.{CCNName, Content, MetaInfo}
+import nfn.ComputeWorker._
+import nfn.service.{CallableNFNService, NFNService, NFNValue}
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import myutil.IOHelper
-import ComputeWorker._
 
 object ComputeWorker {
   case class Callable(callable: CallableNFNService)
   case class End()
 }
 
-/**
- *
- */
 case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor {
   import context.dispatcher
 
@@ -36,13 +28,14 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
 
   // Received compute request
   // Make sure it actually is a compute request and forward to the handle method
-  def receivedComputeRequest(computeName: CCNName, useThunks: Boolean, requestor: ActorRef) = {
+  def prepareCallable(computeName: CCNName, useThunks: Boolean, requestor: ActorRef): Option[Future[CallableNFNService]] = {
     if(computeName.isCompute && computeName.isNFN) {
-      logger.debug(s"Received thunk request: $computeName")
+      logger.debug(s"Received compute request: $computeName")
       val computeCmps = computeName.withoutCompute.withoutThunk.withoutNFN
       handleComputeRequest(computeCmps, computeName, useThunks, requestor)
     } else {
       logger.error(s"Dropping compute interest $computeName, because it does not begin with ${CCNName.computeKeyword}, end with ${CCNName.nfnKeyword} or is not a thunk, therefore is not a valid compute interest")
+      None
     }
   }
 
@@ -51,10 +44,11 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
    * Parses the compute request and instantiates a callable service.
    * On success, sends a thunk back if required, executes the services and sends the result back.
    */
-  def handleComputeRequest(computeName: CCNName, originalName: CCNName, useThunks:Boolean, requestor: ActorRef) = {
+  def handleComputeRequest(computeName: CCNName, originalName: CCNName, useThunks:Boolean, requestor: ActorRef): Option[Future[CallableNFNService]] = {
     logger.debug(s"Handling compute request for name: $computeName")
     assert(computeName.cmps.size == 1, "Compute cmps at this moment should only have one component")
     val futCallableServ: Future[CallableNFNService] = NFNService.parseAndFindFromName(computeName.cmps.head, ccnServer)
+
 
     // send back thunk content when callable service is creating (means everything was available)
     if(useThunks) {
@@ -64,7 +58,7 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
       }
     }
     maybeFutCallable = Some(futCallableServ)
-
+    maybeFutCallable
   }
 
   def resultDataOrRedirect(data: Array[Byte], name: CCNName, ccnServer: ActorRef): Future[Array[Byte]] = {
@@ -84,45 +78,43 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
     } else Future(data)
   }
 
+  def executeCallable(futCallable: Future[CallableNFNService], name: CCNName, senderCopy: ActorRef) = {
+    futCallable flatMap { callable =>
+      val resultValue: NFNValue = callable.exec
+      val futResultData = resultDataOrRedirect(resultValue.toDataRepresentation, name, ccnServer)
+      futResultData map { resultData =>
+
+        Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
+
+      }
+    } onComplete {
+      case Success(content) => {
+        logger.info(s"Finished computation, result: $content")
+        senderCopy ! content
+      }
+      case Failure(ex) => {
+        logger.error(ex, s"Error when executing the service $name.")
+      }
+    }
+  }
+
   override def receive: Actor.Receive = {
     case ComputeServer.Thunk(name) => {
-      receivedComputeRequest(name, useThunks = true, sender)
+      prepareCallable(name, useThunks = true, sender)
     }
     case msg @ ComputeServer.Compute(name) => {
-
       val senderCopy = sender
       maybeFutCallable match {
         case Some(futCallable) => {
-          futCallable onComplete {
-            case Success(callable) => {
-              try {
-                val resultValue: NFNValue = callable.exec
-
-                val futResultData = resultDataOrRedirect(resultValue.toDataRepresentation, name, ccnServer)
-
-                futResultData map { resultData =>
-
-                  val content = Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
-
-                  logger.info(s"Finished computation, result: $content")
-                  senderCopy ! content
-                }
-              } catch {
-                case e: NFNServiceExecutionException => {
-                  logger.error(e, s"Error when executing the service $name, return a NACK to the sender.")
-                  senderCopy ! Content(name, ":NACK".getBytes, MetaInfo.empty)
-                }
-              }
-            }
-            case Failure(e) => {
-              logger.error(e, s"There was an error when creating the callable service for $name")
-            }
-          }
+          executeCallable(futCallable, name, senderCopy)
         }
         case None =>
           // Compute request was send directly without a Thunk message
-          receivedComputeRequest(name, useThunks = false, sender)
-          self.tell(msg, sender)
+          // This means we can prepare the callable by direclty invoking receivedComputeRequest
+          prepareCallable(name, useThunks = false, senderCopy) match {
+            case Some(futCallable) => executeCallable(futCallable, name, senderCopy)
+            case None => logger.warning(s"Could not prepare a callable for name $name")
+          }
       }
     }
     case End() => context.stop(self)
