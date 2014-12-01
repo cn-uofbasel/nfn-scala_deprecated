@@ -57,10 +57,11 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   override def mkBinaryInterest(interest: Interest)(implicit ec: ExecutionContext): Future[Array[Byte]] = {
     val mkI = "ccn-lite-mkI"
 
-    val chunkCmps = interest.name.chunkNum match {
-      case Some(chunkNum) => List("-n", s"$chunkNum", "-e", s"${System.nanoTime().toInt}")
+    val chunkCmps = (interest.name.chunkNum match {
+      case Some(chunkNum) => List("-n", s"$chunkNum")
       case None => Nil
-    }
+    }) //++ List("-e", s"${System.nanoTime().toInt}")
+
     val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableCmpsAndNfnString(interest.name)
     SystemCommandExecutor(List(cmds)).futExecute() map {
       case ExecutionSuccess(_, data) => data
