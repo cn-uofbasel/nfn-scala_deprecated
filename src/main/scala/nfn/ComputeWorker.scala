@@ -14,6 +14,8 @@ object ComputeWorker {
   case class End()
 }
 
+class e extends Throwable
+
 case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor {
   import context.dispatcher
 
@@ -29,36 +31,25 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
   // Received compute request
   // Make sure it actually is a compute request and forward to the handle method
   def prepareCallable(computeName: CCNName, useThunks: Boolean, requestor: ActorRef): Option[Future[CallableNFNService]] = {
-    if(computeName.isCompute && computeName.isNFN) {
-      logger.debug(s"Received compute request: $computeName")
-      val computeCmps = computeName.withoutCompute.withoutThunk.withoutNFN
-      handleComputeRequest(computeCmps, computeName, useThunks, requestor)
+    if (computeName.isCompute && computeName.isNFN) {
+      logger.debug(s"Received compute request, creating calable for: $computeName")
+      val rawComputeName = computeName.withoutCompute.withoutThunk.withoutNFN
+      assert(rawComputeName.cmps.size == 1, "Compute cmps at this moment should only have one component")
+
+      val futCallableServ: Future[CallableNFNService] = NFNService.parseAndFindFromName(rawComputeName.cmps.head, ccnServer)
+      // send back thunk content when callable service is creating (means everything was available)
+      if (useThunks) {
+        futCallableServ foreach { callableServ =>
+          // TODO: No default value for default time estimate
+          requestor ! Content(computeName, callableServ.executionTimeEstimate.fold("")(_.toString).getBytes, MetaInfo.empty)
+        }
+      }
+      maybeFutCallable = Some(futCallableServ)
+      maybeFutCallable
     } else {
       logger.error(s"Dropping compute interest $computeName, because it does not begin with ${CCNName.computeKeyword}, end with ${CCNName.nfnKeyword} or is not a thunk, therefore is not a valid compute interest")
       None
     }
-  }
-
-
-  /*
-   * Parses the compute request and instantiates a callable service.
-   * On success, sends a thunk back if required, executes the services and sends the result back.
-   */
-  def handleComputeRequest(computeName: CCNName, originalName: CCNName, useThunks:Boolean, requestor: ActorRef): Option[Future[CallableNFNService]] = {
-    logger.debug(s"Handling compute request for name: $computeName")
-    assert(computeName.cmps.size == 1, "Compute cmps at this moment should only have one component")
-    val futCallableServ: Future[CallableNFNService] = NFNService.parseAndFindFromName(computeName.cmps.head, ccnServer)
-
-
-    // send back thunk content when callable service is creating (means everything was available)
-    if(useThunks) {
-      futCallableServ foreach { callableServ =>
-        // TODO: No default value for default time estimate
-        requestor ! Content(originalName, callableServ.executionTimeEstimate.fold("")(_.toString).getBytes, MetaInfo.empty)
-      }
-    }
-    maybeFutCallable = Some(futCallableServ)
-    maybeFutCallable
   }
 
   def resultDataOrRedirect(data: Array[Byte], name: CCNName, ccnServer: ActorRef): Future[Array[Byte]] = {
@@ -78,7 +69,7 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
     } else Future(data)
   }
 
-  def executeCallable(futCallable: Future[CallableNFNService], name: CCNName, senderCopy: ActorRef) = {
+  def executeCallable(futCallable: Future[CallableNFNService], name: CCNName, senderCopy: ActorRef): Unit = {
     futCallable flatMap { callable =>
       val resultValue: NFNValue = callable.exec
       val futResultData = resultDataOrRedirect(resultValue.toDataRepresentation, name, ccnServer)
@@ -117,6 +108,9 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
           }
       }
     }
-    case End() => context.stop(self)
+    case End() => {
+      logger.debug("received End message")
+      context.stop(self)
+    }
   }
 }

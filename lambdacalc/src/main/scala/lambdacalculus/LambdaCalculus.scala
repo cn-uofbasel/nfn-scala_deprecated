@@ -19,7 +19,7 @@ object ExecutionOrder extends Enumeration {
   val CallByValue = Value("CallByValue")
 }
 
-case class ParseException(msg: String) extends Throwable(msg)
+case class ParseException(msg: String) extends Exception(msg)
 
 object LambdaCalculusDecompilation extends App {
 
