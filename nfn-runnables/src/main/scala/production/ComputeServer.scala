@@ -12,7 +12,7 @@ import node.LocalNode
 
 
 
-object ComputeServer extends Logging {
+object StandaloneComputeServer extends Logging {
 
 
 
