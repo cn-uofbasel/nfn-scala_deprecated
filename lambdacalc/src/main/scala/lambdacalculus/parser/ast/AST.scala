@@ -102,8 +102,8 @@ case class Let(name: String, letExpr: Expr, code: Option[Expr]) extends Expr {
 }
 case class IfElse(test: Expr, thenn: Expr, otherwise: Expr) extends Expr
 case class NopExpr() extends Expr
-case class Call(name: String, args: List[Expr]) extends Expr
 
+case class Call(name: String, args: List[Expr]) extends Expr
 
 
 

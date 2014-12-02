@@ -1,5 +1,7 @@
 package lambdacalculus.parser
 
+import lambdacalculus.ParseException
+
 import scala.util.parsing.combinator.{Parsers, PackratParsers}
 import scala.util.parsing.combinator.syntactical.StdTokenParsers
 import scala.util.parsing.combinator.lexical.StdLexical
@@ -17,13 +19,20 @@ trait LambdaParser extends Parsers {
 class StandardLambdaParser extends LambdaParser with StdTokenParsers  with PackratParsers with Logging {
   type Tokens = StdLexical
   val lexical: StdLexical =  new StdLexical {
-    override def letter = elem("letter", c => (c.isLetter || c == '/') && c != 'λ' && c != '?')
+    override def letter = elem("letter", isValidLetter)
   }
-  val keywords = Set("let", "endlet", "if", "then", "else", "call")
-  val unaryLiterals = UnaryOp.values.map(_.toString)
-  val binaryLiterals: SortedSet[String] = BinaryOp.values.map(_.toString)
 
-  lexical.delimiters ++= Seq("\\", "λ", "?", ".", "(", ")", "=", ";", "-")
+  def lambdaSymbol = 'λ'
+
+  def isValidLetter(c: Char) = (c.isLetter || c == '/') && c != lambdaSymbol
+  def keywords = Set("let", "endlet", "if", "then", "else", "call")
+  def unaryLiterals = UnaryOp.values.map(_.toString)
+  def binaryLiterals: SortedSet[String] = BinaryOp.values.map(_.toString)
+
+
+  def delimiters: Seq[String] = Seq(lambdaSymbol.toString, ".", "(", ")", "=", ";", "-")
+
+  lexical.delimiters ++= delimiters
   lexical.reserved ++= keywords ++ binaryLiterals ++ unaryLiterals
   type P[+T] = PackratParser[T]
 
@@ -32,8 +41,7 @@ class StandardLambdaParser extends LambdaParser with StdTokenParsers  with Packr
 
   lazy val expr:        P[Expr]       = let | application | notApp
   lazy val notApp:      P[Expr]       = ifthenelse | call | binary | unary | str | variable | number | lambda | parens
-
-  lazy val lambda:      P[Clos]       = positioned(("λ" | "\\")  ~> ident ~ ("." ~> expr) ^^ { case name ~ body => Clos(name, body) })
+  lazy val lambda:      P[Clos]       = positioned(lambdaSymbol.toString  ~> ident ~ ("." ~> expr) ^^ { case name ~ body => Clos(name, body) })
   lazy val application: P[Application]= positioned(expr ~ notApp ^^ { case left ~ right => Application(left, right) })
   lazy val parens:      P[Expr]       = "(" ~> expr <~ ")"
   lazy val str:         P[Str]        = positioned(stringLit ^^ { case s => Str(s) })
@@ -45,7 +53,11 @@ class StandardLambdaParser extends LambdaParser with StdTokenParsers  with Packr
     { case name ~ fun ~ code => Let(name, fun, Some(code))})
   lazy val ifthenelse:  P[IfElse]     = positioned(("if" ~> expr) ~ ("then" ~> expr) ~ ("else" ~> expr) ^^
     { case test ~ thenn ~ otherwise => IfElse(test, thenn, otherwise) })
-  lazy val call:       P[Call]        = positioned(("call" ~> numericLit) ~ ident ~ rep(notApp) ^^ { case n ~ i ~ exprs=> Call(i, exprs)})
+  lazy val call:       P[Call]        = positioned(("call" ~> numericLit) ~ ident ~ rep(notApp) ^^ { case n ~ id ~ exprs =>
+    if(exprs.size == Integer.parseInt(n) - 1)
+      Call(id, exprs)
+    else throw new ParseException(s"parsed call with wrong number of arguments (${Integer.parseInt(n) -1} instead of ${exprs.size} ($exprs)), to circumvent this issue put parantheses around calls, introduce an 'endcall' or improve parser")
+  })
 
   // TODO take care of left/right evaluation order
   lazy val unary :      P[UnaryExpr]  = positioned( unaryLiteralsToParse ~ notApp ^^ { case lit ~ v => UnaryExpr(UnaryOp.withName(lit), v)})
