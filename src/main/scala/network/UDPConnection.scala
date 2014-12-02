@@ -6,6 +6,7 @@ import akka.actor._
 import akka.event.Logging
 import akka.io.{IO, Udp}
 import akka.util.ByteString
+import akka.actor.Stash
 import network.UDPConnection._
 
 object UDPConnection {
@@ -33,7 +34,7 @@ object UDPConnection {
  * @param local Socket to listen for data
  * @param maybeTarget If Some(addr), the connection sends data to the target on receiving [[Send]] messages
  */
-class UDPConnection(local:InetSocketAddress, maybeTarget:Option[InetSocketAddress]) extends Actor {
+class UDPConnection(local:InetSocketAddress, maybeTarget:Option[InetSocketAddress]) extends Actor with Stash {
   import context.system
 
   val name = self.path.name
@@ -41,8 +42,6 @@ class UDPConnection(local:InetSocketAddress, maybeTarget:Option[InetSocketAddres
   val logger = Logging(context.system, this)
 
   private var workers: List[ActorRef] = Nil
-
-  private var notConnectedSendQueue = List[Send]()
 
   override def preStart() = {
     // IO is the manager of the akka IO layer, send it a request
@@ -59,18 +58,13 @@ class UDPConnection(local:InetSocketAddress, maybeTarget:Option[InetSocketAddres
     // Received udp socket actor, change receive handler to ready mehtod with reference to the socket actor
     case Udp.Bound(local) =>
       logger.info(s"$name ready")
-      if(notConnectedSendQueue.size > 0 ) {
-        logger.info(s"Sending ${notConnectedSendQueue.size} queued messages")
-      }
+      unstashAll()
       context.become(ready(sender))
-      notConnectedSendQueue foreach { self ! _ }
-      notConnectedSendQueue = Nil
     case Udp.CommandFailed(cmd) =>
       logger.error(s"Udp command '$cmd' failed")
     case send: Send => {
       logger.debug(s"Adding to queue")
-      if(notConnectedSendQueue.size > 10) logger.warning("More than 10 messages queued and still not connected")
-      notConnectedSendQueue ::= send
+      stash()
     }
     case Handler(worker) => handleWorker(worker)
   }
