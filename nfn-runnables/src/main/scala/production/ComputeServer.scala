@@ -6,8 +6,7 @@ import ccn.packet.{Content, CCNName}
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{StaticConfig, ComputeNodeConfig, RouterConfig}
 import myutil.IOHelper
-import nfn.service.{WordCount, Pandoc}
-import nfn.service.WordCount
+import nfn.service.{RemoveSpace, Reverse, WordCount, Pandoc}
 import node.LocalNode
 
 
@@ -49,9 +48,11 @@ object ComputeServer extends Logging {
           val node = LocalNode(routerConfig, Some(computeNodeConfig))
 
           val wc = new WordCount()
-          val pandoc = new Pandoc
+          val pandoc = new Pandoc()
           node.publishService(wc)
           node.publishService(pandoc)
+          node.publishService(new Reverse())
+          node.publishService(new RemoveSpace())
           node += Content(node.prefix.append("docs", "tiny_md"),
             """
               |# TODO List
