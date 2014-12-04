@@ -132,7 +132,7 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     }
 
     val dynServ = new NFNDynamicService {
-      override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (_, _) =>
+      override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
         println("yay")
         NFNIntValue(42)
       }

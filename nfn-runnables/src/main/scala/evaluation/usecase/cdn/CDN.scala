@@ -15,8 +15,8 @@ import scala.util._
 
 class ESIInclude() extends NFNService {
 
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (values: Seq[NFNValue], _) =>
-    values match {
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+    args match {
       case Seq(xmlDoc: NFNContentObjectValue, tagToReplace: NFNContentObjectValue, contentToReplaceTagWith: NFNContentObjectValue) => {
         val doc = new String(xmlDoc.data)
         val tag = new String(tagToReplace.data)
@@ -25,21 +25,21 @@ class ESIInclude() extends NFNService {
         NFNStringValue(res)
       }
       case _ =>
-        throw new NFNServiceArgumentException(s"$ccnName requires to arguments of type: name of webpage, name of tag to replace, name of content to replace tag with and not $values")
+        throw new NFNServiceArgumentException(s"$ccnName requires to arguments of type: name of webpage, name of tag to replace, name of content to replace tag with and not $args")
     }
   }
 }
 
 class RandomAd() extends NFNService {
 
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (values: Seq[NFNValue], _) =>
-    values match {
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+    args match {
       case Seq() => {
         val randomAd = s"""<div class="ad">randomly chosen ad at: ${System.currentTimeMillis}</div>"""
         NFNStringValue(randomAd)
       }
       case _ =>
-        throw new NFNServiceArgumentException(s"$ccnName requires no arguments and not $values")
+        throw new NFNServiceArgumentException(s"$ccnName requires no arguments and not $args")
     }
   }
 }

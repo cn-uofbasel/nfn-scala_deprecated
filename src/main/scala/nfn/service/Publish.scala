@@ -5,11 +5,11 @@ import ccn.packet.{CCNName, Content, MetaInfo}
 import nfn.NFNApi
 
 class Publish() extends NFNService {
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (args, nfnServer) =>
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(NFNContentObjectValue(contentName, contentData), NFNContentObjectValue(_, publishPrefixNameData), _) => {
         val nameOfContentWithoutPrefixToAdd = CCNName(new String(publishPrefixNameData).split("/").tail:_*)
-        nfnServer ! NFNApi.AddToLocalCache(Content(nameOfContentWithoutPrefixToAdd, contentData, MetaInfo.empty), prependLocalPrefix = true)
+        ccnApi ! NFNApi.AddToLocalCache(Content(nameOfContentWithoutPrefixToAdd, contentData, MetaInfo.empty), prependLocalPrefix = true)
         NFNEmptyValue()
       }
       case _ =>

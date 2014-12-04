@@ -4,8 +4,8 @@ import akka.actor.ActorRef
 import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
 
 class Pandoc extends NFNService {
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = {
-    (args, _) => args match {
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+    args match {
       case Seq(NFNContentObjectValue(_, doc), NFNStringValue(from), NFNStringValue(to)) =>
         val cmds = List("pandoc", "-f", from, "-t", to)
         SystemCommandExecutor(List(cmds), Some(doc)).execute() match {

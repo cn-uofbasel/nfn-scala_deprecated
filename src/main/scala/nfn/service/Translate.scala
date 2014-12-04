@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 
 class Translate() extends NFNService {
 
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = { (args, nfnServer) =>
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(NFNContentObjectValue(name, data)) =>
         // translating should happen here

@@ -13,23 +13,21 @@ import scala.util.Try
  */
 class MapService() extends NFNService {
 
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = {
-    (values: Seq[NFNValue], nfnMaster) => {
-      values match {
-        case Seq(NFNContentObjectValue(servName, servData), args @ _*) => {
-          val tryExec = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) map { (serv: NFNService) =>
-            NFNListValue(
-              (args map { arg =>
-                val execTime = serv.executionTimeEstimate flatMap { _ => this.executionTimeEstimate }
-                serv.instantiateCallable(serv.ccnName, Seq(arg), nfnMaster, execTime).get.exec
-              }).toList
-            )
-          }
-          tryExec.get
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+    args match {
+      case Seq(NFNContentObjectValue(servName, servData), args @ _*) => {
+        val tryExec = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) map { (serv: NFNService) =>
+          NFNListValue(
+            (args map { arg =>
+              val execTime = serv.executionTimeEstimate flatMap { _ => this.executionTimeEstimate }
+              serv.instantiateCallable(serv.ccnName, Seq(arg), ccnApi, execTime).get.exec
+            }).toList
+          )
         }
-        case _ =>
-          throw new NFNServiceArgumentException(s"A Map service must match Seq(NFNServiceValue, NFNValue*), but it was: $values ")
+        tryExec.get
       }
+      case _ =>
+        throw new NFNServiceArgumentException(s"A Map service must match Seq(NFNServiceValue, NFNValue*), but it was: $args ")
     }
   }
 }
@@ -41,27 +39,25 @@ class MapService() extends NFNService {
  */
 class ReduceService() extends NFNService {
 
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = {
-    (values: Seq[NFNValue], nfnMaster) => {
-      values match {
-        case Seq(fun: NFNServiceValue, argList: NFNListValue) => {
-          // TODO exec time
-          fun.serv.instantiateCallable(fun.serv.ccnName, argList.values, nfnMaster, None).get.exec
-        }
-        case Seq(NFNContentObjectValue(servName, servData), args @ _*) => {
-          val tryExec: Try[NFNValue] = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) flatMap {
-            (serv: NFNService) =>
-              // TODO exec time
-              serv.instantiateCallable(serv.ccnName, args, nfnMaster, None) map {
-                callableServ =>
-                  callableServ.exec
-              }
-          }
-          tryExec.get
-        }
-        case _ =>
-          throw new NFNServiceArgumentException(s"A Reduce service must match Seq(NFNServiceValue, NFNListValue), but it was: $values")
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+    args match {
+      case Seq(fun: NFNServiceValue, argList: NFNListValue) => {
+        // TODO exec time
+        fun.serv.instantiateCallable(fun.serv.ccnName, argList.values, ccnApi, None).get.exec
       }
+      case Seq(NFNContentObjectValue(servName, servData), args @ _*) => {
+        val tryExec: Try[NFNValue] = NFNService.serviceFromContent(Content(servName, servData, MetaInfo.empty)) flatMap {
+          (serv: NFNService) =>
+            // TODO exec time
+            serv.instantiateCallable(serv.ccnName, args, ccnApi, None) map {
+              callableServ =>
+                callableServ.exec
+            }
+        }
+        tryExec.get
+      }
+      case _ =>
+        throw new NFNServiceArgumentException(s"A Reduce service must match Seq(NFNServiceValue, NFNListValue), but it was: $args")
     }
   }
 }

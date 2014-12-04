@@ -7,8 +7,8 @@ import myutil.IOHelper
 import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
 
 class PDFLatex extends NFNService {
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = {
-    (args, _) => args match {
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+    args match {
       case Seq(NFNContentObjectValue(_, doc)) =>
 
         val dir = new File(s"./service-library/${IOHelper.uniqueFileName("pdflatex")}")

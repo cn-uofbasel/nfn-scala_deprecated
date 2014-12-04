@@ -180,7 +180,7 @@ trait NFNService {
 
   def executionTimeEstimate: Option[Int] = None
 
-  def function: (Seq[NFNValue], ActorRef) => NFNValue
+  def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue
 
   def instantiateCallable(name: CCNName, values: Seq[NFNValue], ccnServer: ActorRef, executionTimeEstimate: Option[Int]): Try[CallableNFNService] = {
     assert(name == ccnName, s"Service $ccnName is created with wrong name $name")

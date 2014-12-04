@@ -7,14 +7,12 @@ import akka.actor.ActorRef
  */
 class SumService() extends NFNService {
 
-  override def function: (Seq[NFNValue], ActorRef) => NFNValue = {
-    (values: Seq[NFNValue], _) => {
-      NFNIntValue(
-        values.map({
-          case i: NFNIntValue => i.i
-          case _ => throw  new NFNServiceArgumentException(s"SumService requires a sequence of NFNIntValue's and not $values")
-        }).sum
-      )
-    }
+  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+    NFNIntValue(
+      args.map({
+        case i: NFNIntValue => i.i
+        case _ => throw  new NFNServiceArgumentException(s"SumService requires a sequence of NFNIntValue's and not $args")
+      }).sum
+    )
   }
 }
