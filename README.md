@@ -34,7 +34,14 @@ To install sbt you can use homebrew (`brew install sbt`).
 #### IDE
 If you want to use IntelliJ or eclipse you can use the sbt tasks `gen-idea` or `eclipse`.
 
+#### Uninstalling:
+* Uninstall sbt (and remove `~/.sbt` if it still exists)
+* Delete `~/.ivy2` (this will of course also delete all your cached Java jars if you are using ivy)
+
 ##Running NFN
+
+For a detailed tutorial on both running CCN-Lite as well as nfn-scala go to the [tutorial](https://github.com/cn-uofbasel/ccn-lite/blob/dev-master/doc/tutorial/tutorial.md).
+In the following two very basic ways to use nfn-scala.
 
 ### Running a test project
 There are some runnables in the nfn-runnables project. In the sbt commandline type `project nfn-runnables` and then `run`. 
