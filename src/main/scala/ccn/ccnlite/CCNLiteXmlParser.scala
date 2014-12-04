@@ -23,7 +23,11 @@ object CCNLiteXmlParser extends Logging {
     val chunkMarker: Byte = 0x00
     val ndntlvMarkers: Set[Byte] = Set(chunkMarker)
 
-    def unsignedByteToInt(b: Byte): Int = b & 0xFF
+    def unsignedByteToInt(b: Array[Byte]): Int = {
+      val r = ByteBuffer.wrap(b.reverse.padTo(4, 0.toByte).reverse).getInt
+      if(r < 0) throw new Exception("parsed a signed Integer, does not fit into a Integer")
+      else r
+    }
 
     def parseComponentsCCNB(elem: Elem):Seq[String] = {
       val components = elem \ "name" \ "component"
@@ -31,7 +35,7 @@ object CCNLiteXmlParser extends Logging {
       components.map { parseDataCCNB }
     }
 
-    def ndntlvParseName(elem: Elem):CCNName = {
+    def ndntlvParseName(elem: Elem): CCNName = {
 
       val components = elem \ "Name" \ "NameComponent" \ "data"
 
@@ -40,7 +44,7 @@ object CCNLiteXmlParser extends Logging {
       val (cmps, markedCmps) = cmpsWithMarkers.partition { cmp: Array[Byte] => cmp.nonEmpty && !ndntlvMarkers.contains(cmp(0)) }
       val chunkComp = markedCmps.find { cmp => cmp(0) == chunkMarker}
       val chunkNum = chunkComp map { cmp =>
-        unsignedByteToInt(cmp(1))
+        unsignedByteToInt(cmp.tail)
       }
 
       CCNName(cmps.map(new String(_)).toList, chunkNum)
@@ -99,7 +103,7 @@ object CCNLiteXmlParser extends Logging {
       val nameComponents = packet \ "Name" \ "NameSegment" map { ns => new String(decodeBase64(ns.text.trim)) }
       val chunkNum:Option[Int] =
         (packet \ "Name" \ "Chunk").headOption map {
-          c => unsignedByteToInt(decodeBase64(c.text.trim)(0))
+          c => unsignedByteToInt(decodeBase64(c.text.trim))
         }
 
       CCNName(nameComponents.toList, chunkNum)
@@ -177,7 +181,7 @@ object CCNLiteXmlParser extends Logging {
             val name = ccntlvParseName(content)
             val contentData = content \ "Payload" map {d => decodeBase64(d.text.trim) } reduceLeft(_ ++ _)
             val lastChunkNum = (content \ "MetaData" \ "EndChunk").headOption map {
-              c => unsignedByteToInt(decodeBase64(c.text.trim)(0))
+              c => unsignedByteToInt(decodeBase64(c.text.trim))
             }
             if(contentData.startsWith(":NACK".getBytes)) {
               Nack(name)
@@ -242,7 +246,7 @@ object CCNLiteXmlParser extends Logging {
                 None
               } else {
                 // TODO: this probably breaks for large numbers because it does ignore the NDNTLV encoding of includedNonNegInt
-                Some(unsignedByteToInt(lastChunkNumData(1)))
+                Some(unsignedByteToInt(lastChunkNumData.tail))
               }
             }
             if(contentData.startsWith(":NACK".getBytes)) {
