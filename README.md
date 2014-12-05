@@ -44,12 +44,12 @@ For a detailed tutorial on both running CCN-Lite as well as nfn-scala go to the 
 In the following two very basic ways to use nfn-scala.
 
 ### Running a test project
-There are some runnables.runnables in the nfn-runnables.runnables project. In the sbt commandline type `project nfn-runnables.runnables` and then `run`. 
+There are some runnables.runnables in the nfn-runnables.runnables project. In the sbt commandline type `run`. 
 Choose from a list of runnable applications, e.g. `runnables.evaluation.PaperExperiment` which runs the currently selected expriment (change in source code).
 
 ### Starting a standalone compute server
 If you want to start CCN-lite yourself and have only a compute server, start CCN-Lite first and then use the following command:
-`sbt 'project nfn-runnables.runnables'  'runMain runnables.production.StandaloneComputeServer /node/node1 /tmp/mgmt.sock 9000 9001 debug'` in the shell. 
+`sbt 'runMain runnables.production.StandaloneComputeServer /node/node1 /tmp/mgmt.sock 9000 9001 debug'` in the shell. 
 This application starts the compute server and will setup the faces to CCN-Lite and publish the WordCount and Pandoc functions as well as two markdown documents (a small one as well as the CCN-Lite tutorial)
 `/node/node1` is the prefix (e.g. prefix of nfn testbed node is `/ndn/ch/unibas/nfn`). 
 `/tmp/mgmt.sock` is the socket where the management commands are send to. The first port is the port of CCN-Lite, the second port is the port of the compute server itself.
