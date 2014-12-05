@@ -5,6 +5,7 @@ import java.io.File
 import ccn.{CCNWireFormat, CCNInterface}
 import ccn.packet._
 import com.typesafe.scalalogging.slf4j.Logging
+import config.SystemEnvironment
 import myutil.IOHelper
 import myutil.systemcomandexecutor._
 
@@ -27,15 +28,8 @@ object CCNLiteInterfaceCli {
 
 case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {
 
-  val ccnLiteEnv = {
-    val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
-    if(maybeCcnLiteEnv == null) {
-      throw new Exception("CCNL_HOME system variable is not set. Set it to the root directory of ccn-lite.")
-    }
-
-    maybeCcnLiteEnv
-  }
-  val utilFolderName = s"$ccnLiteEnv/util/"
+  val ccnLiteEnv = SystemEnvironment.ccnLiteEnv
+  val binFolderName = s"$ccnLiteEnv/bin/"
 
   private def ccnNameToRoutableCmpsAndNfnString(name: CCNName): List[String] = {
     val nameCmps = name.cmps
@@ -62,7 +56,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
       case None => Nil
     }) ++ List("-e", s"${Random.nextInt()}")
 
-    val cmds: List[String] = List(utilFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableCmpsAndNfnString(interest.name)
+    val cmds: List[String] = List(binFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableCmpsAndNfnString(interest.name)
     SystemCommandExecutor(List(cmds)).futExecute() map {
       case ExecutionSuccess(_, data) => data
       case execErr: ExecutionError =>
@@ -75,7 +69,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
   }
   def mkBinaryContent(content: Content, chunkSize: Int)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
     val mkC = "ccn-lite-mkC"
-    val baseCmds = List(utilFolderName+mkC, "-s", s"$wireFormat")
+    val baseCmds = List(binFolderName+mkC, "-s", s"$wireFormat")
 
     // split into chunk size
     val dataChunks = content.data.grouped(chunkSize).toList
@@ -107,7 +101,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
   override def wireFormatDataToXmlPacket(binaryPacket: Array[Byte])(implicit ec: ExecutionContext): Future[CCNPacket] = {
     val pktdump = "ccn-lite-pktdump"
-    val cmds = List(utilFolderName+pktdump, "-f", "1")
+    val cmds = List(binFolderName+pktdump, "-f", "1")
 
     SystemCommandExecutor(List(cmds), Some(binaryPacket)).futExecute() map {
       case ExecutionSuccess(_, data) =>
@@ -143,7 +137,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
           val ccnbAbsoluteFilename: String = file.getCanonicalPath
 
           val ctrl = "ccn-lite-ctrl"
-          val cmds = List(utilFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
+          val cmds = List(binFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
           val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(List(cmds)).futExecute() map {
             case ExecutionSuccess(_, data) => data
             case execErr: ExecutionError =>

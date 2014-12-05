@@ -22,7 +22,7 @@ object PandocApp extends App {
   val nodes = List(node1)
 //  node1 <~> node2
 
-  val ccnlTutorialMdPath = "doc/tutorial/tutorial.md"
+  val ccnlTutorialMdPath = "tutorial/tutorial.md"
 
   val tutorialMdName = node1.prefix.append(CCNName(ccnlTutorialMdPath.split("/").toList.map{ n => n.replace(".", "")}, None))
   val ccnlHome = System.getenv("CCNL_HOME")

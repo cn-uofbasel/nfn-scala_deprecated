@@ -37,6 +37,7 @@ object NFNApi {
   case class CCNSendReceive(interest: Interest, useThunks: Boolean)
 
   case class AddToCCNCache(content: Content)
+  case class AddToCCNCacheAck(name: CCNName)
 
   case class AddToLocalCache(content: Content, prependLocalPrefix: Boolean = false)
 
@@ -423,13 +424,18 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     }
 
     case NFNApi.AddToCCNCache(content) => {
+      val senderCopy = sender
       logger.info(s"creating add to cache messages for $content")
+      cs.add(content)
       ccnIf.mkAddToCacheInterest(content) onComplete {
         case Success(binaryAddToCacheReqs) =>
           logger.debug(s"sending ${binaryAddToCacheReqs.size} add to cache requests for ${content.name} to the network")
           binaryAddToCacheReqs foreach { binaryAddToCacheReq =>
             nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
+            Thread.sleep(3)
           }
+          logger.debug("sending back AddToCacheAck")
+          senderCopy ! NFNApi.AddToCCNCacheAck(content.name)
         case Failure(ex) => logger.error(ex, s"Could not add to CCN cache for $content")
       }
     }

@@ -3,6 +3,7 @@ package config
 import java.util.concurrent.TimeUnit
 
 import akka.event.Logging.LogLevel
+import akka.util.Timeout
 import ccn.CCNWireFormat
 import ccn.packet.CCNName
 import com.typesafe.config.ConfigException.BadValue
@@ -32,6 +33,8 @@ object StaticConfig {
   def isThunkEnabled = config.getBoolean("nfn-scala.usethunks")
 
   def defaultTimeoutDuration = Duration(config.getInt("nfn-scala.defaulttimeoutmillis"), TimeUnit.MILLISECONDS)
+
+  def defaultTimeout = Timeout(defaultTimeoutDuration)
 
   def debugLevel = {
     val lvl =  maybeDebugLevel.getOrElse(config.getString("nfn-scala.debuglevel"))
@@ -86,7 +89,7 @@ object LogLevelSLF4J {
 object SystemEnvironment {
   val ccnLiteEnv: String = {
     val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
-    if(maybeCcnLiteEnv == null) {
+    if(maybeCcnLiteEnv == null || maybeCcnLiteEnv == "") {
       throw new Exception("CCNL_HOME system variable is not set. Set it to the root directory of your local ccn-lite copy and compile it.")
     }
     maybeCcnLiteEnv

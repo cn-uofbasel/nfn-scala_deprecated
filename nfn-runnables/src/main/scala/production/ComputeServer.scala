@@ -76,7 +76,7 @@ object StandaloneComputeServer extends Logging {
 
 
           // Read the tutorial form the ccn-lite documentation and publish it
-          val ccnlTutorialMdPath = "doc/tutorial/tutorial.md"
+          val ccnlTutorialMdPath = "tutorial/tutorial.md"
 
           val tutorialMdName = node.prefix.append(CCNName("docs", "tutorial_md"))
           val ccnlHome = System.getenv("CCNL_HOME")

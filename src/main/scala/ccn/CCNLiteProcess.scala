@@ -115,7 +115,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     if(!nodeConfig.isAlreadyRunning) {
       val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/ccn-lite-relay" else s"$ccnLiteEnv/ccn-nfn-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
-      val cmd = s"$ccnliteExecutable -v 100 -u $port -x $sockName -s $wireFormat"
+      val cmd = s"$ccnliteExecutable -v 98 -u $port -x $sockName -s $wireFormat"
       logger.debug(s"$processName-$prefix: executing: '$cmd'")
       val processBuilder = new ProcessBuilder(cmd.split(" "): _*)
       processBuilder.redirectErrorStream(true)

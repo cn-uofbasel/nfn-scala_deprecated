@@ -2,8 +2,10 @@ package nfn
 
 import akka.actor.{Actor, ActorRef}
 import akka.event.Logging
+import akka.pattern.ask
 import ccn.ccnlite.CCNLiteInterfaceCli
 import ccn.packet.{CCNName, Content, MetaInfo}
+import config.StaticConfig
 import nfn.ComputeWorker._
 import nfn.service.{CallableNFNService, NFNService, NFNValue}
 import scala.concurrent.Future
@@ -57,13 +59,17 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
       name.expression match {
         case Some(expr) =>
           val redirectName = nodePrefix.cmps ++ List(expr)
-          ccnServer ! NFNApi.AddToCCNCache(Content(CCNName(redirectName, None), data))
 
-          Thread.sleep(1000)
-
-          val escapedComponents = CCNLiteInterfaceCli.escapeCmps(redirectName)
-          val redirectResult: String = "redirect:" + escapedComponents.mkString("/", "/", "")
-          Future(redirectResult.getBytes)
+          val content = Content(CCNName(redirectName, None), data)
+          implicit val timeout = StaticConfig.defaultTimeout
+          ccnServer ? NFNApi.AddToCCNCache(content) map {
+            case NFNApi.AddToCCNCacheAck(_) =>
+              val escapedComponents = CCNLiteInterfaceCli.escapeCmps(redirectName)
+              val redirectResult: String = "redirect:" + escapedComponents.mkString("/", "/", "")
+              logger.debug(s"received AddToCacheAck, returning redirect result $redirectResult")
+              redirectResult.getBytes
+            case answer @ _ => throw new Exception(s"Asked for addToCache for $content and expected addToCacheAck but received $answer")
+          }
         case None => throw new Exception(s"Name $name could not be transformed to an expression")
       }
     } else Future(data)

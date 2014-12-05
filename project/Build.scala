@@ -14,7 +14,8 @@ object BuildSettings {
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.sonatypeRepo("releases"),
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
-    test in assembly := {}
+    test in assembly := {},
+    MainBuild.compileCCNLite
   )
 }
 
@@ -57,22 +58,6 @@ object MainBuild extends Build {
     )
   )
 
-//  lazy val lambdaMacros: Project = {
-//    val paradiseVersion = "2.0.0-M3"
-//    Project(
-//      "lambda-macros",
-//      file("lambda-macros"),
-//      settings = buildSettings ++ Seq(
-//        addCompilerPlugin("org.scalamacros" % "paradise" % paradiseVersion cross CrossVersion.full),
-//        libraryDependencies <+ (scalaVersion)("org.scala-lang" % "scala-compiler" % _),
-//        libraryDependencies ++= (
-//          if (scalaVersion.value.startsWith("2.10")) List("org.scalamacros" % "quasiquotes"  % paradiseVersion cross CrossVersion.full)
-//          else Nil
-//          )
-//      )
-//    ).dependsOn(lambdaCalculus)
-//  }
-
   lazy val nfnRunnables: Project = Project(
     "nfn-runnables",
     file("nfn-runnables"),
@@ -89,7 +74,7 @@ object MainBuild extends Build {
   val compileCCNLite = compileCCNLiteTask := {
     val ccnlPath = {
       val p = System.getenv("CCNL_HOME")
-      if(p == null) throw new Exception("CCNL_HOME no set. Get a copy of the current ccn-lite version from 'https://github.com/cn-uofbasel/ccn-lite' and set the variable to its path.")
+      if(p == null || p == "") throw new Exception("CCNL_HOME no set. Get a copy of the current ccn-lite version from 'https://github.com/cn-uofbasel/ccn-lite' and set the variable to its path.")
       else p
     }
 
@@ -98,7 +83,7 @@ object MainBuild extends Build {
 
       new java.lang.ProcessBuilder(cmds:_*)
     }
-    processBuilder.directory(new File(s"$ccnlPath"))
+    processBuilder.directory(new File(s"$ccnlPath/src"))
     val e = processBuilder.environment()
     e.put("USE_NFN", "1")
     e.put("USE_NACKS", "1")
@@ -120,7 +105,6 @@ class InputStreamToStdOut(is: InputStream) extends Runnable {
     val reader = new BufferedReader(new InputStreamReader(is))
     var line = reader.readLine
     while(line != null) {
-      println(reader.readLine())
       line = reader.readLine
     }
   }
