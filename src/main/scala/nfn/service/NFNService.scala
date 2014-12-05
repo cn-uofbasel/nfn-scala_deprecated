@@ -72,23 +72,14 @@ object NFNService extends Logging {
 
     def findService(fun: String): Future[NFNService] = {
       logger.debug(s"Looking for service $fun")
-      NFNServiceLibrary.find(fun) match {
-        case Some(serv) => {
-          future {
-            serv
-          }
-        }
-        case None => {
-          CCNName.fromString(fun) match {
-            case Some(CCNName(cmps, _)) =>
-              val interest = Interest(CCNName(cmps, None))
-              val futServiceContent: Future[Content] = loadFromCacheOrNetwork(interest)
+      CCNName.fromString(fun) match {
+        case Some(CCNName(cmps, _)) =>
+          val interest = Interest(CCNName(cmps, None))
+          val futServiceContent: Future[Content] = loadFromCacheOrNetwork(interest)
 
-              import myutil.Implicit.tryToFuture
-              futServiceContent flatMap { serviceFromContent }
-            case None => Future.failed(new Exception(s"Could not create name for service $fun"))
-          }
-        }
+          import myutil.Implicit.tryToFuture
+          futServiceContent flatMap { serviceFromContent }
+        case None => Future.failed(new Exception(s"Could not create name for service $fun"))
       }
     }
 
@@ -194,6 +185,15 @@ trait NFNService {
 
   override def toString = ccnName.toString
 
+}
+
+class ServiceException(msg: String) extends Exception(msg)
+
+case class NFNServiceExecutionException(msg: String) extends ServiceException(msg)
+case class NFNServiceArgumentException(msg: String) extends ServiceException(msg)
+
+case class CallableNFNService(name: CCNName, values: Seq[NFNValue], nfnMaster: ActorRef, function: (Seq[NFNValue], ActorRef) => NFNValue, executionTimeEstimate: Option[Int]) extends Logging {
+  def exec:NFNValue = function(values, nfnMaster)
 }
 
 abstract class NFNDynamicService() extends NFNService {

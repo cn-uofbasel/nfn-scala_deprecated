@@ -6,7 +6,7 @@ import ccn.packet.{NFNInterest, Interest, CCNName, Content}
 import com.typesafe.config.{ConfigFactory, Config}
 import lambdacalculus.parser.ast.Expr
 import myutil.IOHelper
-import nfn.service.Pandoc
+import nfn.service.{PandocTestDocuments, Pandoc}
 import node.LocalNodeFactory
 import concurrent.ExecutionContext.Implicits.global
 
@@ -22,18 +22,19 @@ object PandocApp extends App {
   val nodes = List(node1)
 //  node1 <~> node2
 
-  val ccnlTutorialMdPath = "tutorial/tutorial.md"
-
-  val tutorialMdName = node1.prefix.append(CCNName(ccnlTutorialMdPath.split("/").toList.map{ n => n.replace(".", "")}, None))
-  val ccnlHome = System.getenv("CCNL_HOME")
-  val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
-  val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
-  val tutorialMdContent = Content(tutorialMdName, tutorialMdData)
-
   val pandocServ = new Pandoc()
-  val pandoc = node1.prefix.append(pandocServ.ccnName).toString
-  node1.publishService(pandocServ)
-  node1 += tutorialMdContent
+
+  val pandoc = node1.localPrefix.append(pandocServ.ccnName).toString
+
+  val tutorialContent = PandocTestDocuments.tutorialMd(node1.localPrefix)
+  val tinyContent = PandocTestDocuments.tinyMd(node1.localPrefix)
+  node1.publishServiceLocalPrefix(pandocServ)
+  node1 += Content(tutorialContent.name, tutorialContent.data.take(20000))
+  node1 += tinyContent
+
+
+
+
 
 //  node2.addPrefixFace(pandocServ.ccnName, node1)
 
@@ -42,10 +43,11 @@ object PandocApp extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val expr: Expr = pandoc appl(tutorialMdName, str("markdown_github"), str("latex"))
+  val exprTut: Expr = pandoc appl(tutorialContent.name, str("markdown_github"), str("html"))
+  val exprTiny: Expr = pandoc appl(tinyContent.name, str("markdown_github"), str("html"))
 
 //  sendAndPrintForName(Interest(CCNName("call 4 /nfn_service_impl_Pandoc /node/node1/doc/tutorial/tutorialmd 'markdown_github' 'latex'", "NFN")))
-  sendAndPrintForName(expr)
+  sendAndPrintForName(exprTut)
 
   def sendAndPrintForName(interest: Interest) = {
     val startTime = System.currentTimeMillis

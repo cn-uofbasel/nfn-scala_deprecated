@@ -62,27 +62,14 @@ object StandaloneComputeServer extends Logging {
           // put the data of the jar into a content object.
           // The name of this service is infered from the package structure of the service as well as the prefix of the local node.
           // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
-          node.publishService(new WordCount())
-          node.publishService(new Pandoc())
-          node.publishService(new Reverse())
-          node.publishService(new RemoveSpace())
-
-          // Publish docs/tiny_md under the given prefix (e.g /node/nodeA/docs/tiny_md)
-          node += Content(node.prefix.append("docs", "tiny_md"),
-            """
-              |# TODO List
-              |* ~~NOTHING~~
-            """.stripMargin.getBytes)
+          node.publishServiceLocalPrefix(new WordCount())
+          node.publishServiceLocalPrefix(new Pandoc())
+          node.publishServiceLocalPrefix(new Reverse())
+          node.publishServiceLocalPrefix(new RemoveSpace())
 
 
-          // Read the tutorial form the ccn-lite documentation and publish it
-          val ccnlTutorialMdPath = "tutorial/tutorial.md"
-
-          val tutorialMdName = node.prefix.append(CCNName("docs", "tutorial_md"))
-          val ccnlHome = System.getenv("CCNL_HOME")
-          val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
-          val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
-          node += Content(tutorialMdName, tutorialMdData)
+          node += PandocTestDocuments.tutorialMd(node.localPrefix)
+          node += PandocTestDocuments.tinyMd(node.localPrefix)
         }
         case _ => printUsageAndExit
       }

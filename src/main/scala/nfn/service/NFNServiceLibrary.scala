@@ -13,32 +13,6 @@ import scala.reflect.runtime.{universe => ru}
 
 
 object NFNServiceLibrary extends Logging {
-  private var services:Map[CCNName, NFNService] = Map()
-
-  def add(serv: NFNService) =  {
-    val name = serv.ccnName
-    services += name -> serv
-  }
-
-  def removeAll() = services = Map()
-
-  def find(servName: String):Option[NFNService] = {
-
-    CCNName.fromString(servName) match {
-      case Some(name) =>
-        val found = services.get(name)
-        logger.debug(s"Found $found")
-        found
-      case None =>
-        logger.error(s"Could not split name $servName with '/'")
-        None
-    }
-  }
-
-  def find(servName: CCNName):Option[NFNService] = find(servName.toString)
-
-  def convertDollarToChf(dollar: Int): Int = ???
-
   def nfnPublishService(serv: NFNService, prefix: CCNName, ccnWorker: ActorRef) = {
     def pinnedData = "pinnedfunction".getBytes
 
@@ -62,17 +36,9 @@ object NFNServiceLibrary extends Logging {
     logger.debug(s"nfnPublish: Adding ${content.name} (size=${serviceContent.size}) to cache")
     ccnWorker ! NFNApi.AddToCCNCache(content)
   }
-
 }
 
-class ServiceException(msg: String) extends Exception(msg)
 
-case class NFNServiceExecutionException(msg: String) extends ServiceException(msg)
-case class NFNServiceArgumentException(msg: String) extends ServiceException(msg)
-
-case class CallableNFNService(name: CCNName, values: Seq[NFNValue], nfnMaster: ActorRef, function: (Seq[NFNValue], ActorRef) => NFNValue, executionTimeEstimate: Option[Int]) extends Logging {
-  def exec:NFNValue = function(values, nfnMaster)
-}
 
 object Main {
 

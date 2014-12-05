@@ -86,10 +86,10 @@ object CDN extends App {
   node1 += webpageContent
   node1 += esiTagContent
 
-  node1.publishService(new ESIInclude())
+  node1.publishServiceLocalPrefix(new ESIInclude())
 
-  node1.publishService(new RandomAd())
-  node2.publishService(new RandomAd())
+  node1.publishServiceLocalPrefix(new RandomAd())
+  node2.publishServiceLocalPrefix(new RandomAd())
 
   import lambdacalculus.parser.ast.LambdaDSL._
   import nfn.LambdaNFNImplicits._

@@ -1,7 +1,34 @@
 package nfn.service
 
+import java.io.File
+
 import akka.actor.ActorRef
+import ccn.packet.{CCNName, Content}
+import myutil.IOHelper
 import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
+
+
+object PandocTestDocuments {
+  def tinyMd(prefix: CCNName) =
+    Content(prefix.append("docs", "tiny_md"),
+      """
+        |# TODO List
+        |* ~~NOTHING~~
+      """.stripMargin.getBytes)
+
+
+
+  def tutorialMd(prefix: CCNName) = {
+    // Read the tutorial form the ccn-lite documentation and publish it
+    val ccnlTutorialMdPath = "tutorial/tutorial.md"
+
+    val tutorialMdName = prefix.append(CCNName("docs", "tutorial_md"))
+    val ccnlHome = System.getenv("CCNL_HOME")
+    val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
+    val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
+    Content(tutorialMdName, tutorialMdData)
+  }
+}
 
 class Pandoc extends NFNService {
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {

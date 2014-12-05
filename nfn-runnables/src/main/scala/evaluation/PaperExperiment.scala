@@ -30,19 +30,19 @@ object PaperExperiment extends App {
   val node5 = LocalNodeFactory.forId(5, isCCNOnly = true)
   val nodes = List(node1, node2, node3, node4, node5)
 
-  val docname1 = node1.prefix.append("doc", "test1")
+  val docname1 = node1.localPrefix.append("doc", "test1")
   val docdata1 = "one".getBytes
 
-  val docname2 = node2.prefix.append("doc", "test2")
+  val docname2 = node2.localPrefix.append("doc", "test2")
   val docdata2 = "two two".getBytes
 
-  val docname3 = node3.prefix.append("doc", "test3")
+  val docname3 = node3.localPrefix.append("doc", "test3")
   val docdata3 = "three three three".getBytes
 
-  val docname4 = node4.prefix.append("doc", "test4")
+  val docname4 = node4.localPrefix.append("doc", "test4")
   val docdata4 = "four four four four".getBytes
 
-  val docname5 = node5.prefix.append("doc", "test5")
+  val docname5 = node5.localPrefix.append("doc", "test5")
   val docdata5 = "five five five five five".getBytes
 
   node1 <~> node2
@@ -85,10 +85,10 @@ object PaperExperiment extends App {
 
   // remove for exp6
   if(expNum != 6) {
-    node3.publishService(new WordCount())
+    node3.publishServiceLocalPrefix(new WordCount())
   }
 
-  node4.publishService(new WordCount())
+  node4.publishServiceLocalPrefix(new WordCount())
 
   val wcPrefix = new WordCount().ccnName
 

@@ -118,34 +118,11 @@ object LocalNode {
   }
 }
 
-//object LogLevel {
-//  import org.slf4j.LoggerFactory
-//  import ch.qos.logback.classic.Level
-//  import ch.qos.logback.classic.Logger
-//
-//  def setLoggingLevel(level: Level) {
-//    val rootLogger = LoggerFactory.getLogger(Logger.FQCN)
-//    rootLogger.setLevel(level)
-//  }
-//}
-
 case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[ComputeNodeConfig]) extends Logging {
 
-  implicit val timeout = Timeout(StaticConfig.defaultTimeoutDuration)
+  implicit val timeout = StaticConfig.defaultTimeout
 
-  private var isRunning = true
-
-  val prefix = routerConfig.prefix
-
-  /**
-   * This flag is required because ccn-lite internally increases the faceid for each management operation and interest it receives.
-   * The faceid is only written to the ccnlite output, which we currently do not parse during runtime.
-   * Therefore, as soon as one interest is sent, connecting nodes (= add faces to ccnlite) is no longer valid.
-   * This can be removed by either parsing the ccnlite output or if ccnlite changes how faces are setup.
-   */
-  private var isConnecting = true
-
-  private var isDoingManagementOperations = false
+  val localPrefix = routerConfig.prefix
 
   val (maybeNFNServer: Option[ActorRef], maybeEc: Option[ExecutionContext]) =
     maybeComputeNodeConfig match {
@@ -156,7 +133,7 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
       case None => (None, None)
     }
 
-  implicit val ec = maybeEc getOrElse( scala.concurrent.ExecutionContext.Implicits.global)
+  implicit val ec = maybeEc.getOrElse(scala.concurrent.ExecutionContext.Implicits.global)
 
   val ccnLiteProcess: CCNLiteProcess = {
     val ccnLiteNFNNetworkProcess: CCNLiteProcess = CCNLiteProcess(routerConfig)
@@ -177,8 +154,6 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
 
 
   private def nfnMaster = {
-    assert(isRunning, "Node was already shutdown")
-    assert(maybeNFNServer.isDefined, "Node received command which requires a local nfn server, init the node with a RouterConfig")
     maybeNFNServer.get
   }
 
@@ -190,8 +165,6 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    * @param otherNode
    */
   def connect(otherNode: LocalNode) = {
-    assert(isConnecting, "Node can only connect to other nodes before caching any content")
-
     Monitor.monitor ! Monitor.ConnectLog(routerConfig.toNodeLog, otherNode.routerConfig.toNodeLog)
     ccnLiteProcess.connect(otherNode.routerConfig)
   }
@@ -247,12 +220,7 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    * Caches the given content in the node.
    * @param content
    */
-  def cache(content: Content) = {
-    if(isConnecting)
-      nfnMaster ! NFNApi.AddToCCNCache(content)
-    else
-      throw new Exception("cannot add content with add to cache when already running")
-  }
+  def cache(content: Content) =  nfnMaster ! NFNApi.AddToCCNCache(content)
 
   /**
    * Symoblic methdo for [[cache]]
@@ -261,30 +229,19 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
   def +=(content: Content) = cache(content)
 
 
-  def publishService(serv: NFNService) = {
+  def publishServiceLocalPrefix(serv: NFNService) = {
+    NFNServiceLibrary.nfnPublishService(serv, localPrefix, nfnMaster)
+  }
+  
+  def publishServiceCustomPrefix(serv: NFNService, prefix: CCNName): Unit = {
     NFNServiceLibrary.nfnPublishService(serv, prefix, nfnMaster)
   }
-
-  def removeLocalServices = NFNServiceLibrary.removeAll()
 
   /**
    * Fire and forgets an interest to the system. Response will still arrive in the localAbstractMachine cache, but will discarded when arriving
    * @param req
    */
-  def send(req: Interest)(implicit useThunks: Boolean) = {
-    isConnecting = false
-    nfnMaster ! NFNApi.CCNSendReceive(req, useThunks)
-  }
-
-  def splitByteArray(ba: Array[Byte], s: Byte): List[Array[Byte]] = {
-    ba match {
-      case Array() => List(Array())
-      case _ => {
-        val (h, t) = ba.span(_ == s)
-        h :: splitByteArray(t, s)
-      }
-    }
-  }
+  def send(req: Interest)(implicit useThunks: Boolean) = nfnMaster ! NFNApi.CCNSendReceive(req, useThunks)
 
   /**
    * Sends the request and returns the future of the content
@@ -319,10 +276,8 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
    * Shuts this node down. After shutting down, any method call will result in an exception
    */
   def shutdown() = {
-    assert(isRunning, "This node was already shut down")
     nfnMaster ! NFNServer.Exit()
     ccnLiteProcess.stop()
-    isRunning = false
   }
 
 }

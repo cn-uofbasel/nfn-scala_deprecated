@@ -16,14 +16,14 @@ object LargeContentTest extends App {
   val nodes = List(node1, node2)
   node1 <~> node2
 
-  val contentNameSmall1 = node1.prefix.append(CCNName("content", "small"))
-  val contentNameLarge1 = node1.prefix.append(CCNName("content", "large"))
+  val contentNameSmall1 = node1.localPrefix.append(CCNName("content", "small"))
+  val contentNameLarge1 = node1.localPrefix.append(CCNName("content", "large"))
 
   val smallData = ("1"*10).getBytes
   val largeData = ((1 to 500) map { _.toString} mkString(" ")).getBytes // atm segmentsize is 100
 
-  val contentNameSmall2 = node2.prefix.append(CCNName("content", "small"))
-  val contentNameLarge2 = node2.prefix.append(CCNName("content", "large"))
+  val contentNameSmall2 = node2.localPrefix.append(CCNName("content", "small"))
+  val contentNameLarge2 = node2.localPrefix.append(CCNName("content", "large"))
 
   val smallContent1 = Content(contentNameSmall1, smallData)
   val largeContent1 = Content(contentNameLarge1, largeData)
