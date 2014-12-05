@@ -11,7 +11,7 @@ class PDFLatex extends NFNService {
     args match {
       case Seq(NFNContentObjectValue(_, doc)) =>
 
-        val dir = new File(s"./service-library/${IOHelper.uniqueFileName("pdflatex")}")
+        val dir = new File(s"./temp-service-library/${IOHelper.uniqueFileName("pdflatex")}")
 
         if(!dir.exists()) dir.mkdirs()
         val cmds = List("pdflatex", s"-output-directory=${dir.getCanonicalPath}")

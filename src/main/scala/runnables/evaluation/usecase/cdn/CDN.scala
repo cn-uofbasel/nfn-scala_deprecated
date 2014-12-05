@@ -1,4 +1,4 @@
-package evaluation.usecase.cdn
+package runnables.evaluation.usecase.cdn
 
 import akka.actor.ActorRef
 import ccn.packet._

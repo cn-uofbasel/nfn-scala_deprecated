@@ -56,8 +56,8 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   val wireFormat = StaticConfig.packetformat
 
   case class NetworkFace(toHost: String, toPort: Int) {
-    val cmdUDPFace = List(s"$ccnLiteEnv/util/ccn-lite-ctrl", "-x", s"$sockName", "newUDPface", "any", s"$toHost", s"$toPort")
-    val cmdMgmtToXml = List(s"$ccnLiteEnv/util/ccn-lite-ccnb2xml")
+    val cmdUDPFace = List(s"$ccnLiteEnv/bin/ccn-lite-ctrl", "-x", s"$sockName", "newUDPface", "any", s"$toHost", s"$toPort")
+    val cmdMgmtToXml = List(s"$ccnLiteEnv/bin/ccn-lite-ccnb2xml")
 
     val faceId: Int =
       SystemCommandExecutor(List(cmdUDPFace, cmdMgmtToXml)).execute() match {
@@ -80,7 +80,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 
 
     def registerPrefix(prefixToRegister: String) = {
-      val cmdPrefixReg =  List(s"$ccnLiteEnv/util/ccn-lite-ctrl", "-x", s"$sockName", "prefixreg", s"$prefixToRegister", s"$faceId", s"$wireFormat")
+      val cmdPrefixReg =  List(s"$ccnLiteEnv/bin/ccn-lite-ctrl", "-x", s"$sockName", "prefixreg", s"$prefixToRegister", s"$faceId", s"$wireFormat")
       SystemCommandExecutor(List(cmdPrefixReg)).execute() match {
         case ExecutionSuccess(_, xml) => logger.info(s"Registered prefix for $prefixToRegister")
         case err: ExecutionError => logger.error(s"Error when registering prefix: $err")
@@ -89,7 +89,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 
     def unregisterPrefixPrefix(prefixToRegister: String) = {
       udpFaces.get((host, port)) map { updFace =>
-        val cmdPrefixReg =  s"$ccnLiteEnv/util/ccn-lite-ctrl -x $sockName prefixunreg $prefixToRegister $faceId"
+        val cmdPrefixReg =  s"$ccnLiteEnv/bin/ccn-lite-ctrl -x $sockName prefixunreg $prefixToRegister $faceId"
         logger.debug(s"CCNLiteProcess-$prefix: executing '$cmdPrefixReg")
         Runtime.getRuntime.exec(cmdPrefixReg.split(" "))
       }

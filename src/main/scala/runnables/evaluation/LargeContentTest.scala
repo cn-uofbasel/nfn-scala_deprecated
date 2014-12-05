@@ -1,4 +1,4 @@
-package evaluation
+package runnables.evaluation
 
 import ccn.packet.{Interest, CCNName, Content}
 import com.typesafe.config.{ConfigFactory, Config}

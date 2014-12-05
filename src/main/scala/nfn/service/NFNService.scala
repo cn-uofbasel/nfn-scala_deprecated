@@ -29,7 +29,7 @@ object NFNService extends Logging {
    * @return
    */
   def serviceFromContent(content: Content): Try[NFNService] = {
-    val serviceLibraryDir = "./service-library"
+    val serviceLibraryDir = "./temp-service-library"
     val serviceLibararyFile = new File(serviceLibraryDir)
 
     if(serviceLibararyFile.exists) {
@@ -47,21 +47,25 @@ object NFNService extends Logging {
     }
 
     val file: File = createTempFile
-    val out = new FileOutputStream(file)
-    val filePath = file.getCanonicalPath
+
     try {
+      val out = new FileOutputStream(file)
+      val filePath = file.getCanonicalPath
+      try {
 
-      out.write(content.data)
-      out.flush()
+        out.write(content.data)
+        out.flush()
+      } finally {
+        if (out != null) out.close
+      }
+
+      val servName = content.name.cmps.last.replace("_", ".")
+      val loadedService: Try[NFNService] = BytecodeLoader.loadClass[NFNService](filePath, servName)
+      logger.debug(s"Dynamically loaded class $servName from content")
+      loadedService
     } finally {
-      if (out != null) out.close
+      if (file.exists) file.delete
     }
-
-    val servName = content.name.cmps.last.replace("_", ".")
-    val loadedService: Try[NFNService] = BytecodeLoader.loadClass[NFNService](filePath, servName)
-    logger.debug(s"Dynamically loaded class $servName from content")
-    if (file.exists) file.delete
-    loadedService
   }
 
   def parseAndFindFromName(name: String, ccnServer: ActorRef)(implicit ec: ExecutionContext): Future[CallableNFNService] = {

@@ -37,9 +37,9 @@ object MainBuild extends Build {
         "org.slf4j" % "slf4j-api" % "1.7.5",
         "net.liftweb" %% "lift-json" % "2.5.1",
         "org.apache.bcel" % "bcel" % "5.2"
-      )
-//      mainClass in "nfn-scala-experiments" in Compile := Some("production.ComputeServer")
-//      mainClass in (Compile, run) := Some("production.ComputeServer")
+      ),
+      mainClass in assembly := Some("runnables.production.StandaloneComputeServer"),
+      mainClass in (Compile, run) := Some("runnables.production.StandaloneComputeServer")
     )
   ).dependsOn(lambdaCalculus)
 
@@ -54,15 +54,8 @@ object MainBuild extends Build {
         "org.slf4j" % "slf4j-api" % "1.7.5"
       ),
       resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
-//      mainClass in (Compile, run) := Some("lambdacalculus.LambdaCalculus")
     )
   )
-
-  lazy val nfnRunnables: Project = Project(
-    "nfn-runnables",
-    file("nfn-runnables"),
-    settings = buildSettings
-  ).dependsOn(nfn)
 
   lazy val testservice: Project = Project(
     "testservice",

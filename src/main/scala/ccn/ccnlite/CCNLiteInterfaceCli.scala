@@ -123,28 +123,32 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
       val listFutBinaryContents =
         binaryContents map { binaryContent =>
 
-          val serviceLibFolderName = "./service-library"
-          val serviceLibFolder = new File(serviceLibFolderName)
+          try {
+            val serviceLibFolderName = "./temp-service-library"
+            val serviceLibFolder = new File(serviceLibFolderName)
 
-          if(!serviceLibFolder.exists()) {
-            serviceLibFolder.mkdir()
+            if (!serviceLibFolder.exists()) {
+              serviceLibFolder.mkdir()
+            }
+
+            val filename = s"$serviceLibFolderName/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"
+            val file = new File(filename)
+
+            IOHelper.writeToFile(file, binaryContent)
+            val ccnbAbsoluteFilename: String = file.getCanonicalPath
+
+            val ctrl = "ccn-lite-ctrl"
+            val cmds = List(binFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
+            val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(List(cmds)).futExecute() map {
+              case ExecutionSuccess(_, data) => data
+              case execErr: ExecutionError =>
+                throw new Exception(s"Error creating add to cache request: $execErr")
+            }
+            futCacheInterest.onComplete { _ => file.delete()}
+            futCacheInterest
+          } finally {
+
           }
-
-          val filename = s"$serviceLibFolderName/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"
-          val file = new File(filename)
-
-          IOHelper.writeToFile(file, binaryContent)
-          val ccnbAbsoluteFilename: String = file.getCanonicalPath
-
-          val ctrl = "ccn-lite-ctrl"
-          val cmds = List(binFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
-          val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(List(cmds)).futExecute() map {
-            case ExecutionSuccess(_, data) => data
-            case execErr: ExecutionError =>
-              throw new Exception(s"Error creating add to cache request: $execErr")
-          }
-          futCacheInterest.onComplete { _ =>  file.delete() }
-          futCacheInterest
         }
 
       Future.sequence {

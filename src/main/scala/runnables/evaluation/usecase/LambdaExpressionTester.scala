@@ -1,4 +1,4 @@
-package evaluation.usecase
+package runnables.evaluation.usecase
 
 import com.typesafe.config.ConfigFactory
 import config.{ComputeNodeConfig, RouterConfig, CombinedNodeConfig}
