@@ -1,0 +1,3 @@
+[submodule "ccn-lite-nfn"]
+	path = ccn-lite-nfn
+	url = https://github.com/cn-uofbasel/ccn-lite.git
