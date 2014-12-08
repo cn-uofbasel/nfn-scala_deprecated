@@ -2,7 +2,7 @@ package ccn
 
 import java.io._
 import com.typesafe.scalalogging.slf4j.Logging
-import config.{SystemEnvironment, RouterConfig, StaticConfig}
+import config.{CCNLiteSystemPath, RouterConfig, StaticConfig}
 import ccn.packet.CCNName
 import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
 
@@ -96,7 +96,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     }
   }
 
-  val ccnLiteEnv = SystemEnvironment.ccnLiteEnv
+  val ccnLiteEnv = CCNLiteSystemPath.ccnLiteHome
 
   private var process: Process = null
 

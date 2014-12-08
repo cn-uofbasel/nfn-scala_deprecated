@@ -5,7 +5,7 @@ import java.io.File
 import ccn.{CCNWireFormat, CCNInterface}
 import ccn.packet._
 import com.typesafe.scalalogging.slf4j.Logging
-import config.SystemEnvironment
+import config.CCNLiteSystemPath
 import myutil.IOHelper
 import myutil.systemcomandexecutor._
 
@@ -28,7 +28,7 @@ object CCNLiteInterfaceCli {
 
 case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {
 
-  val ccnLiteEnv = SystemEnvironment.ccnLiteEnv
+  val ccnLiteEnv = CCNLiteSystemPath.ccnLiteHome
   val binFolderName = s"$ccnLiteEnv/bin/"
 
   private def ccnNameToRoutableCmpsAndNfnString(name: CCNName): List[String] = {

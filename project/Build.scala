@@ -67,8 +67,13 @@ object MainBuild extends Build {
   val compileCCNLite = compileCCNLiteTask := {
     val ccnlPath = {
       val p = System.getenv("CCNL_HOME")
-      if(p == null || p == "") throw new Exception("CCNL_HOME no set. Get a copy of the current ccn-lite version from 'https://github.com/cn-uofbasel/ccn-lite' and set the variable to its path.")
-      else p
+      if(p == null || p == "") {
+        if(new File("./ccn-lite-nfn/bin").exists()) {
+          new File("./ccn-lite-nfn").getCanonicalPath
+        } else {
+          throw new Exception("CCNL_HOME was not set and nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update)")
+        }
+      } else p
     }
 
     val processBuilder = {
@@ -76,7 +81,9 @@ object MainBuild extends Build {
 
       new java.lang.ProcessBuilder(cmds:_*)
     }
-    processBuilder.directory(new File(s"$ccnlPath/src"))
+    val ccnlPathFile = new File(s"$ccnlPath/src")
+    println(s"Building in directory $ccnlPathFile")
+    processBuilder.directory(ccnlPathFile)
     val e = processBuilder.environment()
     e.put("USE_NFN", "1")
     e.put("USE_NACKS", "1")

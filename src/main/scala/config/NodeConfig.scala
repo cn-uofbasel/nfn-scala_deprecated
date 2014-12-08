@@ -1,5 +1,6 @@
 package config
 
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 import akka.event.Logging.LogLevel
@@ -86,13 +87,16 @@ object LogLevelSLF4J {
   }
 }
 
-object SystemEnvironment {
-  val ccnLiteEnv: String = {
+object CCNLiteSystemPath {
+  val ccnLiteHome: String = {
     val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
     if(maybeCcnLiteEnv == null || maybeCcnLiteEnv == "") {
-      throw new Exception("CCNL_HOME system variable is not set. Set it to the root directory of your local ccn-lite copy and compile it.")
-    }
-    maybeCcnLiteEnv
+      if(new File("./ccn-lite-nfn/bin").exists()) {
+        new File("./ccn-lite-nfn").getCanonicalPath
+      } else {
+        throw new Exception("CCNL_HOME was not set and nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update)")
+      }
+    } else maybeCcnLiteEnv
   }
 }
 
