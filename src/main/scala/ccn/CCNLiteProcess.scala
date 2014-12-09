@@ -56,13 +56,22 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   val wireFormat = StaticConfig.packetformat
 
   case class NetworkFace(toHost: String, toPort: Int) {
-    val cmdUDPFace = List(s"$ccnLiteEnv/bin/ccn-lite-ctrl", "-x", s"$sockName", "newUDPface", "any", s"$toHost", s"$toPort")
+
+    val mgmtCmds = nodeConfig.mgmntSocket match {
+      case "" => List("-u", s"${nodeConfig.host}", s"${nodeConfig.port}")
+      case mgmntSock @ _ => List("-x", mgmntSock)
+    }
+
+    val newFaceCommand = List("newUDPface", "any", s"$toHost", s"$toPort")
+
+    val cmdUDPFace = s"$ccnLiteEnv/bin/ccn-lite-ctrl" :: mgmtCmds ++ newFaceCommand
     val cmdMgmtToXml = List(s"$ccnLiteEnv/bin/ccn-lite-ccnb2xml")
 
     val faceId: Int =
       SystemCommandExecutor(List(cmdUDPFace, cmdMgmtToXml)).execute() match {
         case ExecutionSuccess(_, faceIdData) => {
           val faceIdStr = new String(faceIdData)
+          logger.debug(s"faceIdStr: $faceIdStr")
           if(faceIdStr.contains("failed")) {
             throw new Exception(s"Error when registering new udp face")
           } else {
@@ -80,7 +89,8 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
 
 
     def registerPrefix(prefixToRegister: String) = {
-      val cmdPrefixReg =  List(s"$ccnLiteEnv/bin/ccn-lite-ctrl", "-x", s"$sockName", "prefixreg", s"$prefixToRegister", s"$faceId", s"$wireFormat")
+      val prefixRegCommand = List("prefixreg", s"$prefixToRegister", s"$faceId", s"$wireFormat")
+      val cmdPrefixReg =  s"$ccnLiteEnv/bin/ccn-lite-ctrl" :: mgmtCmds ++ prefixRegCommand
       SystemCommandExecutor(List(cmdPrefixReg)).execute() match {
         case ExecutionSuccess(_, xml) => logger.info(s"Registered prefix for $prefixToRegister")
         case err: ExecutionError => logger.error(s"Error when registering prefix: $err")
@@ -115,9 +125,16 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
     if(!nodeConfig.isAlreadyRunning) {
       val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/ccn-lite-relay" else s"$ccnLiteEnv/ccn-nfn-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
-      val cmd = s"$ccnliteExecutable -v 98 -u $port -x $sockName -s $wireFormat"
-      logger.debug(s"$processName-$prefix: executing: '$cmd'")
-      val processBuilder = new ProcessBuilder(cmd.split(" "): _*)
+
+
+      val mgmtCmdsOrEmpty =
+        if(sockName != "") {
+          List("-x", s"$sockName")
+        } else Nil
+
+      val cmds: List[String] = s"$ccnliteExecutable" :: List("-v", "98", "-u", "$port", "-s", s"$wireFormat") ++ mgmtCmdsOrEmpty
+      logger.debug(s"$processName-$prefix: executing: '${cmds.mkString(" ")}'")
+      val processBuilder = new ProcessBuilder(cmds:_*)
       processBuilder.redirectErrorStream(true)
       process = processBuilder.start
 

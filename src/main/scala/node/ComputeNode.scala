@@ -5,7 +5,7 @@ import java.net.InetSocketAddress
 import akka.actor.{ActorSystem, Props, ActorRef}
 import ccn.{CCNTLVWireFormat, CCNInterface}
 import ccn.ccnlite.CCNLiteInterfaceCli
-import nfn.{UDPConnectionContentInterest, ComputeServer}
+import nfn.{UDPConnectionWireFormatEncoder, UDPConnectionWireFormatEncoder$, ComputeServer}
 
 case class ComputeNode() {
   val system = ActorSystem("ComputeServer")
@@ -16,7 +16,7 @@ case class ComputeNode() {
 
   val ccnIf:CCNInterface = CCNLiteInterfaceCli(wireFormat = wireFormat)
 
-  val udpConnection: ActorRef = UDPConnectionContentInterest.apply(
+  val udpConnection: ActorRef = UDPConnectionWireFormatEncoder.apply(
     system,
     new InetSocketAddress(10011),
     new InetSocketAddress(10010),

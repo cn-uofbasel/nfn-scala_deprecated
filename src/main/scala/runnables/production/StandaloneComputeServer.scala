@@ -1,11 +1,9 @@
 package runnables.production
 
-import java.io.File
 
-import ccn.packet.{Content, CCNName}
+import ccn.packet.CCNName
 import com.typesafe.scalalogging.slf4j.Logging
-import config.{StaticConfig, ComputeNodeConfig, RouterConfig}
-import myutil.IOHelper
+import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import nfn.service._
 import node.LocalNode
 
@@ -18,17 +16,20 @@ object StandaloneComputeServer extends Logging {
 
   def printUsageAndExit = {
 
-    println("Usage: <prefix> <mgmtsocket> <ccn-lite-port> <compute-server-port> <loglevel> (e.g. /ndn/ch/unibas/ccn-lite /tmp/ccn-lite-1.sock 9000 9001 info)")
+    println("Usage: <prefix> <mgmtsocket> <ccn-lite-addr>:<ccn-lite-port> <compute-server-port> <loglevel> (e.g. /ndn/ch/unibas/ccn-lite /tmp/ccn-lite-1.sock 9000 9001 info)")
 
     sys.exit(1)
   }
   def main(args: Array[String]) = {
+    println(s"Standalone ComputeServer started with ${args.toList.map(_.toString)}")
       args match {
-        case Array(prefixStr, mgmtSocket, ccnlPortStr, computeServerPortStr, loglevel) => {
-          val (prefix: CCNName, ccnlPort: Int, computeServerPort: Int) =
+        case Array(prefixStr, mgmtSocket, ccnlUrlStr, computeServerPortStr, loglevel) => {
+          val (prefix: CCNName, ccnlHost:String, ccnlPort: Int, computeServerPort: Int) =
           try {
+            val Array(ccnlHost, ccnlPortStr) = ccnlUrlStr.split(":")
             (
               CCNName(prefixStr.split("/").tail:_*),
+              ccnlHost,
               Integer.parseInt(ccnlPortStr),
               Integer.parseInt(computeServerPortStr)
             )
@@ -45,13 +46,13 @@ object StandaloneComputeServer extends Logging {
           // Configuration of the router, so far always ccn-lite
           // It requires the socket to the management interface, isCCNOnly = false indicates that it is a NFN node
           // and isAlreadyRunning = true tells the system that it should not have to start ccn-lite
-          val routerConfig = RouterConfig("127.0.0.1", ccnlPort, prefix, mgmtSocket ,isCCNOnly = false, isAlreadyRunning = true)
+          val routerConfig = RouterConfig(ccnlHost, ccnlPort, prefix, mgmtSocket ,isCCNOnly = false, isAlreadyRunning = true)
 
 
           // This configuration sets up the compute server
           // withLocalAm = false tells the system that it should not start an abstract machine alongside the compute server
           // because we know that the ccn-lite node will be started in nfn mode
-          val computeNodeConfig = ComputeNodeConfig("127.0.0.1", computeServerPort, prefix, withLocalAM = false)
+          val computeNodeConfig = ComputeNodeConfig("0.0.0.0", computeServerPort, prefix, withLocalAM = false)
 
           // Abstraction of a node which runs both the router and the compute server on localhost (over UDP sockets)
           val node = LocalNode(routerConfig, Some(computeNodeConfig))
@@ -65,7 +66,6 @@ object StandaloneComputeServer extends Logging {
           node.publishServiceLocalPrefix(new WordCount())
           node.publishServiceLocalPrefix(new Pandoc())
           node.publishServiceLocalPrefix(new Reverse())
-          node.publishServiceLocalPrefix(new RemoveSpace())
 
 
           node += PandocTestDocuments.tutorialMd(node.localPrefix)

@@ -1,13 +1,34 @@
-FROM haroon/docker-oracle-jdk7
+FROM basilkohler/ccn-lite:devel
 MAINTAINER Basil Kohler<basil.kohler@gmail.com>
 
-ENV CCNL_HOME /ccn-lite
-ENV CCNL_PORT 9999
+# add community-maintained universe repository to sources
+RUN sed -i.bak 's/main$/main universe/' /etc/apt/sources.list
 
-RUN apt-get update && apt-get install -y libssl-dev build-essential git wget
+# date packages were last updated
+ENV REFRESHED_AT 2014-01-14
+ENV DEBIAN_FRONTEND noninteractive
+# resynchronize package index files from their sources
+RUN apt-get -qq update
 
-ADD . /var/ccn-lite
-WORKDIR /var/ccn-lite/src
-RUN make clean all
+# install software-properties-common (ubuntu >= 12.10) to be able to use add-apt-repository
+RUN apt-get -qq -y install software-properties-common
+# add PPA for java
+RUN add-apt-repository ppa:webupd8team/java
+# resynchronize package index files from their sources
+RUN apt-get -qq update
 
-CMD ./ccn-lite-relay -s ccnx2014 -v 99 -u $CCNL_PORT -d ../test/ccntlv -x /tmp/ccn-lite-relay.sock
+# accept Oracle license
+RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+# install jdk7
+RUN apt-get -qq -y install oracle-java7-installer
+ENV JAVA_HOME /usr/lib/jvm/java-7-oracle
+
+WORKDIR /var/nfn-scala
+ADD ./target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar /var/nfn-scala/
+
+EXPOSE 9001/udp
+
+
+# When linking one container to another, the exposed port information is transmitted and stored in env variables
+# The CCN-Lite container exposes the udp port 9000.
+CMD java -jar /var/nfn-scala/nfn-assembly-0.1-SNAPSHOT.jar $CCNL_NAME "" "$CCNL_PORT_9000_UDP_ADDR:$CCNL_PORT_9000_UDP_PORT" "9001" "debug"

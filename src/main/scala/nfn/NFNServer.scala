@@ -1,6 +1,6 @@
 package nfn
 
-import java.net.InetSocketAddress
+import java.net.{InetAddress, InetSocketAddress}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -59,24 +59,26 @@ object NFNServerFactory extends Logging {
     Props(classOf[NFNServer], nfnNodeConfig, computeNodeConfig, ccnIf)
 }
 
-object UDPConnectionContentInterest {
+object UDPConnectionWireFormatEncoder {
   def apply(context: ActorRefFactory, from: InetSocketAddress, to: InetSocketAddress, ccnIf: CCNInterface): ActorRef = {
     context.actorOf(
       Props(
-        classOf[UDPConnectionContentInterest],
+        classOf[UDPConnectionWireFormatEncoder],
         from,
         to,
         ccnIf
       ),
-      name = s"udpsocket-${from.getHostName}:${from.getPort}-${to.getHostName}:${to.getPort}"
+      name = s"udpsocket-${from.getPort}-${to.getPort}"
     )
   }
 }
 
-
-class UDPConnectionContentInterest(local:InetSocketAddress,
+// This class takes out some work from the NFN server.
+// It encodes each packet send to the network to the wireformat and it also logs all send messages
+class UDPConnectionWireFormatEncoder(local:InetSocketAddress,
                                    target:InetSocketAddress,
                                    ccnLite: CCNInterface) extends UDPConnection(local, Some(target)) {
+
 
   implicit val execContext = context.dispatcher
   def logPacket(packet: CCNPacket) = {
@@ -180,7 +182,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
   val cs = ContentStore()
 
   val nfnGateway: ActorRef =
-    UDPConnectionContentInterest(
+    UDPConnectionWireFormatEncoder(
       context.system,
       new InetSocketAddress(computeNodeConfig.host, computeNodeConfig.port),
       new InetSocketAddress(nfnNodeConfig.host, nfnNodeConfig.port),
