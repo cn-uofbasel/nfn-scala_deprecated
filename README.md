@@ -64,7 +64,6 @@ From then on the simulation can be directly started with `./omentreplay`.
 -->
 
 ## Issues
-- Add to cache (internally used when "publishing" content to a CCN-Lite cache) only allows for chunk sizes around 100B.
 - CCN-Lite command line interface is slow, but it is convenient and currently helps to test CCN-Lite itself. For performance, the JNI interface (or JNA) should be reintroduced.
 - Compute Server currently only does exact match on names and not longest prefix match. 
 This can result in issues, for example when computing on data from the testbed, which always adds a version number. 

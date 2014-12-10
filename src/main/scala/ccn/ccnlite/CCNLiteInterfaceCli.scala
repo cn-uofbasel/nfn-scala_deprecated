@@ -9,7 +9,8 @@ import config.CCNLiteSystemPath
 import myutil.IOHelper
 import myutil.systemcomandexecutor._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
 import scala.util.{Random, Failure, Success}
 
 object CCNLiteInterfaceCli {
@@ -115,10 +116,9 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     }
   }
 
-  override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[List[Array[Byte]]] = {
-    val chunkSize = 100
+  override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[Unit] = { //List[Array[Byte]]] = {
     logger.debug(s"add to cache for $content")
-    mkBinaryContent(content, chunkSize) flatMap { (binaryContents: List[Array[Byte]]) =>
+    mkBinaryContent(content, CCNLiteInterfaceCli.maxChunkSize) flatMap { (binaryContents: List[Array[Byte]]) =>
 
       val listFutBinaryContents =
         binaryContents map { binaryContent =>
@@ -138,22 +138,22 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
             val ccnbAbsoluteFilename: String = file.getCanonicalPath
 
             val ctrl = "ccn-lite-ctrl"
-            val cmds = List(binFolderName + ctrl, "-m", "addContentToCache", ccnbAbsoluteFilename)
+            val cmds = List(binFolderName + ctrl, "-x", "/tmp/mgmt.sock", "addContentToCache", ccnbAbsoluteFilename)
             val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(List(cmds)).futExecute() map {
-              case ExecutionSuccess(_, data) => data
+              case ExecutionSuccess(_, data) =>
+                logger.debug(s"ctrl add2dache:\n${new String(data)}\n")
+                data
               case execErr: ExecutionError =>
                 throw new Exception(s"Error creating add to cache request: $execErr")
             }
+            Await.result(futCacheInterest, 1 second)
             futCacheInterest.onComplete { _ => file.delete()}
             futCacheInterest
           } finally {
 
           }
         }
-
-      Future.sequence {
-        listFutBinaryContents
-      }
+      Future()
     }
   }
 }

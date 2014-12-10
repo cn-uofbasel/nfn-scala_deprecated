@@ -41,13 +41,14 @@ class CCNLiteInterfaceTest extends FlatSpec with Matchers with GivenWhenThen {
 
       }
     }
-    s"CCNLiteInterface of type $ccnIf with wire format ${ccnIf.wireFormat} with Content $content" should "be converted to (ccnb) wire format for an addToCache request" in {
-      ccnIf.mkAddToCacheInterest(content) foreach { wireFormatAddToCacheReqs =>
-        wireFormatAddToCacheReqs.size should be(1)
-        val wireFormatAddToCacheReq = wireFormatAddToCacheReqs.head
-        new String(wireFormatAddToCacheReq).contains("testdata") shouldBe true
-      }
-    }
+    // was for old add to cache, needs a new implementation
+//    s"CCNLiteInterface of type $ccnIf with wire format ${ccnIf.wireFormat} with Content $content" should "be converted to (ccnb) wire format for an addToCache request" in {
+//      ccnIf.mkAddToCacheInterest(content) foreach { wireFormatAddToCacheReqs =>
+//        wireFormatAddToCacheReqs.size should be(1)
+//        val wireFormatAddToCacheReq = wireFormatAddToCacheReqs.head
+//        new String(wireFormatAddToCacheReq).contains("testdata") shouldBe true
+//      }
+//    }
   }
 
 }

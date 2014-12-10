@@ -50,6 +50,7 @@ omnetreplay/lib/rapidjson/
 *c_xml.txt
 failed-messages
 service-library
+temp-service-library
 temp-bytecode-content
 
 # temp
