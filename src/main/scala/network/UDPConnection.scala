@@ -18,8 +18,8 @@ object UDPConnection {
 
   val UdpSocketOptions = List(
     Udp.SO.SendBufferSize(maxPacketSizeKB),
-    Udp.SO.ReceiveBufferSize(maxPacketSizeKB),
-    Udp.SO.ReuseAddress(true)
+    Udp.SO.ReceiveBufferSize(maxPacketSizeKB)
+   //,    Udp.SO.ReuseAddress(true)
   )
 
 }
