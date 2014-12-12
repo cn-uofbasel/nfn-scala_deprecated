@@ -5,7 +5,7 @@ import java.io.File
 import akka.actor.ActorRef
 import ccn.packet.{CCNName, Content}
 import myutil.IOHelper
-import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
+import myutil.systemcomandexecutor._
 
 
 object PandocTestDocuments {

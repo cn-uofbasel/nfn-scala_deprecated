@@ -58,10 +58,11 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     }) ++ List("-e", s"${Random.nextInt()}")
 
     val cmds: List[String] = List(binFolderName+mkI, "-s", s"$wireFormat") ++ chunkCmps ++ ccnNameToRoutableCmpsAndNfnString(interest.name)
+
     SystemCommandExecutor(List(cmds)).futExecute() map {
       case ExecutionSuccess(_, data) => data
       case execErr: ExecutionError =>
-        throw new Exception(s"Error when creating binary interest for $interest: $execErr")
+        throw new Exception(s"Error when creating binary interest for $interest:\n$execErr")
     }
   }
 
@@ -116,44 +117,43 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
     }
   }
 
-  override def mkAddToCacheInterest(content: Content)(implicit ec: ExecutionContext): Future[Unit] = { //List[Array[Byte]]] = {
+  override def addToCache(content: Content, mgmtSock: String)(implicit ec: ExecutionContext): Future[Int] = {
     logger.debug(s"add to cache for $content")
     mkBinaryContent(content, CCNLiteInterfaceCli.maxChunkSize) flatMap { (binaryContents: List[Array[Byte]]) =>
+      binaryContents.foldLeft(Future(0)) {
+        case(futN, binaryContent) =>
 
-      val listFutBinaryContents =
-        binaryContents map { binaryContent =>
+          val serviceLibFolderName = "./temp-service-library"
+          val serviceLibFolder = new File(serviceLibFolderName)
+
+          if (!serviceLibFolder.exists()) {
+            serviceLibFolder.mkdir()
+          }
+
+          val filename = s"$serviceLibFolderName/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"
+          val file = new File(filename)
 
           try {
-            val serviceLibFolderName = "./temp-service-library"
-            val serviceLibFolder = new File(serviceLibFolderName)
-
-            if (!serviceLibFolder.exists()) {
-              serviceLibFolder.mkdir()
-            }
-
-            val filename = s"$serviceLibFolderName/${content.name.hashCode}-${System.nanoTime}-${Random.nextInt()}.ccnb"
-            val file = new File(filename)
-
             IOHelper.writeToFile(file, binaryContent)
             val ccnbAbsoluteFilename: String = file.getCanonicalPath
 
             val ctrl = "ccn-lite-ctrl"
-            val cmds = List(binFolderName + ctrl, "-x", "/tmp/mgmt.sock", "addContentToCache", ccnbAbsoluteFilename)
-            val futCacheInterest: Future[Array[Byte]] = SystemCommandExecutor(List(cmds)).futExecute() map {
+            val cmds = List(binFolderName + ctrl, "-x", mgmtSock, "addContentToCache", ccnbAbsoluteFilename)
+            SystemCommandExecutor(List(cmds)).futExecute() flatMap {
               case ExecutionSuccess(_, data) =>
-                logger.debug(s"ctrl add2dache:\n${new String(data)}\n")
-                data
+                file.delete()
+                futN map { _ + 1}
               case execErr: ExecutionError =>
+                file.delete()
                 throw new Exception(s"Error creating add to cache request: $execErr")
             }
-            Await.result(futCacheInterest, 1 second)
-            futCacheInterest.onComplete { _ => file.delete()}
-            futCacheInterest
-          } finally {
-
+          } catch {
+            case e: Exception => {
+              file.delete()
+              throw e
+            }
           }
         }
-      Future()
     }
   }
 }

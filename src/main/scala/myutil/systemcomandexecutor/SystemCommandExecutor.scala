@@ -1,24 +1,40 @@
 package myutil.systemcomandexecutor
 
 import java.io._
+import java.util.concurrent.TimeoutException
 import com.typesafe.scalalogging.slf4j.Logging
 import myutil.IOHelper
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.sys.process._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.util.Success
 
 
-//object SystemCommandExecutor {
-//  def apply(cmds: List[String], maybeInputData: Option[Array[Byte]] = None): SystemCommandExecutor = {
-//    SystemCommandExecutor(List(cmds), maybeInputData)
-//  }
-//}
 case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: Option[Array[Byte]] = None) extends Logging {
 
-  def futExecute()(implicit execContext: ExecutionContext): Future[ExecutionResult] = Future(execute())
+//  def executeEC(ec: ExecutionContext): ExecutionResult = {
+//    execute()(ec)
+//  }
 
+  def futExecute()(implicit ec: ExecutionContext): Future[ExecutionResult] = {
+    Future { execute() }
+  }
+
+  def executeWithTimeout(timeout: FiniteDuration = 5.seconds)(implicit ec: ExecutionContext): Unit = {
+    try {
+      val execRes = Await.result(
+        Future {
+          execute()
+        },
+        timeout
+      )
+      execRes
+    } catch {
+      case e: TimeoutException => ExecutionError(cmdPipes, Array(), None)
+    }
+  }
+
+  // This call is blocking and depending on the exeucted result might never finish
+  // use executeWithTimeout for a terminating version
   def execute(): ExecutionResult = {
     logger.debug(s"Executing: $this")
     val maybeInput =
@@ -49,21 +65,21 @@ case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: O
 
     val procBuilder: ProcessBuilder =
       cmdPipes.map(Process(_))
-              .reduceRight(_ #| _)
+        .reduceRight(_ #| _)
+
     val finalProc = procBuilder run io
 
     val exitCode = finalProc.exitValue()
-
-    val execRes =
-      if (exitCode == 0) {
-        ExecutionSuccess(cmdPipes, resultOut.toByteArray)
-      } else {
-        val execErr = ExecutionError(cmdPipes, errorOut.toByteArray, exitCode)
-
-        logger.error(s"Execution error: $execErr")
-        execErr
-      }
     finalProc.destroy()
-    execRes
+    if (exitCode == 0) {
+      val execRes = ExecutionSuccess(cmdPipes, resultOut.toByteArray)
+      logger.debug(s"Completed execution of $cmdPipes")
+      execRes
+    } else {
+      val execErr = ExecutionError(cmdPipes, errorOut.toByteArray, Some(exitCode))
+
+      logger.error(s"Execution error: $execErr")
+      execErr
+    }
   }
 }

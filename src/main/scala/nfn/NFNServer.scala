@@ -95,9 +95,10 @@ class UDPConnectionWireFormatEncoder(local:InetSocketAddress,
     }
   }
 
-  def handlePacket(packet: CCNPacket, senderCopy: ActorRef) =
+  def handlePacket(packet: CCNPacket, senderCopy: ActorRef) = {
     packet match {
       case i: Interest =>
+        logger.debug(s"handling interest: $packet")
         ccnLite.mkBinaryInterest(i) onComplete {
           case Success(binaryInterest) =>
             logger.debug(s"Sending binary interest for $i to network")
@@ -128,6 +129,7 @@ class UDPConnectionWireFormatEncoder(local:InetSocketAddress,
       case a: AddToCacheNack =>
         logger.warning("received AddToCacheNack to send to a UDPConnection, dropping it!")
     }
+  }
 
   def interestContentReceiveWithoutLog: Receive = {
     case p: CCNPacket => {
@@ -161,7 +163,7 @@ class UDPConnectionWireFormatEncoder(local:InetSocketAddress,
  *  A NFNServer also maintains a socket which is connected to the actual CCNNetwork, usually an CCNLiteInterfaceWrapper instance encapsulated in a [[CCNLiteProcess]].
  */
 //case class NFNServer(maybeNFNNodeConfig: Option[RouterConfig], maybeComputeNodeConfig: Option[ComputeNodeConfig]) extends Actor {
-case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNodeConfig, ccnIf: CCNInterface) extends Actor {
+case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeConfig, ccnIf: CCNInterface) extends Actor {
 
   implicit val execContext = context.dispatcher
 
@@ -185,7 +187,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     UDPConnectionWireFormatEncoder(
       context.system,
       new InetSocketAddress(computeNodeConfig.host, computeNodeConfig.port),
-      new InetSocketAddress(nfnNodeConfig.host, nfnNodeConfig.port),
+      new InetSocketAddress(routerConfig.host, routerConfig.port),
       ccnIf
     )
 
@@ -322,6 +324,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
               // /COMPUTE/call .../.../NFN
               // A compute flag at the beginning means that the interest is a binary computation
               // to be executed on the compute server
+              logger.debug("is nfn")
               if (i.name.isCompute) {
                 if(i.name.isThunk) {
                   computeServer ! ComputeServer.Thunk(i.name)
@@ -418,7 +421,7 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
     case NFNApi.CCNSendReceive(interest, useThunks) => {
       val senderCopy = sender
 
-      logger.debug(s"Sending interest $interest (f=$senderCopy)")
+      logger.debug(s"API: Sending interest $interest (f=$senderCopy)")
       val maybeThunkInterest =
         if(interest.name.isNFN && useThunks) interest.thunkify
         else interest
@@ -429,16 +432,10 @@ case class NFNServer(nfnNodeConfig: RouterConfig, computeNodeConfig: ComputeNode
       val senderCopy = sender
       logger.info(s"creating add to cache messages for $content")
       cs.add(content)
-      ccnIf.mkAddToCacheInterest(content) onComplete {
-        case Success(_) =>
-          logger.debug(s"AddToCache for $content finished executing")
-//          logger.debug(s"sending ${binaryAddToCacheReqs.size} add to cache requests for ${content.name} to the network")
-//          binaryAddToCacheReqs foreach { binaryAddToCacheReq =>
-//            nfnGateway ! UDPConnection.Send(binaryAddToCacheReq)
-//            Thread.sleep(3)
-//          }
-//          logger.debug("sending back AddToCacheAck")
-//          senderCopy ! NFNApi.AddToCCNCacheAck(content.name)
+      ccnIf.addToCache(content, routerConfig.mgmntSocket) onComplete {
+        case Success(n) =>
+          logger.debug(s"Send $n AddToCache requests for content $content to router ")
+          senderCopy ! NFNApi.AddToCCNCacheAck(content.name)
         case Failure(ex) => logger.error(ex, s"Could not add to CCN cache for $content")
       }
     }

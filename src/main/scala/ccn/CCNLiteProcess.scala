@@ -71,15 +71,14 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
       SystemCommandExecutor(List(cmdUDPFace, cmdMgmtToXml)).execute() match {
         case ExecutionSuccess(_, faceIdData) => {
           val faceIdStr = new String(faceIdData)
-          logger.debug(s"faceIdStr: $faceIdStr")
-          if(faceIdStr.contains("failed")) {
-            throw new Exception(s"Error when registering new udp face")
-          } else {
+          if(faceIdStr.contains("newface cmd worked")) {
             val start = faceIdStr.indexOf("<FACEID>") + "<FACEID>".length
             val end = faceIdStr.indexOf("</FACEID>")
             val faceId = Integer.parseInt(faceIdStr.substring(start, end))
             logger.info(s"Registered udp face with faceid $faceId")
             faceId
+          } else {
+            throw new Exception(s"Error when registering new udp face:\n$faceIdStr")
           }
         }
         case err: ExecutionError => throw new Exception(s"Error when registering new udp face: $err")
@@ -123,7 +122,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   def start() = {
 
     if(!nodeConfig.isAlreadyRunning) {
-      val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/ccn-lite-relay" else s"$ccnLiteEnv/ccn-nfn-relay"
+      val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/bin/ccn-lite-relay" else s"$ccnLiteEnv/bin/ccn-nfn-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
 
 
@@ -132,7 +131,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
           List("-x", s"$sockName")
         } else Nil
 
-      val cmds: List[String] = s"$ccnliteExecutable" :: List("-v", "98", "-u", "$port", "-s", s"$wireFormat") ++ mgmtCmdsOrEmpty
+      val cmds: List[String] = s"$ccnliteExecutable" :: List("-v", "99", "-u", s"$port", "-s", s"$wireFormat") ++ mgmtCmdsOrEmpty
       logger.debug(s"$processName-$prefix: executing: '${cmds.mkString(" ")}'")
       val processBuilder = new ProcessBuilder(cmds:_*)
       processBuilder.redirectErrorStream(true)

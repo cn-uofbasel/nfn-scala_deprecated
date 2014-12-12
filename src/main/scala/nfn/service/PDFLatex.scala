@@ -4,7 +4,7 @@ import java.io.{FilenameFilter, File}
 
 import akka.actor.ActorRef
 import myutil.IOHelper
-import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
+import myutil.systemcomandexecutor._
 
 class PDFLatex extends NFNService {
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {

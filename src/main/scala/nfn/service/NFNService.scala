@@ -133,40 +133,35 @@ object NFNService extends Logging {
 
     val lc = lambdacalculus.LambdaCalculus()
 
-    try {
-      lc.parse(name) match {
-        case Success(parsedExpr) =>
-            parsedExpr match {
-              case Call(funName, argExprs) => {
+    lc.parse(name) match {
+      case Success(parsedExpr) =>
+          parsedExpr match {
+            case Call(funName, argExprs) => {
 
-                // find service
-                val futServ: Future[NFNService] = findService(funName)
+              // find service
+              val futServ: Future[NFNService] = findService(funName)
 
-                // create or find values for args
-                val futArgs: Future[List[NFNValue]] = findArgs(argExprs)
+              // create or find values for args
+              val futArgs: Future[List[NFNValue]] = findArgs(argExprs)
 
-                import myutil.Implicit.tryToFuture
-                val futCallableServ: Future[CallableNFNService] =
-                  for {
-                    args <- futArgs
-                    serv <- futServ
-                    callable <- serv.instantiateCallable(serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
-                  } yield callable
+              import myutil.Implicit.tryToFuture
+              val futCallableServ: Future[CallableNFNService] =
+                for {
+                  args <- futArgs
+                  serv <- futServ
+                  callable <- serv.instantiateCallable(serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
+                } yield callable
 
-                futCallableServ onSuccess {
-                  case callableServ => logger.info(s"Instantiated callable serv: '$name' -> $callableServ")
-                }
-                futCallableServ
+              futCallableServ onSuccess {
+                case callableServ => logger.info(s"Instantiated callable serv: '$name' -> $callableServ")
               }
-              case _ => throw new Exception("call is the only valid expression for a COMPUTE request")
+              futCallableServ
             }
-        case Failure(ex) => {
-          Future.failed(ex)
-        }
+            case _ => throw new Exception("call is the only valid expression for a COMPUTE request")
+          }
+      case Failure(ex) => {
+        Future.failed(ex)
       }
-    } catch {
-      case e: Exception => logger.error("somtehitng went wrong", e)
-      Future.failed(e)
     }
   }
 }

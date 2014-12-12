@@ -59,8 +59,8 @@ class UDPConnection(val local:InetSocketAddress, val maybeTarget:Option[InetSock
     // Received udp socket actor, change receive handler to ready method with reference to the socket actor
     case Udp.Bound(local) =>
       logger.info(s"$name ready")
-      unstashAll()
       context.become(ready(sender))
+      unstashAll()
     case Udp.CommandFailed(cmd) =>
       logger.error(s"Udp command '$cmd' failed")
     case send: UDPConnection.Send => {
@@ -74,7 +74,7 @@ class UDPConnection(val local:InetSocketAddress, val maybeTarget:Option[InetSock
     case UDPConnection.Send(data) => {
       maybeTarget match {
         case Some(target) => {
-//          logger.debug(s"$name sending data")
+          logger.debug(s"$name sending data to $target")
           if(data.size > UDPConnection.maxPacketSizeKB) {
             throw new Exception(s"The UDPSocket is only able to send packets with max size ${UDPConnection.maxPacketSizeKB} and not ${data.size}")
           } else {
@@ -120,14 +120,13 @@ class UDPSender(remote: InetSocketAddress) extends Actor with Stash {
   }
 
   def ready(socket: ActorRef): Actor.Receive = {
-    case UDPConnection.Send(data) => self ! data
-    case data: Array[Byte] => {
+    case UDPConnection.Send(data) =>
       if(data.size > UDPConnection.maxPacketSizeKB) {
         throw new Exception(s"The UDPSocket is only able to send packets with max size ${UDPConnection.maxPacketSizeKB} and not ${data.size}")
       } else {
+        logger.debug(s"Sending data: '${new String(data)}")
         socket ! Udp.Send(ByteString(data), remote)
       }
-    }
   }
 }
 

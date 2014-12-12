@@ -80,7 +80,6 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
       val resultValue: NFNValue = callable.exec
       val futResultData = resultDataOrRedirect(resultValue.toDataRepresentation, name, ccnServer)
       futResultData map { resultData =>
-
         Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
 
       }

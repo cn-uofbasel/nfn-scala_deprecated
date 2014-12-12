@@ -2,11 +2,10 @@ package runnables.evaluation
 
 import java.io.File
 
-import ccn.packet.{NFNInterest, Interest, CCNName, Content}
+import ccn.packet.{Content, Interest}
 import com.typesafe.config.{ConfigFactory, Config}
 import lambdacalculus.parser.ast.Expr
-import myutil.IOHelper
-import nfn.service.{PandocTestDocuments, Pandoc}
+import nfn.service.{WordCount, PandocTestDocuments, Pandoc}
 import node.LocalNodeFactory
 import concurrent.ExecutionContext.Implicits.global
 
@@ -23,18 +22,17 @@ object PandocApp extends App {
 //  node1 <~> node2
 
   val pandocServ = new Pandoc()
+  val wcServ = new WordCount()
 
   val pandoc = node1.localPrefix.append(pandocServ.ccnName).toString
+  val wc = node1.localPrefix.append(wcServ.ccnName).toString
 
   val tutorialContent = PandocTestDocuments.tutorialMd(node1.localPrefix)
   val tinyContent = PandocTestDocuments.tinyMd(node1.localPrefix)
   node1.publishServiceLocalPrefix(pandocServ)
-  node1 += Content(tutorialContent.name, tutorialContent.data.take(20000))
+  node1.publishServiceLocalPrefix(wcServ)
+  node1 += tutorialContent
   node1 += tinyContent
-
-
-
-
 
 //  node2.addPrefixFace(pandocServ.ccnName, node1)
 
@@ -45,12 +43,14 @@ object PandocApp extends App {
 
   val exprTut: Expr = pandoc appl(tutorialContent.name, str("markdown_github"), str("html"))
   val exprTiny: Expr = pandoc appl(tinyContent.name, str("markdown_github"), str("html"))
+  val exprWc: Expr = wc appl(tinyContent.name)
 
-//  sendAndPrintForName(Interest(CCNName("call 4 /nfn_service_impl_Pandoc /node/node1/doc/tutorial/tutorialmd 'markdown_github' 'latex'", "NFN")))
   sendAndPrintForName(exprTut)
+
 
   def sendAndPrintForName(interest: Interest) = {
     val startTime = System.currentTimeMillis
+    println(s"Sending request: $interest")
     node1 ? interest onComplete {
       case Success(resultContent) => {
         val runTime = System.currentTimeMillis - startTime
