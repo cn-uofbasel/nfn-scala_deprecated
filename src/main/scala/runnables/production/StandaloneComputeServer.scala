@@ -52,7 +52,7 @@ object StandaloneComputeServer extends Logging {
         // This configuration sets up the compute server
         // withLocalAm = false tells the system that it should not start an abstract machine alongside the compute server
         // because we know that the ccn-lite node will be started in nfn mode
-        val computeNodeConfig = ComputeNodeConfig("0.0.0.0", computeServerPort, prefix, withLocalAM = false)
+        val computeNodeConfig = ComputeNodeConfig("127.0.0.1", computeServerPort, prefix, withLocalAM = false)
 
         // Abstraction of a node which runs both the router and the compute server on localhost (over UDP sockets)
         val node = LocalNode(routerConfig, Some(computeNodeConfig))
