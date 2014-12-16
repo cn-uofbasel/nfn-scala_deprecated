@@ -37,15 +37,6 @@ case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: O
   // use executeWithTimeout for a terminating version
   def execute(): ExecutionResult = {
     logger.debug(s"Executing: $this")
-
-    cmdPipes.foreach({ cmds =>
-      if (cmds.headOption.isEmpty) {
-        throw new Exception(s"Cmd $cmds of $cmdPipes is empy")
-      } else if (! new File(cmds.head).exists) {
-        throw new Exception(s"Executable ${cmds.head} for $cmds does not exist")
-      }
-    })
-
     val maybeInput =
       maybeInputData map { inputData =>
         new ByteArrayInputStream(inputData)
