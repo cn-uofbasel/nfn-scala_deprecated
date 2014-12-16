@@ -19,7 +19,7 @@ case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: O
     Future { execute() }
   }
 
-  def executeWithTimeout(timeout: FiniteDuration = 5.seconds)(implicit ec: ExecutionContext): Unit = {
+  def executeWithTimeout(timeout: FiniteDuration = 5.seconds)(implicit ec: ExecutionContext): ExecutionResult = {
     try {
       val execRes = Await.result(
         Future {
@@ -40,8 +40,9 @@ case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: O
 
     cmdPipes.foreach({ cmds =>
       if (cmds.headOption.isEmpty) {
-        throw new Exception(s"Cmd $cmds of $cmdPipes is empy")
-      } else if (! new File(cmds.head).exists) {
+        throw new Exception(s"Cmd $cmds of $cmdPipes is empty")
+      }  else if (!new File(cmds.head).exists &&
+                  System.getenv("PATH").split(":").toList.forall(p => !new java.io.File(s"$p/${cmds.head}").exists)) {
         throw new Exception(s"Executable ${cmds.head} for $cmds does not exist")
       }
     })

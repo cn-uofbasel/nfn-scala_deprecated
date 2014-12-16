@@ -8,30 +8,41 @@ import nfn.service._
 import node.LocalNode
 
 
-
-
-object StandaloneComputeServer extends Logging {
-
-
+object ComputeServerStarter extends Logging {
 
   def printUsageAndExit = {
-
-    println("Usage: <prefix> <mgmtsocket> <ccn-lite-addr>:<ccn-lite-port> <compute-server-port> <loglevel> (e.g. /ndn/ch/unibas/ccn-lite /tmp/ccn-lite-1.sock 9000 9001 info)")
-
+    println("Usage: <prefix> <mgmtsocket> <ccn-lite-addr>:<ccn-lite-port> <compute-server-port> <is-ccnl-already-running> <loglevel> (e.g. /ndn/ch/unibas/ccn-lite /tmp/ccn-lite-1.sock 9000 9001 true info)")
     sys.exit(1)
   }
+
+  def parseIsAlreadyRunning(str: String): Boolean = {
+
+    val pos = Set("t", "true", "y", "yes")
+    val neg = Set("no", "n", "f", "false")
+    if(pos.contains(str)) {
+      true
+    } else if(neg.contains(str)) {
+      false
+    } else {
+      throw new Exception(
+        s"is-ccnl-already-running is $str but only ${pos.mkString("(", ", ", ")")} or ${neg.mkString("(", ",", ")")} is valid"
+      )
+    }
+  }
+
   def main(args: Array[String]) = {
-    println(s"Standalone ComputeServer started with ${args.toList.map(_.toString)}")
+    println(s"Standalone ComputeServer (args=${args.toList.map(_.toString)})")
     args match {
-      case Array(prefixStr, mgmtSocket, ccnlUrlStr, computeServerPortStr, loglevel) => {
-        val (prefix: CCNName, ccnlHost:String, ccnlPort: Int, computeServerPort: Int) =
+      case Array(prefixStr, mgmtSocket, ccnlUrlStr, computeServerPortStr, isAlreadyRunningStr, loglevel) => {
+        val (prefix: CCNName, ccnlHost:String, ccnlPort: Int, computeServerPort: Int, isAlreadyRunning) =
         try {
           val Array(ccnlHost, ccnlPortStr) = ccnlUrlStr.split(":")
           (
             CCNName(prefixStr.split("/").tail:_*),
             ccnlHost,
             Integer.parseInt(ccnlPortStr),
-            Integer.parseInt(computeServerPortStr)
+            Integer.parseInt(computeServerPortStr),
+            parseIsAlreadyRunning(isAlreadyRunningStr)
           )
         } catch {
           case e: Exception =>
@@ -41,12 +52,10 @@ object StandaloneComputeServer extends Logging {
 
         StaticConfig.setDebugLevel(loglevel)
 
-        logger.info("Starting standalone ComputeServer")
-
         // Configuration of the router, so far always ccn-lite
         // It requires the socket to the management interface, isCCNOnly = false indicates that it is a NFN node
         // and isAlreadyRunning = true tells the system that it should not have to start ccn-lite
-        val routerConfig = RouterConfig(ccnlHost, ccnlPort, prefix, mgmtSocket ,isCCNOnly = false, isAlreadyRunning = true)
+        val routerConfig = RouterConfig(ccnlHost, ccnlPort, prefix, mgmtSocket ,isCCNOnly = false, isAlreadyRunning = isAlreadyRunning)
 
 
         // This configuration sets up the compute server
@@ -65,6 +74,7 @@ object StandaloneComputeServer extends Logging {
         // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
         node.publishServiceLocalPrefix(new WordCount())
         node.publishServiceLocalPrefix(new Pandoc())
+        node.publishServiceLocalPrefix(new PDFLatex())
         node.publishServiceLocalPrefix(new Reverse())
 
 

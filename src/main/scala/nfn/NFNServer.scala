@@ -324,7 +324,6 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
               // /COMPUTE/call .../.../NFN
               // A compute flag at the beginning means that the interest is a binary computation
               // to be executed on the compute server
-              logger.debug("is nfn")
               if (i.name.isCompute) {
                 if(i.name.isThunk) {
                   computeServer ! ComputeServer.Thunk(i.name)

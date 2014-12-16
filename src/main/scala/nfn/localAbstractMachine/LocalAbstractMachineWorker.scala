@@ -4,7 +4,7 @@ import akka.actor._
 import akka.event.Logging
 import ccn.packet._
 import lambdacalculus._
-import lambdacalculus.machine.{Value, ListValue, ConstValue}
+import lambdacalculus.machine.{MachineValue, ListMachineValue, ConstMachineValue}
 import scala.util.{Success, Failure, Try}
 import nfn.NFNApi
 
@@ -42,15 +42,15 @@ class LocalAbstractMachineWorker(ccnServer: ActorRef) extends Actor {
   // otherwise no response
   private def handleInterest(interest: Interest, senderCopy: ActorRef) = {
 
-    def computeResultToContent(computeResult: Value): String = computeResult match {
-      case ConstValue(n, _) => n.toString
-      case ListValue(values, _) => (values map { computeResultToContent }).mkString(" ")
+    def computeResultToContent(computeResult: MachineValue): String = computeResult match {
+      case ConstMachineValue(n, _) => n.toString
+      case ListMachineValue(values, _) => (values map { computeResultToContent }).mkString(" ")
       case r@_ => throw new Exception(s"Result is only implemented for type ConstValue and not $r")
     }
 
     def tryComputeContentForExpr(expr: String): Try[Content] = {
       lc.substituteParseCompileExecute(expr) map {
-        case List(result: Value) => {
+        case List(result: MachineValue) => {
           val resultString = computeResultToContent(result)
           Content(interest.name, resultString.getBytes, MetaInfo.empty)
         }

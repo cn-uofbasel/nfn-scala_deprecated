@@ -11,7 +11,7 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
     CBVConfiguration(List(), List(), code)
   }
 
-  override def result(cfg: CBVConfiguration): List[Value] = cfg.stack
+  override def result(cfg: CBVConfiguration): List[MachineValue] = cfg.stack
 
   override def transform(state: CBVConfiguration): CBVConfiguration = {
 
@@ -34,8 +34,8 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
 
         val n =
           s match {
-            case List(ClosureValue(varName, _, _, _), _*) => ConstValue(const, Some(varName))
-            case _ => ConstValue(const)
+            case List(ClosureMachineValue(varName, _, _, _), _*) => ConstMachineValue(const, Some(varName))
+            case _ => ConstMachineValue(const)
           }
         val c = code.tail
 
@@ -54,7 +54,7 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
             if(n < e.size) {
               e(n)
             } else {
-              VariableValue(name)
+              VariableMachineValue(name)
             }
 
           )
@@ -73,7 +73,7 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
 
         v match {
           // The accessed name is a list of code, add it to the current code to execute it
-          case CodeValue(cl, maybeContextName) => {
+          case CodeMachineValue(cl, maybeContextName) => {
             val c = code.tail
             nextStack = s
             nextEnv = e
@@ -95,7 +95,7 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
         val s = stack
         val e = env
         val c = code.tail
-        val v = CodeValue(cl, Some(defName))
+        val v = CodeMachineValue(cl, Some(defName))
 
         nextStack = s
         nextEnv = v :: e
@@ -121,7 +121,7 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
         val e = env
         val c = code.tail
 
-        nextStack = ClosureValue(varName, ct, e) :: s
+        nextStack = ClosureMachineValue(varName, ct, e) :: s
         nextEnv = e
         nextCode = c
       }
@@ -129,20 +129,20 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
       case APPLY() => {
 
         val closure = stack match {
-          case List(_, closure: ClosureValue, _*) => closure
+          case List(_, closure: ClosureMachineValue, _*) => closure
           case _ => throw new MachineException(s"APPLY requires the second element of the stack to be a closure value, stack: $stack")
         }
 
         val v = stack.head match {
-          case ConstValue(n, maybeConstName) => ConstValue(n, closure.maybeContextName)
-          case CodeValue(c, maybeConstName) => CodeValue(c, closure.maybeContextName)
+          case ConstMachineValue(n, maybeConstName) => ConstMachineValue(n, closure.maybeContextName)
+          case CodeMachineValue(c, maybeConstName) => CodeMachineValue(c, closure.maybeContextName)
           case _ => stack.head
         }
         val ct = closure.c
         val et = closure.e
         val s = stack.tail.tail
-        val e = EnvValue(env)
-        val c = CodeValue(code.tail)
+        val e = EnvMachineValue(env)
+        val c = CodeMachineValue(code.tail)
 
         nextStack = c :: e :: s
         nextEnv = v :: et
@@ -151,8 +151,8 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
       // [ v.c'.e'.s | e | RETURN.c ] -> [ v.s | e' | c' ]
       case RETURN() => {
         val v = stack.head
-        val ct = stack.tail.head.asInstanceOf[CodeValue].c
-        val et = stack.tail.tail.head.asInstanceOf[EnvValue].c
+        val ct = stack.tail.head.asInstanceOf[CodeMachineValue].c
+        val et = stack.tail.tail.head.asInstanceOf[EnvMachineValue].c
         val s = stack.tail.tail.tail
         val e = env
         val c = code.tail
@@ -169,7 +169,7 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
       }
       case THENELSE(thenn, otherwise) => {
         val thenElseCode = stack.head match {
-          case ConstValue(n, maybeContextName) => if(n != 0) thenn else otherwise
+          case ConstMachineValue(n, maybeContextName) => if(n != 0) thenn else otherwise
           case _ => throw new MachineException(s"CBNAbstractMachine: top of stack needs to be of ConstValue to check the test case of an if-then-else epxression")
         }
 
@@ -208,16 +208,16 @@ case class CBVAbstractMachine(override val storeIntermediateSteps:Boolean = fals
         val e = env
         val c = code.tail
 
-        def valueToNFNStringRep(value: Value): String = value match {
-          case ConstValue(n, _) => n.toString
-          case VariableValue(name, _) => name
-          case ListValue(values, _) => values.map( valueToNFNStringRep ).mkString(" ")
+        def valueToNFNStringRep(value: MachineValue): String = value match {
+          case ConstMachineValue(n, _) => n.toString
+          case VariableMachineValue(name, _) => name
+          case ListMachineValue(values, _) => values.map( valueToNFNStringRep ).mkString(" ")
           case arg @ _ => throw new MachineException(s"CBVAbstractMachine: transformation from value $arg to a string is not implemented for call: $name")
         }
 
         val argsStrings = args map { valueToNFNStringRep }
 
-        val r: Value = executeCall(s"call ${nArgs + 1} $name ${argsStrings.mkString(" ")}")
+        val r: MachineValue = executeCall(s"call ${nArgs + 1} $name ${argsStrings.mkString(" ")}")
 
         nextStack = r :: s
         nextEnv = e

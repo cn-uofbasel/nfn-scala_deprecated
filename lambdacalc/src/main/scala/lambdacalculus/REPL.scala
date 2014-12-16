@@ -92,7 +92,7 @@ object REPL {
     val lambdaCalculus = REPLState.lambdaCalculus
 
       lambdaCalculus.substituteParseCompileExecute(input) match {
-        case Success(resultStack: List[Value]) => {
+        case Success(resultStack: List[MachineValue]) => {
           // if(lambdaCalculus.machine.storeIntermediateSteps) machine.printIntermediateSteps()
           println(s"resultstack: $resultStack")
           val strResult: List[String] = resultStack.map(ValuePrettyPrinter(_, Some(lambdaCalculus.compiler)))

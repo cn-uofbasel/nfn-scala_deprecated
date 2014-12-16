@@ -131,8 +131,10 @@ object PaperExperiment extends App {
   val wc = wcPrefix.toString
   val nack = new NackServ().toString
 
-  val exp1 = wc appl (docname1, str("foo bar"))
+  val exp1 = wc appl ("foo bar", docname1, str("foo bar"))
 
+
+  val variable: Variable = LambdaDSL.stringToExpr("a")
   val exp2 = wc appl docname5
 
   // cut 1 <-> 3:
@@ -143,7 +145,7 @@ object PaperExperiment extends App {
   val exp3 = wc appl docname5
 
   // thunks vs no thunks
-  val exp4 = (wc appl docname3) + (wc appl docname4)
+  val exp4: Expr = (wc appl docname3) + (wc appl docname4)
 
   val exp5_1 = wc appl docname3
   val exp5_2 = (wc appl docname3) + (wc appl docname4)

@@ -99,7 +99,7 @@ case class LambdaCalculus(execOrder: ExecutionOrder.ExecutionOrder = ExecutionOr
     } yield compiled
   }
 
-  def substituteParseCompileExecute(code: String): Try[List[Value]] = {
+  def substituteParseCompileExecute(code: String): Try[List[MachineValue]] = {
     val result = for {
       compiled <- substituteParseCompile(code)
       executed <- execute(compiled)
@@ -126,7 +126,7 @@ case class LambdaCalculus(execOrder: ExecutionOrder.ExecutionOrder = ExecutionOr
 
   def compile(code: Expr): Try[List[Instruction]] = Try(compiler(code))
 
-  def execute(code: List[Instruction]): Try[List[Value]] = {
+  def execute(code: List[Instruction]): Try[List[MachineValue]] = {
     Try(machine(code))
   }
 }

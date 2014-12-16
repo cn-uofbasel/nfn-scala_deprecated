@@ -10,7 +10,7 @@ case class CBNAbstractMachine(override val storeIntermediateSteps:Boolean = fals
     CBNConfiguration(List(), List(), code)
   }
 
-  override def result(cfg: CBNConfiguration): List[Value] = cfg.stack
+  override def result(cfg: CBNConfiguration): List[MachineValue] = cfg.stack
 
   override def transform(state:CBNConfiguration): CBNConfiguration = {
 
@@ -45,7 +45,7 @@ case class CBNAbstractMachine(override val storeIntermediateSteps:Boolean = fals
               nextEnv = et ++ e
               nextCode = ct ++ c
             }
-            case codeVal: CodeValue => {
+            case codeVal: CodeMachineValue => {
               logger.debug(s"CodeVal")
               val v = codeVal.c
 
@@ -101,7 +101,7 @@ case class CBNAbstractMachine(override val storeIntermediateSteps:Boolean = fals
       case CONST(const) => {
         val s = stack
         val e = env
-        val v = ConstValue(const)
+        val v = ConstMachineValue(const)
         val c = code.tail
 
         nextStack = v :: s
@@ -123,7 +123,7 @@ case class CBNAbstractMachine(override val storeIntermediateSteps:Boolean = fals
         val s = stack
         val e = env
         val c = code.tail
-        val v = CodeValue(cl, Some(defName))
+        val v = CodeMachineValue(cl, Some(defName))
 
         nextStack = s
         nextEnv = v :: e
@@ -147,7 +147,7 @@ case class CBNAbstractMachine(override val storeIntermediateSteps:Boolean = fals
       }
       case THENELSE(thenn, otherwise) => {
         val thenElseCode = stack.head match {
-          case ConstValue(n, _) => if(n != 0) thenn else otherwise
+          case ConstMachineValue(n, _) => if(n != 0) thenn else otherwise
           case _ => throw new MachineException(s"CBNAbstractMachine: top of stack needs to be of ConstValue to check the test case of an if-then-else epxression")
         }
 
