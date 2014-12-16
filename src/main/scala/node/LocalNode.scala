@@ -138,6 +138,7 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
   val ccnLiteProcess: CCNLiteProcess = {
     val ccnLiteNFNNetworkProcess: CCNLiteProcess = CCNLiteProcess(routerConfig)
     ccnLiteNFNNetworkProcess.start()
+    Thread.sleep(5)
 
     // If there is also a compute server, setup the local face
     maybeComputeNodeConfig map {computeNodeConfig =>

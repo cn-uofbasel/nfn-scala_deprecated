@@ -2,7 +2,7 @@ package lambdacalculus.machine.CallByValue
 
 import lambdacalculus.machine._
 
-case class CBVConfiguration(stack: List[Value], env:List[Value], code:List[Instruction]) extends Configuration {
+case class CBVConfiguration(stack: List[MachineValue], env:List[MachineValue], code:List[Instruction]) extends Configuration {
   override def toString:String = {
     val sb = new StringBuilder()
     sb ++=   "stack: " ++ stack.mkString("(", ", ", ")")

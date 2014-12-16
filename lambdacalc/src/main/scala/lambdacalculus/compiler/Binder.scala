@@ -2,6 +2,10 @@ package lambdacalculus.compiler
 
 import lambdacalculus.parser.ast._
 
+
+/**
+ * Binds variables of the parsed expressions to the scope of the corresponding closures
+ */
 object Binder {
 
   def apply(ast: Expr): Expr = bind(ast, List())

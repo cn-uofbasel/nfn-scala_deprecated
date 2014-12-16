@@ -8,13 +8,13 @@ import akka.actor.ActorRef
 
 import lambdacalculus.machine._
 import nfn.service._
-import lambdacalculus.machine.CallByValue.VariableValue
+import lambdacalculus.machine.CallByValue.VariableMachineValue
 
 case class LocalNFNCallExecutor(ccnWorker: ActorRef)(implicit execContext: ExecutionContext) extends CallExecutor {
 
-  override def executeCall(call: String): Value = {
+  override def executeCall(call: String): MachineValue = {
 
-    val futValue: Future[Value] = {
+    val futValue: Future[MachineValue] = {
       for {
         callableServ <- NFNService.parseAndFindFromName(call, ccnWorker)
       } yield {
@@ -27,13 +27,13 @@ case class LocalNFNCallExecutor(ccnWorker: ActorRef)(implicit execContext: Execu
 }
 
 object NFNValueToMachineValue {
-  def toMachineValue(nfnValue: NFNValue):Value =  {
+  def toMachineValue(nfnValue: NFNValue):MachineValue =  {
 
     nfnValue match {
-      case NFNIntValue(n) => ConstValue(n)
-      case NFNNameValue(name) => VariableValue(name.toString)
-      case NFNEmptyValue() => NopValue()
-      case NFNListValue(values: List[NFNValue]) => ListValue(values map { toMachineValue})
+      case NFNIntValue(n) => ConstMachineValue(n)
+      case NFNNameValue(name) => VariableMachineValue(name.toString)
+      case NFNEmptyValue() => NopMachineValue()
+      case NFNListValue(values: List[NFNValue]) => ListMachineValue(values map { toMachineValue})
       case _ =>  throw new Exception(s"NFNValueToMachineValue: conversion of $nfnValue to machine value type not implemented")
     }
   }

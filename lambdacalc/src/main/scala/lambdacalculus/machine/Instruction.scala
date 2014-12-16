@@ -26,7 +26,7 @@ case class CONST(n: Int) extends Instruction {
 
 case class Unary(op: UnaryOp.UnaryOp) extends Instruction {
   def stringRepr = s"$op"
-  def apply(v: Value):Value = ??? //op(v)
+  def apply(v: MachineValue):MachineValue = ??? //op(v)
 }
 
 case class BINARYOP(op: BinaryOp.BinaryOp) extends Instruction {
@@ -34,10 +34,10 @@ case class BINARYOP(op: BinaryOp.BinaryOp) extends Instruction {
 
   def stringRepr = s"$op"
 
-  def apply(v1: Value, v2: Value):Value = {
+  def apply(v1: MachineValue, v2: MachineValue):MachineValue = {
     import BinaryOp._
     (v1, v2) match {
-      case (ConstValue(c1, _), ConstValue(c2, _)) => ConstValue(
+      case (ConstMachineValue(c1, _), ConstMachineValue(c2, _)) => ConstMachineValue(
         op match {
           case Add => c1 + c2
           case Sub => c1 - c2

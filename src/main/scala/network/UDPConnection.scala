@@ -30,7 +30,8 @@ object UDPConnection {
  * Received data is send to all registered workers. To register a worker send a [[UDPConnection.Handler]] message.
  * This actor initializes itself on preStart by sending a bind message to the IO manager.
  * On receiving a Bound message, it sets the ready method to its new [[akka.actor.Actor.Receive]] handler.
- * All Send messages received before being ready are queued up in a buffer and send on being ready.
+ * All Send messages received before being ready are queued up in a [[Stash]] and get unload (meaning send to self)
+ * on connect.
  *
  * @param local Socket to listen for data
  * @param maybeTarget If Some(addr), the connection sends data to the target on receiving [[UDPConnection.Send]] messages
@@ -57,7 +58,7 @@ class UDPConnection(val local:InetSocketAddress, val maybeTarget:Option[InetSock
 
   def receive: Receive = {
     // Received udp socket actor, change receive handler to ready method with reference to the socket actor
-    case Udp.Bound(local) =>
+    case Udp.Bound(boundAddr) =>
       logger.info(s"$name ready")
       context.become(ready(sender))
       unstashAll()
@@ -87,15 +88,14 @@ class UDPConnection(val local:InetSocketAddress, val maybeTarget:Option[InetSock
       }
     }
     case Udp.Received(data, sendingRemote) => {
-//      logger.debug(s"$name received ${data.decodeString("utf-8")})")
-      frowardReceivedData(data, sendingRemote)
+      forwardReceivedData(data, sendingRemote)
     }
     case Udp.Unbind  => socket ! Udp.Unbind
     case Udp.Unbound => context.stop(self)
     case UDPConnection.Handler(worker) => handleWorker(worker)
   }
 
-  def frowardReceivedData(data: ByteString, sendingRemote: InetSocketAddress): Unit = {
+  def forwardReceivedData(data: ByteString, sendingRemote: InetSocketAddress): Unit = {
     workers.foreach(_ ! UDPConnection.Received(data.toByteBuffer.array.clone(), sendingRemote))
   }
 }
@@ -118,7 +118,6 @@ class UDPSender(remote: InetSocketAddress) extends Actor with Stash {
     }
     case msg  => stash()
   }
-
   def ready(socket: ActorRef): Actor.Receive = {
     case UDPConnection.Send(data) =>
       if(data.size > UDPConnection.maxPacketSizeKB) {

@@ -19,7 +19,7 @@ case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: O
     Future { execute() }
   }
 
-  def executeWithTimeout(timeout: FiniteDuration = 5.seconds)(implicit ec: ExecutionContext): Unit = {
+  def executeWithTimeout(timeout: FiniteDuration = 5.seconds)(implicit ec: ExecutionContext): ExecutionResult = {
     try {
       val execRes = Await.result(
         Future {
@@ -37,6 +37,7 @@ case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: O
   // use executeWithTimeout for a terminating version
   def execute(): ExecutionResult = {
     logger.debug(s"Executing: $this")
+    
     val maybeInput =
       maybeInputData map { inputData =>
         new ByteArrayInputStream(inputData)

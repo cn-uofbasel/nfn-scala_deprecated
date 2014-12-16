@@ -1,23 +1,16 @@
 package lambdacalculus
 
 import org.scalatest._
-import lambdacalculus.machine.{ConstValue, Value}
+import lambdacalculus.machine.{ConstMachineValue, MachineValue}
 import ExecutionOrder._
 
 import scala.util.{Failure, Success, Try}
 import lambdacalculus.parser.ast.Expr
 
-/**
-* Created with IntelliJ IDEA.
-* User: basil
-* Date: 02/12/13
-* Time: 16:55
-* To change this template use File | Settings | File Templates.
-*/
 class LambdaCalculusTest extends FlatSpec with Matchers with GivenWhenThen{
 
-  def const(i: Int): List[Value] = List(ConstValue(i))
-  def tryConst(i: Int): Try[List[Value]] = Try(const(i))
+  def const(i: Int): List[MachineValue] = List(ConstMachineValue(i))
+  def tryConst(i: Int): Try[List[MachineValue]] = Try(const(i))
 
   def testExpression(expr: String, result: Int) = {
     def decompile(execOrder: ExecutionOrder): (Expr, Expr) = {
@@ -27,7 +20,7 @@ class LambdaCalculusTest extends FlatSpec with Matchers with GivenWhenThen{
       yield p
       val compiled = parsed.flatMap(lc.compile)
 
-      When(s"Compiled: ${compiled}")
+      When(s"Compiled: $compiled")
       val decompiled = compiled match {
         case Success(c) => lc.compiler.decompile(c)
         case Failure(e) => throw new Exception(s"Could not decompile $e")
@@ -39,8 +32,8 @@ class LambdaCalculusTest extends FlatSpec with Matchers with GivenWhenThen{
 
       r.isSuccess should be (true)
       r.get.size should be (1)
-      r.get.head should be (a [ConstValue])
-      r.get.head.asInstanceOf[ConstValue].n should be (result)
+      r.get.head should be (a [ConstMachineValue])
+      r.get.head.asInstanceOf[ConstMachineValue].n should be (result)
     }
 //    ignore should s"evaluate with call-by-name to $result" in {
 //      val r = LambdaCalculus(CallByName).substituteParseCompileExecute(expr)

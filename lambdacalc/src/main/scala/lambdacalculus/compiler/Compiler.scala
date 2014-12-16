@@ -7,6 +7,12 @@ import com.typesafe.scalalogging.slf4j.Logging
 case class CompileException(msg: String) extends Exception(msg)
 case class DecompileException(msg: String) extends Exception(msg)
 
+
+/**
+ * Transforms an abstract syntax tree to a list of machine [[Instruction]]s.
+ * There are two implementations for call-by-name [[CBNCompiler]] and call-by-value [[CBVCompiler]].
+ * Before compiling the AST the scopes of the variables are bound to their scope.
+ */
 trait Compiler extends Logging{
 
   def apply(ast: Expr): List[Instruction] = {

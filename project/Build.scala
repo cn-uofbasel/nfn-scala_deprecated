@@ -38,8 +38,7 @@ object MainBuild extends Build {
         "net.liftweb" %% "lift-json" % "2.5.1",
         "org.apache.bcel" % "bcel" % "5.2"
       ),
-      mainClass in assembly := Some("runnables.production.StandaloneComputeServer")
-//      mainClass in (Compile, run) := Some("runnables.production.StandaloneComputeServer")
+      mainClass in assembly := Some("runnables.production.ComputeServerStarter")
     )
   ).dependsOn(lambdaCalculus)
 
