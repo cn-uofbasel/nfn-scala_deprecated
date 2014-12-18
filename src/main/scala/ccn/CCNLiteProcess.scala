@@ -131,7 +131,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
           List("-x", s"$sockName")
         } else Nil
 
-      val cmds: List[String] = s"$ccnliteExecutable" :: List("-v", "99", "-u", s"$port", "-s", s"$wireFormat") ++ mgmtCmdsOrEmpty
+      val cmds: List[String] = s"$ccnliteExecutable" :: List("-v", "100", "-u", s"$port", "-s", s"$wireFormat") ++ mgmtCmdsOrEmpty
       logger.debug(s"$processName-$prefix: executing: '${cmds.mkString(" ")}'")
       val processBuilder = new ProcessBuilder(cmds:_*)
       processBuilder.redirectErrorStream(true)

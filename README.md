@@ -7,6 +7,8 @@ It can also be used to run CCN-Lite directly from Scala and to create a network 
 ##Installation
 
 Installation is fairly straight forward, and boils down to an available Java JDK 7, sbt 0.13.5 and CCN-Lite.
+If you want to install the JVM or sbt you could also test it out within a Docker container.
+For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite/docs).
 
 ### ccn-lite
 
@@ -45,7 +47,7 @@ In the following two very basic ways to use nfn-scala.
 
 ### Running a test project
 There are some runnables.runnables in the nfn-runnables.runnables project. In the sbt commandline type `run`. 
-Choose from a list of runnable applications, e.g. `runnables.evaluation.PaperExperiment` which runs the currently selected expriment (change in source code).
+Choose from a list of runnable applications, e.g. `runnables.evaluation.PandocApp` which starts a nfn environment, sends a predefined request and prints the result.
 
 ### Starting a standalone compute server
 If you want to start CCN-lite yourself and have only a compute server, start CCN-Lite first and then use the following command:

@@ -37,7 +37,7 @@ case class SystemCommandExecutor(cmdPipes: List[List[String]], maybeInputData: O
   // use executeWithTimeout for a terminating version
   def execute(): ExecutionResult = {
     logger.debug(s"Executing: $this")
-    
+
     val maybeInput =
       maybeInputData map { inputData =>
         new ByteArrayInputStream(inputData)
