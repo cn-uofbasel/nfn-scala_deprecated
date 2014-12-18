@@ -1,4 +1,4 @@
-FROM basilkohler/ccn-lite:devel
+FROM ubuntu:14.04
 MAINTAINER Basil Kohler<basil.kohler@gmail.com>
 
 EXPOSE 9000/udp
