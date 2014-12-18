@@ -14,7 +14,7 @@ For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://githu
 
 Refer to the installation information in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite), but in short the following should work.
 
-1. Set the ccn-lite env: `export CCNL_HOME="<path/to/ccnlite"` (don't forget to add it to your  bash profile if you want it to persist)
+1. Set the ccn-lite env: `export CCNL_HOME=<path/to/ccnlite>` (don't forget to add it to your  bash profile if you want it to persist)
 2. Ubuntu: `sudo apt-get install libssl-dev`
 
    OSX: `brew install openssl` (assuming the [homebrew](http://brew.sh) packet manager is installed)

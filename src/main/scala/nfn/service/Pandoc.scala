@@ -4,6 +4,7 @@ import java.io.File
 
 import akka.actor.ActorRef
 import ccn.packet.{CCNName, Content}
+import config.CCNLiteSystemPath
 import myutil.IOHelper
 import myutil.systemcomandexecutor._
 
@@ -23,7 +24,7 @@ object PandocTestDocuments {
     val ccnlTutorialMdPath = "tutorial/tutorial.md"
 
     val tutorialMdName = prefix.append(CCNName("docs", "tutorial_md"))
-    val ccnlHome = System.getenv("CCNL_HOME")
+    val ccnlHome = CCNLiteSystemPath.ccnLiteHome
     val tutorialMdFile = new File(s"$ccnlHome/$ccnlTutorialMdPath")
     val tutorialMdData = IOHelper.readByteArrayFromFile(tutorialMdFile)
     Content(tutorialMdName, tutorialMdData)
