@@ -50,13 +50,19 @@ There are some runnables.runnables in the nfn-runnables.runnables project. In th
 Choose from a list of runnable applications, e.g. `runnables.evaluation.PandocApp` which starts a nfn environment, sends a predefined request and prints the result.
 
 ### Starting a standalone compute server
-If you want to start CCN-lite yourself and have only a compute server, start CCN-Lite first and then use the following command:
-`sbt 'runMain runnables.production.ComputeServerStarter /node/node1 /tmp/mgmt.sock 9000 9001 no debug'` in the shell.
-This application starts the compute server and will setup the faces to CCN-Lite and publish the WordCount and Pandoc functions as well as two markdown documents (a small one as well as the CCN-Lite tutorial)
-`/node/node1` is the prefix (e.g. prefix of nfn testbed node is `/ndn/ch/unibas/nfn`). 
-`/tmp/mgmt.sock` is the socket where the management commands are send to. The first port is the port of CCN-Lite, the second port is the port of the compute server itself.
-The last argument is the log level (`debug`, `info`, `warning`, ...).
-
+There is a small startscript/program to start and configure a single nfn-node.
+This time we are going to build a jar-file containing everything (even scala) with `sbt assembly`. This jar can be deployed on any JVCM.
+To run it you can either use `scala ./target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar -h` (make sure you have the correct Scala version) or `java -jar /target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar -h`.
+Running the above will print a help message. As you can see there are several options. The most important setting is if you want to start ccn-lite yourself or if you want nfn-scala to start it internally.
+You do not have to worry about faces, they are setup automatically.
+The prefix is the name under which all content and services are published.
+If you want to use the default values (which starts CCN-Lite internally), you can run it with `sbt run /nfn/testnode`.
+To test if it everything works, use send the following two interests to CCN-Lite:
+```bash
+ccn-lite-peek -u 127.0.0.1/9000 "/nfn/testnode/docs/tiny_md" | ccn-lite-pktdump
+ccn-lite-peek -u 127.0.0.1/9000 "" "add 1 2" | ccn-lite-pktdump
+ccn-lite-peek -u 127.0.0.1/9000 "" "/nfn/testnode/nfn_service_WordCount 'this string contains 5 words'" | ccn-lite-pktdump
+```
 <!---
 ## Visualization
 To replay and visualize the most recently run NFN program, change to the directory `./omnetreplay`. 

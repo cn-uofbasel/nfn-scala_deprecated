@@ -41,11 +41,10 @@ EXPOSE 9001/udp
 
 ENV CCNL_NAME /docker/nfn
 ENV CCNL_PORT 9000
-ENV CCNL_ADDR 127.0.0.1
 ENV CCNL_MGMT_SOCK /tmp/ccn-lite-mgmt.sock
 ENV NFN_SCALA_PORT 9001
 
 # When linking one container to another, the exposed port information is transmitted and stored in env variables
 # The CCN-Lite container exposes the udp port 9000.
 # Results in: java -jar /var/nfn-scala/target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar "/docker/nfn" "/tmp/ccn-lite-mgmt.sock" "127.0.0.1:9000" "9001" "no" "debug"
-CMD java -jar /var/nfn-scala/target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar "$CCNL_NAME" "$CCNL_MGMT_SOCK" "$CCNL_ADDR:$CCNL_PORT" "$NFN_SCALA_PORT" "no" "debug"
+CMD java -jar /var/nfn-scala/target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar -m "$CCNL_MGMT_SOCK" -o "$CCNL_PORT" -p "$NFN_SCALA_PORT" -d "$CCNL_NAME"
