@@ -1,6 +1,6 @@
 package runnables.evaluation
 
-import ccn.packet.{Interest, Content}
+import ccn.packet.{CCNName, Interest, Content}
 import com.typesafe.config.{ConfigFactory, Config}
 import nfn.service.WordCount
 import node.LocalNodeFactory
@@ -13,6 +13,8 @@ import scala.util.{Failure, Success}
  */
 object PaperExperiment_NFN_outside extends App {
   implicit val conf: Config = ConfigFactory.load()
+
+  val node0 = LocalNodeFactory.forId(0) // node0 is a local nfn node
 
   val node1 = LocalNodeFactory.forId(1, isCCNOnly = true)
   val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
@@ -80,8 +82,9 @@ object PaperExperiment_NFN_outside extends App {
   node14.publishServiceLocalPrefix(new WordCount())
 
   //add routing informations for the functions
-  val wcPrefix = new WordCount().ccnName
-  node1.addPrefixFace(wcPrefix, node11)
+  val wcPrefix = new WordCount().ccnName.prepend(node11.localPrefix)
+
+  /*node1.addPrefixFace(wcPrefix, node11)
   node3.addPrefixFace(wcPrefix, node13)
   node4.addPrefixFace(wcPrefix, node14)
 
@@ -89,18 +92,22 @@ object PaperExperiment_NFN_outside extends App {
   node2.addPrefixFace(wcPrefix, node4)
 
   node5.addPrefixFace(wcPrefix, node3)
-  node5.addPrefixFace(wcPrefix, node4)
+  node5.addPrefixFace(wcPrefix, node4)*/
 
-  Thread.sleep(5000)
+  Thread.sleep(2000)
 
   import lambdacalculus.parser.ast.LambdaDSL._
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
   val wc = wcPrefix.toString
-  val exp1 = /*wc appl*/ (docname1) // call 2 /../wc /../doc/test1
+  val exp1 = "x" @: (wc appl "x")  // call 2 /../wc /../doc/test1 <->   /doc/test1 / @x call 2  /../wc / x
 
-  (node1 ? Interest(docname1)).onComplete{
+  val exp2 : Interest = exp1
+
+  val i = Interest(exp2.name.prepend(docname1))
+  println(s"sending: ${i.name.cmps.mkString("[", " | ", "]")}")
+  (node1 ? i).onComplete{
     case Success (c) => println(c)
     case Failure (e) => println(s"Error $e");
   }
