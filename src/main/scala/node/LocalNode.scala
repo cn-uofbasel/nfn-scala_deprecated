@@ -22,15 +22,17 @@ import ccn.CCNLiteProcess
 
 object LocalNodeFactory {
 
-  def defaultMgmtSockNameForPrefix(prefix: CCNName): String = {
-    s"/tmp/mgmt.${prefix.cmps.mkString(".")}.sock"
+  def defaultMgmtSockNameForPrefix(prefix: CCNName, port: Option[Int] = None): String = {
+    s"/tmp/mgmt.${prefix.cmps.mkString(".")}.${port.getOrElse("")}.sock"
   }
 
-  def forId(id: Int, isCCNOnly: Boolean = false)(implicit config: Config): LocalNode = {
+  def forId(id: Int, isCCNOnly: Boolean = false, port: Int = 0)(implicit config: Config): LocalNode = {
+
+    val p = if(port == 0) id else port;
     val nodePrefix = CCNName("node", s"node$id")
     LocalNode(
-      RouterConfig("127.0.0.1", 10000 + id * 10, nodePrefix, defaultMgmtSockNameForPrefix(nodePrefix), isCCNOnly = isCCNOnly, isAlreadyRunning = false),
-      Some(ComputeNodeConfig("127.0.0.1", 10000 + id * 10 + 1, nodePrefix, withLocalAM = false))
+      RouterConfig("127.0.0.1", 10000 + p * 10, nodePrefix, defaultMgmtSockNameForPrefix(nodePrefix, Some(p)), isCCNOnly = isCCNOnly, isAlreadyRunning = false),
+      Some(ComputeNodeConfig("127.0.0.1", 10000 + p * 10 + 1, nodePrefix, withLocalAM = false))
     )
   }
 }
