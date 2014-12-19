@@ -89,14 +89,14 @@ object LogLevelSLF4J {
 
 object CCNLiteSystemPath {
   val ccnLiteHome: String = {
-    val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
-    if(maybeCcnLiteEnv == null || maybeCcnLiteEnv == "") {
+   // val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
+  //  if(maybeCcnLiteEnv == null || maybeCcnLiteEnv == "") {
       if(new File("./ccn-lite-nfn/bin").exists()) {
         new File("./ccn-lite-nfn").getCanonicalPath
       } else {
         throw new Exception("CCNL_HOME was not set and nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update)")
       }
-    } else maybeCcnLiteEnv
+   // } else maybeCcnLiteEnv
   }
 }
 
