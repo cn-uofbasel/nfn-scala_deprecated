@@ -49,7 +49,7 @@ object LambdaNFNPrinter extends LambdaPrinter {
   def print(expr: Expr): String =  {
 //      LambdaNFNPreprocessor.apply(expr) match {
       expr match {
-        case Clos(arg, body) => s"@$arg " + p"$body"
+        case Clos(arg, body) => s"(@$arg " + p"$body)"
         case Application(fun, arg) => p"$fun $arg"
         case UnaryExpr(op, v) =>  op.toString.toLowerCase + " " + p"$v"
         case BinaryExpr(op, v1, v2) => op.toString.toLowerCase + " " + p"$v1" + " " + p"$v2"
