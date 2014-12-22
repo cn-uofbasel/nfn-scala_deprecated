@@ -30,6 +30,7 @@ object PaperExperiment_NFN_outside extends App {
 
    //Direct connections
   node1 <~> node2
+  node1 <~> node3
   node2 <~> node4
   node3 <~> node5
   node3 <~> node4
@@ -100,6 +101,8 @@ object PaperExperiment_NFN_outside extends App {
   implicit val useThunks: Boolean = false
 
   val wc = wcPrefix
+
+  // 'x == Symbol("x")
   val exp1 = 'x @: (wc call 'x)  // call 2 /../wc /../doc/test1 <-> /doc/test1 / @x call 2  /../wc / x
 
   val exp2 : Interest = exp1
