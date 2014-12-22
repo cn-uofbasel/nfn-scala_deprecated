@@ -42,14 +42,14 @@ object SingeLocalAMNode extends App {
 
   node cache content
 
-  val wc = new WordCount().toString
+  val wc = new WordCount()
 
-  val translate = new Translate().toString
+  val translate = new Translate()
 
-  val wcExpr: Expr = wc appl List(docName)
-  val wcTranslateExpr: Expr = wc appl List(translate appl List(docName))
+  val wcExpr: Expr = wc call (docName)
+  val wcTranslateExpr: Expr = wc call List(translate call (docName))
 
-  val compExpr: Expr = 'x @: ("y" @: (('x * 1) + "y")  ! 2) ! 3
+  val compExpr: Expr = 'x @: ('y @: (('x * 1) + 'y)  ! 2) ! 3
 
   val expr = wcTranslateExpr
   (node ?  wcExpr) onComplete {

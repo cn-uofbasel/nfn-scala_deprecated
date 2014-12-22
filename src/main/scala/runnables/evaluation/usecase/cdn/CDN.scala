@@ -95,10 +95,10 @@ object CDN extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks = false
 
-  val esiInclude = new ESIInclude().toString
-  val randomAd = new RandomAd().toString
+  val esiInclude = new ESIInclude()
+  val randomAd = new RandomAd()
 
-  val exIncludeAd: Expr = esiInclude appl (webpagename, esiTagname, randomAd appl() )
+  val exIncludeAd: Expr = esiInclude call (webpagename, esiTagname, randomAd call() )
 
   val expr = exIncludeAd
 

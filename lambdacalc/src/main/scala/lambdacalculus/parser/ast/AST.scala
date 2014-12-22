@@ -28,7 +28,7 @@ object LambdaDSLTest extends App {
 
   val a: Expr = 'x @: "y" @: (('x * 1) - "y")
 
-  val b: Call = "/WordCount" appl ("/doc/doc1" :: Nil)
+//  val b: Call = "/WordCount" appl ("/doc/doc1")
 
   val l: Expr = ("derp" =: 'a) ~ ('derp)
 
@@ -36,15 +36,17 @@ object LambdaDSLTest extends App {
 
 object LambdaDSL {
 //  implicit def call(symbolNameAndExprs: (Symbol, List[Expr])): Call = symbolAndExprsToCall(symbolNameAndExprs)
-  implicit def symbolAndExprsToCall(symbolNameAndExprs: (Symbol, List[Expr])): Call = Call(symbolNameAndExprs._1.name, symbolNameAndExprs._2)
-  implicit def stringAndExprsToCall(nameAndExprs: (String, List[Expr])): Call = Call(nameAndExprs._1, nameAndExprs._2)
+  implicit def symbolAndExprsToCall(symbolNameAndExprs: (Symbol, Seq[Expr])): Call = Call(symbolNameAndExprs._1.name, symbolNameAndExprs._2.toList)
+//  implicit def nameToExpr(name: CCNName)
+  implicit def nameAndExprsToCall(nameAndExprs: (Variable, List[Expr])): Call = Call(nameAndExprs._1.name, nameAndExprs._2)
+  implicit def stringAndExprsToCall(nameAndExprs: (Str, List[Expr])): Call = Call(nameAndExprs._1.s, nameAndExprs._2)
   implicit def symbolToExpr (sym: Symbol): Variable = Variable.toVar(sym)
-  implicit def stringToExpr (str: String): Variable = Variable(str)
+  implicit def stringToExpr (str: String): Str = Str(str)
   implicit def intToConstant(c: Int):Constant  = Constant(c)
-  implicit def listOfStringToListOfExprs(listOfStr: List[String]): List[Expr] = listOfStr map { str => stringToExpr(str) }
+//  implicit def listOfStringToListOfExprs(listOfStr: List[String]): List[Expr] = listOfStr map { str => stringToExpr(str) }
 
   def iif(test: Expr, thenn: Expr, otherwise: Expr) = IfElse(test, thenn, otherwise)
-  def str(s: String): Str = Str(s)
+//  def str(s: String): Str = Str(s)
 }
 
 sealed abstract class Expr extends Positional {
@@ -76,17 +78,12 @@ object Variable {
 }
 
 case class Variable(name: String, accessValue: Int = -1) extends Expr {
-  def apply(args: List[Expr]): Call = appl(args)
+  def apply(args: List[Expr]): Call = call(args:_*)
 
   import LambdaDSL._
-  def appl(args: List[Expr]): Call =  (Symbol(this.name), args)
-  def appl(): Call =  Symbol(this.name) -> List()
-  def appl(arg1: Expr): Call =  Symbol(this.name) -> List(arg1)
-  def appl(arg1: Expr, arg2: Expr): Call =  Symbol(this.name) -> List(arg1, arg2)
-  def appl(arg1: Expr, arg2: Expr, arg3: Expr): Call =  Symbol(this.name) -> List(arg1, arg2, arg3)
-  def appl(arg1: Expr, arg2: Expr, arg3: Expr, arg4: Expr): Call =  Symbol(this.name) -> List(arg1, arg2, arg3, arg4)
-  def appl(arg1: Expr, arg2: Expr, arg3: Expr, arg4: Expr, arg5: Expr): Call =  Symbol(this.name) -> List(arg1, arg2, arg3, arg4, arg5)
-  def appl(arg1: Expr, arg2: Expr, arg3: Expr, arg4: Expr, arg5: Expr, arg6: Expr): Call =  Symbol(this.name) -> List(arg1, arg2, arg3, arg4, arg5, arg6)
+  def call(args: Expr*): Call =  (Symbol(this.name), args)
+  def call(args: List[Expr]): Call =  (Symbol(this.name), args)
+  def call(): Call =  Symbol(this.name) -> List()
 }
 
 object Constant {

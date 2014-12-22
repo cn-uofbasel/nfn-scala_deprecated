@@ -13,7 +13,7 @@ import scala.reflect.runtime.{universe => ru}
 
 
 object NFNServiceLibrary extends Logging {
-  def nfnPublishService(serv: NFNService, prefix: CCNName, ccnWorker: ActorRef) = {
+  def nfnPublishService(serv: NFNService, prefix: Option[CCNName], ccnWorker: ActorRef) = {
     def pinnedData = "pinnedfunction".getBytes
 
     def byteCodeData(serv: NFNService):Array[Byte] = {
@@ -28,7 +28,7 @@ object NFNServiceLibrary extends Logging {
       else byteCodeData(serv)
 
     val content = Content(
-      prefix.append(serv.ccnName),
+      prefix.map(_.append(serv.ccnName)).getOrElse(serv.ccnName),
       serviceContent,
       MetaInfo.empty
     )

@@ -47,34 +47,34 @@ object PaperExperiment extends App {
 
   node1 <~> node2
   if(expNum != 3) {
-    node1.addNodeFaces(List(node4), node2)
-    node2.addNodeFaces(List(node3), node1)
+    node1.registerPrefixToNodes(node2, List(node4))
+    node2.registerPrefixToNodes(node1, List(node3))
   } else {
-    node1.addNodeFaces(List(node3, node4, node5), node2)
+    node1.registerPrefixToNodes(node2, List(node3, node4, node5))
   }
 
   if(expNum != 3) {
     node1 <~> node3
-    node1.addNodeFaces(List(node4), node3)
+    node1.registerPrefixToNodes(node3, List(node4))
   }
 
   node2 <~> node4
-  node2.addNodeFaces(List(node3, node5), node4)
-  node4.addNodeFaces(List(node1), node2)
+  node2.registerPrefixToNodes(node4, List(node3, node5))
+  node4.registerPrefixToNodes(node2, List(node1))
 
   node3 <~> node4
-  node3.addNodeFaces(List(node2), node4)
-  node4.addNodeFaces(List(node1), node3)
+  node3.registerPrefixToNodes(node4, List(node2))
+  node4.registerPrefixToNodes(node3, List(node1))
 
   node3 <~> node5
-  node5.addNodeFaces(List(node1), node3)
+  node5.registerPrefixToNodes(node3, List(node1))
 
   // remove for exp 6
   if(expNum != 6) {
     node4 <~> node5
-    node5.addNodeFaces(List(node2), node4)
+    node5.registerPrefixToNodes(node4, List(node2))
   } else {
-    node4.addNodeFace(node5, node3)
+    node4.registerPrefixToNode(node5, node3)
   }
   node1 += Content(docname1, docdata1)
   node2 += Content(docname2, docdata2)
@@ -94,23 +94,23 @@ object PaperExperiment extends App {
 
   // remove for exp3
   if(expNum != 3 && expNum != 7) {
-    node1.addPrefixFace(wcPrefix, node3)
+    node1.registerPrefix(wcPrefix, node3)
   } else if(expNum != 7) {
-    node1.addPrefixFace(wcPrefix, node2)
+    node1.registerPrefix(wcPrefix, node2)
   }
 
-  node2.addPrefixFace(wcPrefix, node4)
+  node2.registerPrefix(wcPrefix, node4)
   if(expNum == 7) {
-    node2.addPrefixFace(wcPrefix, node1)
+    node2.registerPrefix(wcPrefix, node1)
   }
 
-  node5.addPrefixFace(wcPrefix, node3)
+  node5.registerPrefix(wcPrefix, node3)
 
   if(expNum != 6) {
-    node5.addPrefixFace(wcPrefix, node4)
+    node5.registerPrefix(wcPrefix, node4)
   } else {
 
-    node3.addPrefixFace(wcPrefix, node4)
+    node3.registerPrefix(wcPrefix, node4)
   }
 
 //  val dynServ = new NFNDynamicService {
@@ -127,38 +127,39 @@ object PaperExperiment extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val ts = new Translate().toString
-  val wc = wcPrefix.toString
-  val nack = new NackServ().toString
-
-  val exp1 = wc appl ("foo bar", docname1, str("foo bar"))
+  val ts = new Translate()
+  val wc: CCNName = wcPrefix
+  val nack = new NackServ()
 
 
-  val variable: Variable = LambdaDSL.stringToExpr("a")
-  val exp2 = wc appl docname5
+  val exp1 = wc call ("foo bar", docname1, "foo bar")
+
+
+  val variable: Expr = LambdaDSL.stringToExpr("a")
+  val exp2 = wc call variable
 
   // cut 1 <-> 3:
   // remove <~>
   // remove prefixes
   // add wc face to node 2
   // remove wc face to node 3
-  val exp3 = wc appl docname5
+  val exp3 = wc call docname5
 
   // thunks vs no thunks
-  val exp4: Expr = (wc appl docname3) + (wc appl docname4)
+  val exp4: Expr = (wc call docname3) + (wc call docname4)
 
-  val exp5_1 = wc appl docname3
-  val exp5_2 = (wc appl docname3) + (wc appl docname4)
+  val exp5_1 = wc call docname3
+  val exp5_2 = (wc call docname3) + (wc call docname4)
 
   // node 3 to ccn only (simluate "overloaded" router)
   // cut 4 <-> 5
   // wc face from 3 to 4
-  val exp6 = wc appl docname5
+  val exp6 = wc call docname5
 
   // Adds the wordcountservice to node1 and adds routing from node2 to 1
-  val exp7 = (wc appl docname4) + (wc appl docname3)
+  val exp7 = (wc call docname4) + (wc call docname3)
 
-  val exp8 = nack.appl
+  val exp8 = nack.call
 
   expNum match {
     case 1 => doExp(exp1)

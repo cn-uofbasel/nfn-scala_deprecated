@@ -172,17 +172,17 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
     ccnLiteProcess.connect(otherNode.routerConfig)
   }
 
-  def addNodeFace(faceOfNode: LocalNode, gateway: LocalNode) = {
-    addPrefixFace(faceOfNode.routerConfig.prefix, gateway)
+  def registerPrefixToNode(faceOfNode: LocalNode, gateway: LocalNode) = {
+    registerPrefix(faceOfNode.routerConfig.prefix, gateway)
   }
 
-  def addPrefixFace(prefix: CCNName, gateway: LocalNode) = {
+  def registerPrefix(prefix: CCNName, gateway: LocalNode) = {
     val gatewayConfig = gateway.routerConfig
     ccnLiteProcess.addPrefix(prefix, gatewayConfig.host, gatewayConfig.port)
   }
 
-  def addNodeFaces(faceOfNodes: List[LocalNode], gateway: LocalNode) = {
-    faceOfNodes map { addNodeFace(_, gateway) }
+  def registerPrefixToNodes(gateway: LocalNode, nodes: List[LocalNode]) = {
+    nodes foreach { registerPrefixToNode(_, gateway) }
   }
 
   /**
@@ -232,12 +232,24 @@ case class LocalNode(routerConfig: RouterConfig, maybeComputeNodeConfig: Option[
   def +=(content: Content) = cache(content)
 
 
+  /**
+   * Publishes the service with its name appended to the local prefix
+   * @param serv
+   */
   def publishServiceLocalPrefix(serv: NFNService) = {
-    NFNServiceLibrary.nfnPublishService(serv, localPrefix, nfnMaster)
+    NFNServiceLibrary.nfnPublishService(serv, Some(localPrefix), nfnMaster)
   }
   
   def publishServiceCustomPrefix(serv: NFNService, prefix: CCNName): Unit = {
-    NFNServiceLibrary.nfnPublishService(serv, prefix, nfnMaster)
+    NFNServiceLibrary.nfnPublishService(serv, Some(prefix), nfnMaster)
+  }
+
+  /**
+   * Publishes the service with its name without modifying the name
+   * @param serv
+   */
+  def publishService(serv: NFNService) = {
+    NFNServiceLibrary.nfnPublishService(serv, None, nfnMaster)
   }
 
   /**

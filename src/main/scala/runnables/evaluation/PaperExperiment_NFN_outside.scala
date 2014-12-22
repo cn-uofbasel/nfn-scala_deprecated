@@ -39,17 +39,17 @@ object PaperExperiment_NFN_outside extends App {
   node4 <~> node14
 
   //Add prefixes for multi hop connections
-  node1.addNodeFaces(List(node4), node2)
-  node1.addNodeFaces(List(node4, node5), node3)
+  node1.registerPrefixToNodes(node2, List(node4))
+  node1.registerPrefixToNodes(node3, List(node4, node5))
 
-  node2.addNodeFaces(List(node3, node5), node4)
+  node2.registerPrefixToNodes(node4, List(node3, node5))
 
-  node3.addNodeFaces(List(node2), node4)
+  node3.registerPrefixToNodes(node4, List(node2))
 
-  node4.addNodeFaces(List(node1), node2)
-  node4.addNodeFaces(List(node1), node3)
+  node4.registerPrefixToNodes(node2, List(node1))
+  node4.registerPrefixToNodes(node3, List(node1))
 
-  node5.addNodeFaces(List(node1), node3)
+  node5.registerPrefixToNodes(node3, List(node1))
 
   //Add some documents:
   val docname1 = node1.localPrefix.append("doc", "test1")
@@ -81,15 +81,15 @@ object PaperExperiment_NFN_outside extends App {
 
   //add routing informations for the functions
   val wcPrefix = new WordCount().ccnName
-  node1.addPrefixFace(wcPrefix, node11)
-  node3.addPrefixFace(wcPrefix, node13)
-  node4.addPrefixFace(wcPrefix, node14)
+  node1.registerPrefix(wcPrefix, node11)
+  node3.registerPrefix(wcPrefix, node13)
+  node4.registerPrefix(wcPrefix, node14)
 
-  node2.addPrefixFace(wcPrefix, node1)
-  node2.addPrefixFace(wcPrefix, node4)
+  node2.registerPrefix(wcPrefix, node1)
+  node2.registerPrefix(wcPrefix, node4)
 
-  node5.addPrefixFace(wcPrefix, node3)
-  node5.addPrefixFace(wcPrefix, node4)
+  node5.registerPrefix(wcPrefix, node3)
+  node5.registerPrefix(wcPrefix, node4)
 
   Thread.sleep(5000)
 
@@ -97,8 +97,8 @@ object PaperExperiment_NFN_outside extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val wc = wcPrefix.toString
-  val exp1 = /*wc appl*/ (docname1) // call 2 /../wc /../doc/test1
+  val wc = wcPrefix
+  val exp1 = wc call (docname1) // call 2 /../wc /../doc/test1
 
   (node1 ? Interest(docname1)).onComplete{
     case Success (c) => println(c)

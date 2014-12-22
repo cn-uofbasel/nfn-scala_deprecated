@@ -1,30 +1,31 @@
 package nfn
 
-import java.util.concurrent.TimeUnit
-
 import akka.actor._
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
 import config.StaticConfig
 import lambdacalculus.parser.ast._
-import monitor.Monitor
-import nfn.service.WordCount
-import nfn.service._
-import node.{LocalNode, LocalNodeFactory}
+import nfn.service.{WordCount, _}
+import node.LocalNodeFactory
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.time.{Millis, Span}
 
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 
-class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with SequentialNestedSuiteExecution {
+/**
+ * This spec can be used for test which require a full rebuild of the topology.
+ * This is useful for tests which should have a clean cache or for which the topology should be changed.
+ * The base topology is based on the paper experiments.
+ */
+class PaperExperimentSpec extends FlatSpec with Matchers with ScalaFutures with SequentialNestedSuiteExecution {
 
   implicit val conf: Config = ConfigFactory.load()
 
   (1 to 6) map { expTest }
+//  expTest(1)
 
 
   def expTest(n: Int) = {
@@ -66,34 +67,34 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
 
     node1 <~> node2
     if (expNum != 3) {
-      node1.addNodeFaces(List(node4), node2)
-      node2.addNodeFaces(List(node3), node1)
+      node1.registerPrefixToNodes(node2, List(node4))
+      node2.registerPrefixToNodes(node1, List(node3))
     } else {
-      node1.addNodeFaces(List(node3, node4, node5), node2)
+      node1.registerPrefixToNodes(node2, List(node3, node4, node5))
     }
 
     if (expNum != 3) {
       node1 <~> node3
-      node1.addNodeFaces(List(node4), node3)
+      node1.registerPrefixToNodes(node3, List(node4))
     }
 
     node2 <~> node4
-    node2.addNodeFaces(List(node3, node5), node4)
-    node4.addNodeFaces(List(node1), node2)
+    node2.registerPrefixToNodes(node4, List(node3, node5))
+    node4.registerPrefixToNodes(node2, List(node1))
 
     node3 <~> node4
-    node3.addNodeFaces(List(node2), node4)
-    node4.addNodeFaces(List(node1), node3)
+    node3.registerPrefixToNodes(node4, List(node2))
+    node4.registerPrefixToNodes(node3, List(node1))
 
     node3 <~> node5
-    node5.addNodeFaces(List(node1), node3)
+    node5.registerPrefixToNodes(node3, List(node1))
 
     // remove for exp 6
     if (expNum != 6) {
       node4 <~> node5
-      node5.addNodeFaces(List(node2), node4)
+      node5.registerPrefixToNodes(node4, List(node2))
     } else {
-      node4.addNodeFace(node5, node3)
+      node4.registerPrefixToNode(node5, node3)
     }
     node1 += content1
     node2 += content2
@@ -103,32 +104,32 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
 
     // remove for exp6
     if (expNum != 6) {
-      node3.publishServiceLocalPrefix(new WordCount())
+      node3.publishService(new WordCount())
     }
 
-    node4.publishServiceLocalPrefix(new WordCount())
+    node4.publishService(new WordCount())
 
     val wcPrefix = new WordCount().ccnName
 
     // remove for exp3
     if (expNum != 3 && expNum != 7) {
-      node1.addPrefixFace(wcPrefix, node3)
+      node1.registerPrefix(wcPrefix, node3)
     } else if (expNum != 7) {
-      node1.addPrefixFace(wcPrefix, node2)
+      node1.registerPrefix(wcPrefix, node2)
     }
 
-    node2.addPrefixFace(wcPrefix, node4)
+    node2.registerPrefix(wcPrefix, node4)
     if (expNum == 7) {
-      node2.addPrefixFace(wcPrefix, node1)
+      node2.registerPrefix(wcPrefix, node1)
     }
 
-    node5.addPrefixFace(wcPrefix, node3)
+    node5.registerPrefix(wcPrefix, node3)
 
     if (expNum != 6) {
-      node5.addPrefixFace(wcPrefix, node4)
+      node5.registerPrefix(wcPrefix, node4)
     } else {
 
-      node3.addPrefixFace(wcPrefix, node4)
+      node3.registerPrefix(wcPrefix, node4)
     }
 
     val dynServ = new NFNDynamicService {
@@ -137,23 +138,22 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
         NFNIntValue(42)
       }
     }
-    node1.publishServiceLocalPrefix(dynServ)
+    node1.publishService(dynServ)
 
     Thread.sleep(1000)
 
-    import lambdacalculus.parser.ast.LambdaDSL._
     import nfn.LambdaNFNImplicits._
     implicit val useThunks: Boolean = false
 
-    val ts = new Translate().toString
-    val wc = new WordCount().toString
-    val nack = new NackServ().toString
+    val ts = new Translate()
+    val wc = new WordCount()
+    val nack = new NackServ()
 
-    val exp1 = wc appl docname1
+    val exp1 = wc call docname1
 
     val res1 = "1"
 
-    val exp2 = wc appl docname5
+    val exp2 = wc call docname5
     val res2 = "5"
 
     // cut 1 <-> 3:
@@ -161,30 +161,30 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
     // remove prefixes
     // add wc face to node 2
     // remove wc face to node 3
-    val exp3 = wc appl docname5
+    val exp3 = wc call docname5
     val res3 = "5"
 
     // thunks vs no thunks
-    val exp4 = (wc appl docname3) + (wc appl docname4)
+    val exp4 = (wc call docname3) + (wc call docname4)
     val res4 = "7"
 
-    val exp5_1 = wc appl docname3
+    val exp5_1 = wc call docname3
     val res5_1 = "3"
-    val exp5_2 = (wc appl docname3) + (wc appl docname4)
+    val exp5_2 = (wc call docname3) + (wc call docname4)
     val res5_2 = "4"
 
 
     // node 3 to ccn only (simluate "overloaded" router)
     // cut 4 <-> 5
     // wc face from 3 to 4
-    val exp6 = wc appl docname5
+    val exp6 = wc call docname5
     val res6 = "5"
 
     // Adds the wordcountservice to node1 and adds routing from node2 to 1
-    val exp7 = (wc appl docname4) + (wc appl docname3)
+    val exp7 = (wc call docname4) + (wc call docname3)
     val res7 = "7"
 
-    val exp8 = nack.appl
+    val exp8 = nack.call
     val res8 = Nack(CCNName("")).content
 
     expNum match {
@@ -205,7 +205,7 @@ class NFNMasterSpec extends FlatSpec with Matchers with ScalaFutures with Sequen
         nodes foreach { _.shutdown() }
       }
 
-      implicit val patienceConfig = PatienceConfig(Span(StaticConfig.defaultTimeoutDuration.toMillis, Millis), Span(0, Millis))
+      implicit val patienceConfig = PatienceConfig(Span(StaticConfig.defaultTimeoutDuration.toMillis, Millis), Span(100, Millis))
       whenReady(f) { content =>
         new String(content.data) shouldBe (res)
       }

@@ -10,19 +10,8 @@ Installation is fairly straight forward, and boils down to an available Java JDK
 If you want to install the JVM or sbt you could also test it out within a Docker container.
 For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite/docs).
 
-### ccn-lite
 
-Refer to the installation information in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite), but in short the following should work.
-
-1. Set the ccn-lite env: `export CCNL_HOME=<path/to/ccnlite>` (don't forget to add it to your  bash profile if you want it to persist)
-2. Ubuntu: `sudo apt-get install libssl-dev`
-
-   OSX: `brew install openssl` (assuming the [homebrew](http://brew.sh) packet manager is installed)
-
-3. `make clean all` in the `$CCNL_HOME` root directory
-
-
-### nfn-scala
+### JDK/sbt
 
 #### Ubuntu
 
@@ -33,6 +22,20 @@ Refer to the installation information in [CCN-lite](https://github.com/cn-uofbas
 JDK 7 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
 To install sbt you can use homebrew (`brew install sbt`).
 
+### nfn-scala
+You can either use sbt to compile the project (e.g. `sbt compile`) or you can use `sbt assembly`.
+This command will build the jarfile `./target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar` with all dependency (even Scala itself!)
+which makes it easier to deploy it because you do not have to install sbt or scala (only JVM).
+
+### ccn-lite
+
+To install ccn-lite and its dependencies follow the information [here](https://github.com/cn-uofbasel/ccn-lite).
+nfn-scala uses the commandline utilities of ccn-lite, therefore it needs to have the compiled utilities available.
+There are two possibilities, either you have CCNL_HOME set to your custom installation or you clone the repository with `--recursive` and use the submodule in `ccn-lite-nfn`.
+In general the ladder is the easier option, because the version of ccn-lite is always compatible with your nfn-scala.
+To compile ccn-lite (either in `$CCNL_HOME` or in the submodule), you can type sbt compileCCNLite.
+Alternatively you can also build it manually, but you have to make sure that `USE_NFN=1` is set.
+
 #### IDE
 If you want to use IntelliJ or eclipse you can use the sbt tasks `gen-idea` or `eclipse`.
 
@@ -40,14 +43,14 @@ If you want to use IntelliJ or eclipse you can use the sbt tasks `gen-idea` or `
 * Uninstall sbt (and remove `~/.sbt` if it still exists)
 * Delete `~/.ivy2` (this will of course also delete all your cached Java jars if you are using ivy)
 
-##Running NFN
+##Running nfn-scala
 
 For a detailed tutorial on both running CCN-Lite as well as nfn-scala go to the [tutorial](https://github.com/cn-uofbasel/ccn-lite/blob/dev-master/doc/tutorial/tutorial.md).
 In the following two very basic ways to use nfn-scala.
 
 ### Running a test project
-There are some runnables.runnables in the nfn-runnables.runnables project. In the sbt commandline type `run`. 
-Choose from a list of runnable applications, e.g. `runnables.evaluation.PandocApp` which starts a nfn environment, sends a predefined request and prints the result.
+There are some runnables classes in the project. To see them all you can simply use `sbt run` and you will presented a list with everything available.
+Choose for example . `runnables.evaluation.PandocApp` which starts a nfn environment, sends a predefined request and prints the result.
 
 ### Starting a standalone compute server
 There is a small startscript/program to start and configure a single nfn-node.

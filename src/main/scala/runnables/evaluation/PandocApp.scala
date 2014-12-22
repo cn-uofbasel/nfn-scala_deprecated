@@ -5,6 +5,7 @@ import java.io.File
 import ccn.packet.{Content, Interest}
 import com.typesafe.config.{ConfigFactory, Config}
 import lambdacalculus.parser.ast.Expr
+import monitor.Monitor
 import nfn.service.{WordCount, PandocTestDocuments, Pandoc}
 import node.LocalNodeFactory
 import concurrent.ExecutionContext.Implicits.global
@@ -24,8 +25,8 @@ object PandocApp extends App {
   val pandocServ = new Pandoc()
   val wcServ = new WordCount()
 
-  val pandoc = node1.localPrefix.append(pandocServ.ccnName).toString
-  val wc = node1.localPrefix.append(wcServ.ccnName).toString
+  val pandoc = node1.localPrefix.append(pandocServ.ccnName)
+  val wc = node1.localPrefix.append(wcServ.ccnName)
 
   val tutorialContent = PandocTestDocuments.tutorialMd(node1.localPrefix)
   val tinyContent = PandocTestDocuments.tinyMd(node1.localPrefix)
@@ -41,11 +42,13 @@ object PandocApp extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val exprTut: Expr = pandoc appl(tutorialContent.name, str("markdown_github"), str("html"))
-  val exprTiny: Expr = pandoc appl(tinyContent.name, str("markdown_github"), str("html"))
-  val exprWc: Expr = wc appl(tinyContent.name)
+  val x = 'x @: 'x + 1 ! 2
+  val exprTut: Expr = pandoc call(tutorialContent.name, "markdown_github", 'asdf)
+  val exprTiny: Expr = pandoc call(tinyContent.name, "markdown_github", "html")
+  val exprWc: Expr = wc call (tinyContent.name)
 
   sendAndPrintForName(exprTut)
+
 
 
   def sendAndPrintForName(interest: Interest) = {
@@ -55,9 +58,11 @@ object PandocApp extends App {
       case Success(resultContent) => {
         val runTime = System.currentTimeMillis - startTime
         println(s"RESULT:\n${new String(resultContent.data)}\nTIME: (${runTime}ms)")
+        Monitor.monitor ! Monitor.Visualize()
         nodes foreach { _.shutdown() }
       }
       case Failure(e) => println(s"Could not receive content for $interest")
+        Monitor.monitor ! Monitor.Visualize()
         nodes foreach { _.shutdown() }
     }
 

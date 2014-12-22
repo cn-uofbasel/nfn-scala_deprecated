@@ -2,13 +2,15 @@ package nfn
 
 import lambdacalculus.parser.ast._
 import ccn.packet.{CCNName, NFNInterest, Interest}
+import nfn.service.NFNService
 
 object LambdaNFNImplicits {
   import LambdaDSL._
 
-  implicit def ccnNameToString(name: CCNName): Expr = name.toString
+  implicit def ccnNameToString(name: CCNName): Variable = Variable(name.toString)
+  implicit def ServToString(serv: NFNService): Variable = serv.ccnName
 
-  implicit def ccnNamesToStirngs(names: List[CCNName]): List[Expr] = names map {_.toString}
+//  implicit def ccnNamesToStirngs(names: List[CCNName]): List[Expr] = names map {_.toString}
 
   implicit def exprToString(expr: Expr)(implicit lambdaPrinter: LambdaPrinter): String = {
     lambdaPrinter(expr)
