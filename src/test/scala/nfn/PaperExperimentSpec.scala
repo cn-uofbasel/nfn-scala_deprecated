@@ -20,20 +20,19 @@ import scala.concurrent.Future
  * This is useful for tests which should have a clean cache or for which the topology should be changed.
  * The base topology is based on the paper experiments.
  */
-class PaperExperimentSpec extends FlatSpec with Matchers with ScalaFutures with SequentialNestedSuiteExecution {
+class PaperExperimentSpec extends ExpressionTester with SequentialNestedSuiteExecution with BeforeAndAfterEach {
 
   implicit val conf: Config = ConfigFactory.load()
 
   (1 to 6) map { expTest }
-//  expTest(1)
 
 
   def expTest(n: Int) = {
     s"experiment $n" should "result in corresponding result in content object" in {
-      doExp(n)
+      fullTopologyTestForExperiment(n)
     }
   }
-  def doExp(expNum: Int) = {
+  def fullTopologyTestForExperiment(expNum: Int) = {
 
     val node1 = LocalNodeFactory.forId(1)
     val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
@@ -186,32 +185,22 @@ class PaperExperimentSpec extends FlatSpec with Matchers with ScalaFutures with 
 
     val exp8 = nack.call
     val res8 = Nack(CCNName("")).content
+    
+    implicit val nodeToSendInterestsTo = node1
 
     expNum match {
-      case 1 => doExp(exp1, res1)
-      case 2 => doExp(exp2, res2)
-      case 3 => doExp(exp3, res3)
-      case 4 => doExp(exp4, res4)
-      case 5 => doExp(exp6, res6)
-      case 6 => doExp(exp7, res7)
+      case 1 => doExp(exp1, testExpected(res1))
+      case 2 => doExp(exp2, testExpected(res2))
+      case 3 => doExp(exp3, testExpected(res3))
+      case 4 => doExp(exp4, testExpected(res4))
+      case 5 => doExp(exp6, testExpected(res6))
+      case 6 => doExp(exp7, testExpected(res7))
 //      case 7 => doExp(exp8, res8)
 //      case 9 => doExp(exp9)
       case _ => throw new Exception(s"expNum can only be 1 to 6 and not $expNum")
     }
-
-    def doExp(exprToDo: Expr, res: String) = {
-      val f: Future[Content] = node1 ? exprToDo
-      f.foreach { _ =>
-        nodes foreach { _.shutdown() }
-      }
-
-      implicit val patienceConfig = PatienceConfig(Span(StaticConfig.defaultTimeoutDuration.toMillis, Millis), Span(100, Millis))
-      whenReady(f) { content =>
-        new String(content.data) shouldBe (res)
-      }
-    }
-//    Thread.sleep(StaticConfig.defaultTimeoutDuration.toMillis + 100)
-
+    nodes foreach { _.shutdown() }
   }
+
 }
 

@@ -2,15 +2,12 @@ package nfn
 
 import ccn.packet.Content
 import com.typesafe.config.{Config, ConfigFactory}
-import config.StaticConfig
-import lambdacalculus.parser.ast.Expr
 import nfn.service._
 import node.LocalNodeFactory
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Span}
-import org.scalatest.{BeforeAndAfterAll, SequentialNestedSuiteExecution, Matchers, FlatSpec}
+import org.scalatest.{BeforeAndAfterAll, SequentialNestedSuiteExecution}
 
-import scala.concurrent.Future
+
+
 
 /**
  * This spec tests several expressions based on a static topology.
@@ -18,9 +15,7 @@ import scala.concurrent.Future
  * but it does not empty any caches between executed tests.
  * The topology is from the paper experiments.
  */
-class StaticTopologyTest extends FlatSpec
-                         with Matchers
-                         with ScalaFutures
+class StaticTopologyTest extends ExpressionTester
                          with SequentialNestedSuiteExecution
                          with BeforeAndAfterAll {
   implicit val conf: Config = ConfigFactory.load()
@@ -154,6 +149,8 @@ class StaticTopologyTest extends FlatSpec
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
+  implicit val nodeToSendInterestsTo = node1
+
   val wc = new WordCount()
   val pandoc = new Pandoc()
 
@@ -192,31 +189,6 @@ class StaticTopologyTest extends FlatSpec
     "more than 3000 words",
     { (res: String) => Integer.parseInt(res) should be > 4000 }
   )
-
-  def testExpr(expr: Expr, descr: String, test: String => Unit ) = {
-    s"expr: $expr" should s"$descr" in {
-      doExp(expr, test)
-    }
-  }
-
-  def testExprExpected(expr: Expr, expected: String) = {
-    testExpr(expr, s"result in $expected", testExpected(expected))
-  }
-
-  def testExpected(expected: String): String => Unit = {
-    (res: String) => res shouldBe expected
-  }
-
-
-
-  def doExp(exprToDo: Expr, test: String => Unit) = {
-    val f: Future[Content] = node1 ? exprToDo
-    implicit val patienceConfig = PatienceConfig(Span(StaticConfig.defaultTimeoutDuration.toMillis, Millis), Span(100, Millis))
-    whenReady(f) { content =>
-      val res = new String(content.data)
-      test(res)
-    }
-  }
 
   override def afterAll(): Unit = {
     nodes foreach { _.shutdown() }
