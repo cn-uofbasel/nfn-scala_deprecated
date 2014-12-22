@@ -3,16 +3,9 @@ package nfn
 import akka.actor._
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
-import config.StaticConfig
-import lambdacalculus.parser.ast._
-import nfn.service.{WordCount, _}
+import nfn.service._
 import node.LocalNodeFactory
 import org.scalatest._
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Span}
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 
 /**

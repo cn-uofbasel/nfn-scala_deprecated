@@ -23,6 +23,7 @@ object LambdaNFNImplicits {
     }
   }
   implicit val lambdaPrinter: LambdaPrinter = LambdaNFNPrinter
+
 }
 
 /**

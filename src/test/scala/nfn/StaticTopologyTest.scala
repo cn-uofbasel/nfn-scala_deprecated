@@ -186,7 +186,7 @@ class StaticTopologyTest extends ExpressionTester
   )
   testExpr(
     wc call tutorialMd ,
-    "more than 3000 words",
+    "more than 4000 words",
     { (res: String) => Integer.parseInt(res) should be > 4000 }
   )
 
