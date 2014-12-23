@@ -7,7 +7,7 @@ import ExecutionOrder._
 import scala.util.{Failure, Success, Try}
 import lambdacalculus.parser.ast.Expr
 
-class LambdaCalculusTest extends FlatSpec with Matchers with GivenWhenThen{
+class LambdaCalculusTest extends FlatSpec with Matchers with GivenWhenThen {
 
   def const(i: Int): List[MachineValue] = List(ConstMachineValue(i))
   def tryConst(i: Int): Try[List[MachineValue]] = Try(const(i))

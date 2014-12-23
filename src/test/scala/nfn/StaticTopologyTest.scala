@@ -6,9 +6,6 @@ import nfn.service._
 import node.LocalNodeFactory
 import org.scalatest.{BeforeAndAfterAll, SequentialNestedSuiteExecution}
 
-
-
-
 /**
  * This spec tests several expressions based on a static topology.
  * It is much faster than the [[PaperExperimentSpec]],

@@ -33,8 +33,8 @@ To install ccn-lite and its dependencies follow the information [here](https://g
 nfn-scala uses the commandline utilities of ccn-lite, therefore it needs to have the compiled utilities available.
 There are two possibilities, either you have CCNL_HOME set to your custom installation or you clone the repository with `--recursive` and use the submodule in `ccn-lite-nfn`.
 In general the ladder is the easier option, because the version of ccn-lite is always compatible with your nfn-scala.
-To compile ccn-lite (either in `$CCNL_HOME` or in the submodule), you can type sbt compileCCNLite.
-Alternatively you can also build it manually, but you have to make sure that `USE_NFN=1` is set.
+To compile ccn-lite (either in the submodule or, if not checked out, `$CCNL_HOME`), you can type `sbt compileCCNLite`.
+Alternatively you can also build it manually, make sure that `USE_NFN=1` is set.
 
 #### IDE
 If you want to use IntelliJ or eclipse you can use the sbt tasks `gen-idea` or `eclipse`.

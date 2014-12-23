@@ -40,7 +40,8 @@ object MainBuild extends Build {
         "org.apache.bcel" % "bcel" % "5.2",
         "com.github.scopt" %% "scopt" % "3.3.0"
       ),
-      mainClass in assembly := Some("runnables.production.ComputeServerStarter")
+      mainClass in assembly := Some("runnables.production.ComputeServerStarter"),
+      (run in Compile) <<= (run in Compile) dependsOn compileCCNLiteTask
     )
   ).dependsOn(lambdaCalculus)
 
@@ -67,14 +68,14 @@ object MainBuild extends Build {
   val compileCCNLiteTask = TaskKey[Unit]("compileCCNLite")
   val compileCCNLite = compileCCNLiteTask := {
     val ccnlPath = {
-      val p = System.getenv("CCNL_HOME")
-      if(p == null || p == "") {
         if(new File("./ccn-lite-nfn/bin").exists()) {
           new File("./ccn-lite-nfn").getCanonicalPath
         } else {
-          throw new Exception("CCNL_HOME was not set and nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update)")
+          val p = System.getenv("CCNL_HOME")
+          if(p == null || p == "") {
+            throw new Exception("CCNL_HOME was not set and nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update)")
+          } else p
         }
-      } else p
     }
 
     val processBuilder = {
@@ -83,7 +84,7 @@ object MainBuild extends Build {
       new java.lang.ProcessBuilder(cmds:_*)
     }
     val ccnlPathFile = new File(s"$ccnlPath/src")
-    println(s"Building in directory $ccnlPathFile")
+    println(s"Building CCN-Lite in directory $ccnlPathFile")
     processBuilder.directory(ccnlPathFile)
     val e = processBuilder.environment()
     e.put("USE_NFN", "1")
@@ -95,8 +96,9 @@ object MainBuild extends Build {
     val resVal = process.exitValue()
     if(resVal == 0)
       println(s"Compiled ccn-lite with return value ${process.exitValue()}")
-    else
+    else {
       throw new Exception("Error during compilation of ccn-lite")
+    }
     process.destroy()
   }
 }

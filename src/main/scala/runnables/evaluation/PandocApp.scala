@@ -43,7 +43,7 @@ object PandocApp extends App {
   implicit val useThunks: Boolean = false
 
   val x = 'x @: 'x + 1 ! 2
-  val exprTut: Expr = pandoc call(tutorialContent.name, "markdown_github", 'asdf)
+  val exprTut: Expr = pandoc call(tutorialContent.name, "markdown_github", "html")
   val exprTiny: Expr = pandoc call(tinyContent.name, "markdown_github", "html")
   val exprWc: Expr = wc call (tinyContent.name)
 
