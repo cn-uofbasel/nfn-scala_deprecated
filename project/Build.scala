@@ -73,7 +73,7 @@ object MainBuild extends Build {
         } else {
           val p = System.getenv("CCNL_HOME")
           if(p == null || p == "") {
-            throw new Exception("CCNL_HOME was not set and nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update)")
+            throw new Exception("nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update) or CCNL_HOME was not set")
           } else p
         }
     }

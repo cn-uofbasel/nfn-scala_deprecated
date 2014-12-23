@@ -94,7 +94,7 @@ object CCNLiteSystemPath {
       } else {
         val maybeCcnLiteEnv = System.getenv("CCNL_HOME")
         if(maybeCcnLiteEnv == null || maybeCcnLiteEnv == "") {
-          throw new Exception("CCNL_HOME was not set and nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update)")
+          throw new Exception("nfn-scala ccn-lite submodule was not initialzed (either git clone --recursive or git submodule init && git submodule update) or CCNL_HOME was not set")
         } else maybeCcnLiteEnv
       }
   }
