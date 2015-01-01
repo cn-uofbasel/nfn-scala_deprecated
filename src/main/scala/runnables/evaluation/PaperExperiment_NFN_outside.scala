@@ -80,6 +80,9 @@ object PaperExperiment_NFN_outside extends App {
   node14 += Content(docname4, docdata4)
   node5 += Content(docname5, docdata5)
 
+  //For cache test uncomment
+  node3 += Content(docname4, docdata4)
+
   //install functions
   node11.publishServiceLocalPrefix(new WordCount())
   node13.publishServiceLocalPrefix(new WordCount())
@@ -106,16 +109,20 @@ object PaperExperiment_NFN_outside extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val wc = wcPrefix3
-
-  // 'x == Symbol("x")
-  val exp1 = 'x @: (wc call 'x)  // call 2 /../wc /../doc/test1 <-> /doc/test1 / @x call 2  /../wc / x
+  //Test1
+  val exp1 = 'x @: (wcPrefix1 call 'x)  // call 2 /../wc /../doc/test1 <-> /doc/test1 / @x call 2  /../wc / x
   val i1 = Interest(exp1.name.prepend(docname3))
+
+  //Test2
   val exp2 = 'x @: ('x call docname5)
   val i2 = Interest(exp2.name.prepend(wcPrefix3))
 
+  //Test3
+  val exp3 = 'x @: (wcPrefix4 call 'x)
+  val i3 = Interest(exp3.name.prepend(docname4))
 
-  val i = i2
+
+  val i = i3
   println(s"sending: ${i.name.cmps.mkString("[", " | ", "]")}")
   (node1 ? i).onComplete{
     case Success (c) => println(c)
