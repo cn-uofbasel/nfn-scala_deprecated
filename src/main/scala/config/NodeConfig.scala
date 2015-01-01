@@ -111,7 +111,7 @@ trait NodeConfig {
 
 case class CombinedNodeConfig(maybeNFNNodeConfig: Option[RouterConfig], maybeComputeNodeConfig: Option[ComputeNodeConfig])
 
-case class RouterConfig(host: String, port: Int, prefix: CCNName, mgmntSocket: String = "", isCCNOnly: Boolean = false, isAlreadyRunning: Boolean = false) extends NodeConfig {
+case class RouterConfig(host: String, port: Int, prefix: CCNName, mgmntSocket: String = "", isCCNOnly: Boolean = false, isAlreadyRunning: Boolean = false, defaultNFNRoute: String = "") extends NodeConfig {
   def toNodeLog: NodeLog = NodeLog(host, port, Some(if(isCCNOnly) "CCNNode" else "NFNNode"), Some(prefix.toString))
 }
 

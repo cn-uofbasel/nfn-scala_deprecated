@@ -26,12 +26,13 @@ object LocalNodeFactory {
     s"/tmp/mgmt.${prefix.cmps.mkString(".")}.${port.getOrElse("")}.sock"
   }
 
-  def forId(id: Int, isCCNOnly: Boolean = false, port: Int = 0)(implicit config: Config): LocalNode = {
+  def forId(id: Int, isCCNOnly: Boolean = false, port: Int = 0, default_route_port: Int = 0)(implicit config: Config): LocalNode = {
 
     val p = if(port == 0) id else port;
+    val def_route_port = if(default_route_port != 0)"127.0.0.1/"+default_route_port else ""
     val nodePrefix = CCNName("node", s"node$id")
     LocalNode(
-      RouterConfig("127.0.0.1", 10000 + p * 10, nodePrefix, defaultMgmtSockNameForPrefix(nodePrefix, Some(p)), isCCNOnly = isCCNOnly, isAlreadyRunning = false),
+      RouterConfig("127.0.0.1", 10000 + p * 10, nodePrefix, defaultMgmtSockNameForPrefix(nodePrefix, Some(p)), isCCNOnly = isCCNOnly, isAlreadyRunning = false, defaultNFNRoute = def_route_port),
       Some(ComputeNodeConfig("127.0.0.1", 10000 + p * 10 + 1, nodePrefix, withLocalAM = false))
     )
   }

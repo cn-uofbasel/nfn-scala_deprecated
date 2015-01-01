@@ -16,7 +16,7 @@ object PaperExperiment_NFN_outside extends App {
 
   val node0 = LocalNodeFactory.forId(0) // node0 is a local nfn node
 
-  val node1 = LocalNodeFactory.forId(1, isCCNOnly = true)
+  val node1 = LocalNodeFactory.forId(1, isCCNOnly = true, default_route_port = 10110)
   val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
   val node3 = LocalNodeFactory.forId(3, isCCNOnly = true)
   val node4 = LocalNodeFactory.forId(4, isCCNOnly = true)
