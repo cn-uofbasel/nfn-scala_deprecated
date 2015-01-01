@@ -54,6 +54,9 @@ object PaperExperiment_NFN_outside extends App {
 
   node5.registerPrefixToNodes(node3, List(node1))
 
+  node11.registerPrefixToNodes(node3, List(node1, node2, node4, node5))
+  node13.registerPrefixToNodes(node3, List(node1, node2, node4, node5))
+
   //Add some documents:
   val docname1 = node1.localPrefix.append("doc", "test1")
   val docdata1 = "one".getBytes
@@ -83,8 +86,11 @@ object PaperExperiment_NFN_outside extends App {
   node14.publishServiceLocalPrefix(new WordCount())
 
   //add routing informations for the functions
-  val wcPrefix = new WordCount().ccnName.prepend(node11.localPrefix)
-  node1.registerPrefix(wcPrefix, node11)
+  val wcPrefix1 = new WordCount().ccnName.prepend(node11.localPrefix)
+  val wcPrefix3 = new WordCount().ccnName.prepend(node13.localPrefix)
+  val wcPrefix4 = new WordCount().ccnName.prepend(node14.localPrefix)
+
+  /*node1.registerPrefix(wcPrefix, node11)
   node3.registerPrefix(wcPrefix, node13)
   node4.registerPrefix(wcPrefix, node14)
 
@@ -92,7 +98,7 @@ object PaperExperiment_NFN_outside extends App {
   node2.registerPrefix(wcPrefix, node4)
 
   node5.registerPrefix(wcPrefix, node3)
-  node5.registerPrefix(wcPrefix, node4)
+  node5.registerPrefix(wcPrefix, node4)*/
 
   Thread.sleep(2000)
 
@@ -100,14 +106,16 @@ object PaperExperiment_NFN_outside extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val wc = wcPrefix
+  val wc = wcPrefix3
 
   // 'x == Symbol("x")
   val exp1 = 'x @: (wc call 'x)  // call 2 /../wc /../doc/test1 <-> /doc/test1 / @x call 2  /../wc / x
+  val i1 = Interest(exp1.name.prepend(docname3))
+  val exp2 = 'x @: ('x call docname5)
+  val i2 = Interest(exp2.name.prepend(wcPrefix3))
 
-  val exp2 : Interest = exp1
 
-  val i = Interest(exp2.name.prepend(docname1))
+  val i = i2
   println(s"sending: ${i.name.cmps.mkString("[", " | ", "]")}")
   (node1 ? i).onComplete{
     case Success (c) => println(c)
