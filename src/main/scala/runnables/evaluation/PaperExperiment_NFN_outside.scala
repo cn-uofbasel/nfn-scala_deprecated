@@ -16,7 +16,6 @@ object PaperExperiment_NFN_outside extends App {
 
   //val node0 = LocalNodeFactory.forId(0) // node0 is a local nfn node
 
-
   val node11 = LocalNodeFactory.forId(1, port = 11)
   val node13 = LocalNodeFactory.forId(3, port = 13)
   val node14 = LocalNodeFactory.forId(4, port = 14)
@@ -55,8 +54,9 @@ object PaperExperiment_NFN_outside extends App {
 
   node5.registerPrefixToNodes(node3, List(node1))
 
-  node11.registerPrefixToNodes(node3, List(node1, node2, node4, node5))
-  node13.registerPrefixToNodes(node3, List(node1, node2, node4, node5))
+  node11.registerPrefixToNodes(node1, List(node1, node2, node3, node4, node5))
+  node13.registerPrefixToNodes(node3, List(node1, node2, node3, node4, node5))
+  node14.registerPrefixToNodes(node4, List(node1, node2, node3, node4, node5))
 
   //Add some documents:
   val docname1 = node1.localPrefix.append("doc", "test1")
