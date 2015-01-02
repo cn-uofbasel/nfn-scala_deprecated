@@ -14,17 +14,18 @@ import scala.util.{Failure, Success}
 object PaperExperiment_NFN_outside extends App {
   implicit val conf: Config = ConfigFactory.load()
 
-  val node0 = LocalNodeFactory.forId(0) // node0 is a local nfn node
+  //val node0 = LocalNodeFactory.forId(0) // node0 is a local nfn node
 
-  val node1 = LocalNodeFactory.forId(1, isCCNOnly = true, default_route_port = 10110)
-  val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
-  val node3 = LocalNodeFactory.forId(3, isCCNOnly = true)
-  val node4 = LocalNodeFactory.forId(4, isCCNOnly = true)
-  val node5 = LocalNodeFactory.forId(5, isCCNOnly = true)
 
   val node11 = LocalNodeFactory.forId(1, port = 11)
   val node13 = LocalNodeFactory.forId(3, port = 13)
   val node14 = LocalNodeFactory.forId(4, port = 14)
+
+  val node1 = LocalNodeFactory.forId(1, isCCNOnly = true, default_route_port = 10110)
+  val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)
+  val node3 = LocalNodeFactory.forId(3, isCCNOnly = true, default_route_port = 10130)
+  val node4 = LocalNodeFactory.forId(4, isCCNOnly = true, default_route_port = 10140)
+  val node5 = LocalNodeFactory.forId(5, isCCNOnly = true)
 
   val nodes = List(node1, node2, node3, node4, node5, node11, node13, node14)
 
@@ -121,10 +122,13 @@ object PaperExperiment_NFN_outside extends App {
   val exp3 = 'x @: (wcPrefix4 call 'x)
   val i3 = Interest(exp3.name.prepend(docname4))
 
+  val exp4 = wcPrefix3 call docname3;
+  val i4 = Interest(exp4)
 
   val i = i3
+  //when sending an interest: no NFN component for exp4
   println(s"sending: ${i.name.cmps.mkString("[", " | ", "]")}")
-  (node1 ? i).onComplete{
+  (node1 ? exp4).onComplete{
     case Success (c) => println(c)
     case Failure (e) => println(s"Error $e");
   }
