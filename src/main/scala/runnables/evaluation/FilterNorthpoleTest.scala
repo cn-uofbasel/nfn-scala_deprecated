@@ -55,13 +55,13 @@ object FilterNorthpoleTest extends App {
   // Question: Difference between "Interest" and "Expr"? Both seem to work..
 
   // send interest1 or interest2?
-  val interest = interest2
+  val interest = interest1 // TODO interest 2 currently not working..
 
   // send interest...
   val startTime = System.currentTimeMillis
   println(s" | Send interest: " + interest1)
   node2 ? interest onComplete {
-    // ... and reveive content
+    // ... and receive content
     case Success(resultContent) => {
       println(s" | Result:        " + new String(resultContent.data))
       println(s" | Time:          " + (System.currentTimeMillis-startTime) + "ms")
@@ -70,7 +70,7 @@ object FilterNorthpoleTest extends App {
     }
     // ... but do not get content
     case Failure(e) =>
-      println(" | No content reveived.")
+      println(" | No content received.")
       Monitor.monitor ! Monitor.Visualize()
       nodes foreach { _.shutdown() }
   }
