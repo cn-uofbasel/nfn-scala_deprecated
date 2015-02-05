@@ -23,17 +23,19 @@ object FilterTrackTest extends App {
   *  Sample data "track" on node1
   *
   *
-  *  <FilterTrack>
+  *  {FilterTrack}
   *       |
   *   +-------+           +-------+
-  *   | node1 | <~~~~~~~> | node2 |
+  *   | node1 |***********| node2 |
   *   +-------+           +-------+
   *      |
-  *   (track)
+  *   [track]
   *
   *
   * SCENARIO:
-  *  node2 requests "track" filtered with "FilterTrack"
+  *  node2 requests "track" filtered with
+  *  "FilterTrack" and different access
+  *  levels.
   *
   * */
 
@@ -44,9 +46,9 @@ object FilterTrackTest extends App {
   node1 <~> node2
 
   // service setup
-  val northpoleServ = new FilterTrack()
-  node1.publishServiceLocalPrefix(northpoleServ)
-  val northpole = node1.localPrefix.append(northpoleServ.ccnName)
+  val filterTrackServ = new FilterTrack()
+  node1.publishServiceLocalPrefix(filterTrackServ)
+  val filterTrack = node1.localPrefix.append(filterTrackServ.ccnName)
 
   // data setup
   val trackname = node1.localPrefix.append("track")
@@ -60,8 +62,8 @@ object FilterTrackTest extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val interest1: Interest = northpole call("3 4 6 4 4 6 4 5 6 4 6 7 6 6 5 5 6 5", 0)
-  val interest2: Interest = northpole call(trackname, 1)
+  val interest1: Interest = filterTrack call("3 4 6 4 4 6 4 5 6 4 6 7 6 6 5 5 6 5", 0)
+  val interest2: Interest = filterTrack call(trackname, 1)
   // Question: Difference between "Interest" and "Expr"? Both seem to work..
 
   // send interest1 or interest2?
