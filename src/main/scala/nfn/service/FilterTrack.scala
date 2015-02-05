@@ -5,6 +5,9 @@ import akka.actor.ActorRef
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
+ * Filter:
+ *  Filtering of GPS tracks.
+ *
  * Access Levels:
  *  0   Raw data (no filtering)
  *  1   Shift a track so that the starting point lies
@@ -16,29 +19,34 @@ import akka.actor.ActorRef
 
 class FilterTrack extends NFNService {
 
-  private def processFilterTrack(track:String):String = {
+  private def processFilterTrack(track:String, level:Int):String = {
 
     // convert from string to int array
     val coordinates = track.split(" ").map(_.toInt)
 
-    // offset
-    val offset_x = -coordinates(0)
-    val offset_y = -coordinates(1)
-    val offset_z = -coordinates(2)
+    // set offset dependent on access level
+    val offset:List[Int] = level match {
+      case 0 =>
+        List(0,0,0)
+      case 1 =>
+        List(-coordinates(0), -coordinates(1), -coordinates(2))
+      case _ =>
+        throw new NFNServiceArgumentException(s"Invalid access level.")
+    }
 
     // shift x-coordinates
     for (i <- 0 until coordinates.length by 3) {
-      coordinates(i) = coordinates(i) + offset_x
+      coordinates(i) = coordinates(i) + offset(0)
     }
 
     // shift y-coordinates
     for (i <- 1 until coordinates.length by 3) {
-      coordinates(i) = coordinates(i) + offset_y
+      coordinates(i) = coordinates(i) + offset(1)
     }
 
     // shift z-coordinates
     for (i <- 2 until coordinates.length by 3) {
-      coordinates(i) = coordinates(i) + offset_z
+      coordinates(i) = coordinates(i) + offset(2)
     }
 
     // convert back to string
@@ -52,11 +60,11 @@ class FilterTrack extends NFNService {
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
-      case Seq(NFNStringValue(track)) =>
-        NFNStringValue(processFilterTrack(track))
+      case Seq(NFNStringValue(track), NFNIntValue(level)) =>
+        NFNStringValue(processFilterTrack(track,level))
 
-      case Seq(NFNContentObjectValue(_, track)) =>
-        NFNStringValue(processFilterTrack(new String(track)))
+      case Seq(NFNContentObjectValue(_, track), NFNIntValue(level)) =>
+        NFNStringValue(processFilterTrack(new String(track),level))
 
       case _ =>
         throw new NFNServiceArgumentException(s"Argument mismatch.")

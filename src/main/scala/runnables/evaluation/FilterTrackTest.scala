@@ -22,6 +22,16 @@ object FilterTrackTest extends App {
   *  Service "FilterTrack" on node1
   *  Sample data "track" on node1
   *
+  *
+  *  <FilterTrack>
+  *       |
+  *   +-------+           +-------+
+  *   | node1 | <~~~~~~~> | node2 |
+  *   +-------+           +-------+
+  *      |
+  *   (track)
+  *
+  *
   * SCENARIO:
   *  node2 requests "track" filtered with "FilterTrack"
   *
@@ -50,12 +60,12 @@ object FilterTrackTest extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val interest1: Interest = northpole call("3 4 6 4 4 6 4 5 6 4 6 7 6 6 5 5 6 5")
-  val interest2: Interest = northpole call(trackname)
+  val interest1: Interest = northpole call("3 4 6 4 4 6 4 5 6 4 6 7 6 6 5 5 6 5", 0)
+  val interest2: Interest = northpole call(trackname, 1)
   // Question: Difference between "Interest" and "Expr"? Both seem to work..
 
   // send interest1 or interest2?
-  val interest = interest2
+  val interest = interest1
 
   // send interest...
   val startTime = System.currentTimeMillis
