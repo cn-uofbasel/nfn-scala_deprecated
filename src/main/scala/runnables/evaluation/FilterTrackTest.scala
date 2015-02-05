@@ -4,14 +4,14 @@ import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
 import lambdacalculus.parser.ast.Expr
 import monitor.Monitor
-import nfn.service.FilterNorthpole
+import nfn.service.FilterTrack
 import node.LocalNodeFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 
-object FilterNorthpoleTest extends App {
+object FilterTrackTest extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
@@ -19,11 +19,11 @@ object FilterNorthpoleTest extends App {
   *
   * SETUP:
   *  Network with node1 and node2
-  *  Service "FilterNorthpole" on node1
+  *  Service "FilterTrack" on node1
   *  Sample data "track" on node1
   *
   * SCENARIO:
-  *  node2 requests "track" filtered with "FilterNorthpole"
+  *  node2 requests "track" filtered with "FilterTrack"
   *
   * */
 
@@ -34,7 +34,7 @@ object FilterNorthpoleTest extends App {
   node1 <~> node2
 
   // service setup
-  val northpoleServ = new FilterNorthpole()
+  val northpoleServ = new FilterTrack()
   node1.publishServiceLocalPrefix(northpoleServ)
   val northpole = node1.localPrefix.append(northpoleServ.ccnName)
 

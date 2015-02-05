@@ -5,14 +5,18 @@ import akka.actor.ActorRef
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- *   Shift a track so that the starting point lies on the origin of the coordinate system.
+ * Access Levels:
+ *  0   Raw data (no filtering)
+ *  1   Shift a track so that the starting point lies
+ *      on the origin of the coordinate system.
+ *      (northpole filtering)
  *
  */
 
 
-class FilterNorthpole extends NFNService {
+class FilterTrack extends NFNService {
 
-  private def processNorthpole(track:String):String = {
+  private def processFilterTrack(track:String):String = {
 
     // convert from string to int array
     val coordinates = track.split(" ").map(_.toInt)
@@ -49,10 +53,10 @@ class FilterNorthpole extends NFNService {
 
     args match {
       case Seq(NFNStringValue(track)) =>
-        NFNStringValue(processNorthpole(track))
+        NFNStringValue(processFilterTrack(track))
 
       case Seq(NFNContentObjectValue(_, track)) =>
-        NFNStringValue(processNorthpole(new String(track)))
+        NFNStringValue(processFilterTrack(new String(track)))
 
       case _ =>
         throw new NFNServiceArgumentException(s"Argument mismatch.")
