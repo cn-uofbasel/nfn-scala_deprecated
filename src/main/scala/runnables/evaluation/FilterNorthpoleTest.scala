@@ -51,11 +51,11 @@ object FilterNorthpoleTest extends App {
   implicit val useThunks: Boolean = false
 
   val interest1: Interest = northpole call("3 4 6 4 4 6 4 5 6 4 6 7 6 6 5 5 6 5")
-  val interest2: Interest = northpole call(trackname.name)
+  val interest2: Interest = northpole call(trackname)
   // Question: Difference between "Interest" and "Expr"? Both seem to work..
 
   // send interest1 or interest2?
-  val interest = interest1 // TODO interest 2 currently not working..
+  val interest = interest2
 
   // send interest...
   val startTime = System.currentTimeMillis

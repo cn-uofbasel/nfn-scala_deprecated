@@ -12,7 +12,7 @@ import akka.actor.ActorRef
 
 class FilterNorthpole extends NFNService {
 
-  def processNorthpole(track:String):String = {
+  private def processNorthpole(track:String):String = {
 
     // convert from string to int array
     val coordinates = track.split(" ").map(_.toInt)
@@ -38,7 +38,10 @@ class FilterNorthpole extends NFNService {
     }
 
     // convert back to string
-    " " + coordinates.mkString(" ") // TODO Problem when whitespace is missing!
+    " " + coordinates.mkString(" ")
+    // TODO
+    // Problem when whitespace is missing!
+    // Occurs, then returned string starts with a number.
 
   }
 
@@ -49,7 +52,7 @@ class FilterNorthpole extends NFNService {
         NFNStringValue(processNorthpole(track))
 
       case Seq(NFNContentObjectValue(_, track)) =>
-        NFNStringValue(new String(track))
+        NFNStringValue(processNorthpole(new String(track)))
 
       case _ =>
         throw new NFNServiceArgumentException(s"Argument mismatch.")
