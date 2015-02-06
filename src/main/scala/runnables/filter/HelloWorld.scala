@@ -82,10 +82,11 @@ object HelloWorld extends App {
       nodes foreach { _.shutdown() }
     }
     // ... but do not get content
-    case Failure(e) =>
+    case Failure(e) => {
       println(" | No content received.")
       Monitor.monitor ! Monitor.Visualize()
       nodes foreach { _.shutdown() }
+    }
   }
 
 }

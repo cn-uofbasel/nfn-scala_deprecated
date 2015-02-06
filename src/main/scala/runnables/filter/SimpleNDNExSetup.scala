@@ -2,6 +2,7 @@ package runnables.filter
 
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
+import lambdacalculus.parser.ast.Expr
 import monitor.Monitor
 import nfn.service.filter.track.{AccessChannel, KeyChannel, ContentChannel}
 import node.LocalNodeFactory
@@ -10,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 
-object NDNExSetup extends App {
+object SimpleNDNExSetup extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
@@ -22,18 +23,18 @@ object NDNExSetup extends App {
   *  Sample data "track" and permissions on dsu
   *
 
-
-             [track]        {filterTrack}
-               |                  |
-           +-------+          +-------+
-   <perm>--|  dsu  |**********|  dpu  |
-           +-------+          +-------+
-                 *              *
-                  *            *
-                   *          *
-                    +-------+
-                    |  dvu  |
-                    +-------+
+        {track.KeyChannel}
+      {track.AccessChannel}     {track.ContentChannel}
+                 |                  |
+             +-------+          +-------+
+    [track]--|  dsu  |**********|  dpu  |
+             +-------+          +-------+
+                   *              *
+                    *            *
+                     *          *
+                      +-------+
+                      |  dvu  |
+                      +-------+
 
 
   *
@@ -43,6 +44,7 @@ object NDNExSetup extends App {
   *  access level.
   *
   * */
+
 
   // network setup
   val dsu = LocalNodeFactory.forId(1)
@@ -68,12 +70,12 @@ object NDNExSetup extends App {
   dpu.publishServiceLocalPrefix(keyTrackServ)
   val keyTrack = dpu.localPrefix.append(keyTrackServ.ccnName)
 
-  // data setup
+  // setup track data
   val trackName = dsu.localPrefix.append("track")
   val trackData = "3 4 6 4 4 6 4 5 6 4 6 7 6 6 5 5 6 5".getBytes
   dsu += Content(trackName, trackData)
 
-  // setup permissions
+  // setup permission data
   val permissionName = dsu.localPrefix.append("trackPermission")
   val permissionData = List (
     List("user1", trackName, 0),
@@ -109,10 +111,11 @@ object NDNExSetup extends App {
       nodes foreach { _.shutdown() }
     }
     // ... but do not get content
-    case Failure(e) =>
+    case Failure(e) =>{
       println(" | No content received.")
       Monitor.monitor ! Monitor.Visualize()
       nodes foreach { _.shutdown() }
+    }
   }
 
   // --------------------------------------------------------------
@@ -121,7 +124,7 @@ object NDNExSetup extends App {
 
   Thread.sleep(1000)
 
-  val interest_permissions: Interest = accessTrack call(permissionName, 0)
+  val interest_permissions:Interest = accessTrack call(permissionName, 0)
 
   // send interest for permissions from dpu...
   val startTime2 = System.currentTimeMillis
@@ -135,10 +138,13 @@ object NDNExSetup extends App {
       nodes foreach { _.shutdown() }
     }
     // ... but do not get content
-    case Failure(e) =>
+    case Failure(e) => {
       println(" | No content received.")
       Monitor.monitor ! Monitor.Visualize()
-      nodes foreach { _.shutdown() }
+      nodes foreach {
+        _.shutdown()
+      }
+    }
   }
 
 }

@@ -18,15 +18,28 @@ import nfn.service._
 class AccessChannel extends NFNService {
 
    private def processAccessTrack(track:String, level:Int):String = {
-     println(">>>>> processAccessTrack <<<<<")
+
+     level match {
+       case 0 =>
+         "TODO"
+       case _ =>
+         throw new NFNServiceArgumentException(s"Invalid access level.")
+     }
+
      "TODO"
    }
 
    override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
+    println(">>>>> function in AccessChannel <<<<<")
+
+
      args match {
        case Seq(NFNStringValue(track), NFNIntValue(level)) =>
          NFNStringValue(processAccessTrack(track,level))
+
+       case Seq(NFNContentObjectValue(_,track), NFNIntValue(level)) =>
+         NFNStringValue(processAccessTrack(new String(track),level))
 
        case _ =>
          throw new NFNServiceArgumentException(s"Argument mismatch.")
