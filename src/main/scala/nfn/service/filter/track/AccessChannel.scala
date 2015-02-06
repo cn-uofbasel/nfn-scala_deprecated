@@ -49,7 +49,7 @@ class AccessChannel extends NFNService {
          NFNStringValue(processAccessTrack(new String(request),level))
 
        case _ =>
-         throw new NFNServiceArgumentException(s"Argument mismatch.")
+         throw new NFNServiceArgumentException(s"AccessChannel: Argument mismatch.")
      }
 
    }

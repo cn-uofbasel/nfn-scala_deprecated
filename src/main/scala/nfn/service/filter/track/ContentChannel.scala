@@ -69,7 +69,7 @@ class ContentChannel extends NFNService {
         NFNStringValue(processFilterTrack(new String(track),level))
 
       case _ =>
-        throw new NFNServiceArgumentException(s"Argument mismatch.")
+        throw new NFNServiceArgumentException(s"ContentChannel: Argument mismatch.")
     }
 
   }
