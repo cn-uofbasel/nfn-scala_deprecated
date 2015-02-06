@@ -108,13 +108,11 @@ object SimpleNDNExSetup extends App {
       println(s" | Result:        " + new String(resultContent.data))
       println(s" | Time:          " + (System.currentTimeMillis-startTime1) + "ms")
       Monitor.monitor ! Monitor.Visualize()
-      nodes foreach { _.shutdown() }
     }
     // ... but do not get content
     case Failure(e) =>{
       println(" | No content received.")
       Monitor.monitor ! Monitor.Visualize()
-      nodes foreach { _.shutdown() }
     }
   }
 
