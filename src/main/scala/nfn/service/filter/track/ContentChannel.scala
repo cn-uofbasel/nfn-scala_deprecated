@@ -1,12 +1,13 @@
-package nfn.service
+package nfn.service.filter.track
 
 import akka.actor.ActorRef
+import nfn.service._
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
  * Filter:
- *  Filtering of GPS tracks.
+ *  Filtering of GPS tracks (content channel)
  *
  * Access Levels:
  *  0   Raw data (no filtering)
@@ -17,7 +18,7 @@ import akka.actor.ActorRef
  */
 
 
-class FilterTrack extends NFNService {
+class ContentChannel extends NFNService {
 
   private def processFilterTrack(track:String, level:Int):String = {
 
@@ -51,7 +52,7 @@ class FilterTrack extends NFNService {
 
     // convert back to string
     " " + coordinates.mkString(" ")
-    // TODO
+    // TODO FIX
     // Problem when whitespace is missing!
     // Occurs, then returned string starts with a number.
 

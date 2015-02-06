@@ -1,17 +1,16 @@
-package runnables.evaluation
+package runnables.filter
 
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
-import lambdacalculus.parser.ast.Expr
 import monitor.Monitor
-import nfn.service.FilterTrack
+import nfn.service.filter.track.ContentChannel
 import node.LocalNodeFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 
-object FilterTrackTest extends App {
+object HelloWorld extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
@@ -19,22 +18,24 @@ object FilterTrackTest extends App {
   *
   * SETUP:
   *  Network with node1 and node2
-  *  Service "FilterTrack" on node1
+  *  Service "ContentChannel" on node1
   *  Sample data "track" on node1
   *
-  *
-  *  {FilterTrack}
-  *       |
-  *   +-------+           +-------+
-  *   | node1 |***********| node2 |
-  *   +-------+           +-------+
-  *      |
-  *   [track]
-  *
+
+
+     {ContentChannel}
+          |
+      +-------+           +-------+
+      | node1 |***********| node2 |
+      +-------+           +-------+
+         |
+      [track]
+
+
   *
   * SCENARIO:
   *  node2 requests "track" filtered with
-  *  "FilterTrack" and different access
+  *  "ContentChannel" and different access
   *  levels.
   *
   * */
@@ -46,7 +47,7 @@ object FilterTrackTest extends App {
   node1 <~> node2
 
   // service setup
-  val filterTrackServ = new FilterTrack()
+  val filterTrackServ = new ContentChannel()
   node1.publishServiceLocalPrefix(filterTrackServ)
   val filterTrack = node1.localPrefix.append(filterTrackServ.ccnName)
 
