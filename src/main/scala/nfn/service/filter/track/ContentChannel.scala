@@ -10,8 +10,9 @@ import nfn.service._
  *  Filtering of GPS tracks (content channel)
  *
  * Access Levels:
- *  0   Raw data (no filtering)
- *  1   Shift a track so that the starting point lies
+ *  -1   No permissions
+ *   0   Raw data (no filtering)
+ *   1   Shift a track so that the starting point lies
  *      on the origin of the coordinate system.
  *      (northpole filtering)
  *

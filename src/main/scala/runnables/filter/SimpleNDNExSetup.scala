@@ -122,7 +122,7 @@ object SimpleNDNExSetup extends App {
 
   Thread.sleep(1000)
 
-  val interest_permissions:Interest = accessTrack call(permissionName, 0)
+  val interest_permissions:Interest = accessTrack call("user1 track", 0)
 
   // send interest for permissions from dpu...
   val startTime2 = System.currentTimeMillis
