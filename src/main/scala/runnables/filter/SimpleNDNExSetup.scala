@@ -58,7 +58,7 @@ object SimpleNDNExSetup extends App {
   // service setup (content channel)
   val filterTrackServ = new ContentChannel
   dpu.publishServiceLocalPrefix(filterTrackServ)
-  val filterTrack = dpu.localPrefix.append(filterTrackServ.ccnName)
+  val contentTrack = dpu.localPrefix.append(filterTrackServ.ccnName)
 
   // service setup (access/permission channel)
   val accessTrackServ = new AccessChannel
@@ -77,10 +77,10 @@ object SimpleNDNExSetup extends App {
 
   // setup permission data
   val permissionName = dsu.localPrefix.append("trackPermission")
-  val permissionData = List (
-    List("user1", trackName, 0),
-    List("user2", trackName, 1),
-    List("processor", permissionName, 0)
+  val permissionData = Map(
+    ("user1", trackName) -> 0,
+    ("user2", trackName) -> 1,
+    ("processor", trackName) -> 0
   ).toString.getBytes
   dsu += Content(permissionName, permissionData)
 
@@ -93,16 +93,16 @@ object SimpleNDNExSetup extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val interest_raw: Interest = filterTrack call(trackName, 0)
-  val interest_northpole: Interest = filterTrack call(trackName, 1)
+  val interest_raw: Interest = contentTrack call(trackName, 0)
+  val interest_northpole: Interest = contentTrack call(trackName, 1)
 
   // send interest_raw or interest_northpole?
   val interest = interest_raw
 
   // send interest for track from dvu...
   val startTime1 = System.currentTimeMillis
-  println(s" | Send interest: " + interest)
-  dvu ? interest onComplete {
+  println(s" |>> Send interest: " + interest)
+  dpu ? interest onComplete {
     // ... and receive content
     case Success(resultContent) => {
       println(s" | Result:        " + new String(resultContent.data))
@@ -133,6 +133,32 @@ object SimpleNDNExSetup extends App {
       println(s" | Result:        " + new String(resultContent.data))
       println(s" | Time:          " + (System.currentTimeMillis-startTime2) + "ms")
       Monitor.monitor ! Monitor.Visualize()
+    }
+    // ... but do not get content
+    case Failure(e) => {
+      println(" | No content received.")
+      Monitor.monitor ! Monitor.Visualize()
+    }
+  }
+
+  // --------------------------------------------------------------
+
+  println("=== FETCH KEY FROM DPU ===")
+
+  Thread.sleep(1000)
+
+  val interest_key:Interest = keyTrack call("/node/node1/trackPermission", "user1", 0)
+
+  // send interest for permissions from dpu...
+  val startTime3 = System.currentTimeMillis
+  println(s" | Send interest: " + interest_key)
+  dpu ? interest_key onComplete {
+    // ... and receive content
+    case Success(resultContent) => {
+      println(s" | Result:        " + new String(resultContent.data))
+      println(s" | Time:          " + (System.currentTimeMillis-startTime3) + "ms")
+      Monitor.monitor ! Monitor.Visualize()
+      Thread.sleep(20000)
       nodes foreach { _.shutdown() }
     }
     // ... but do not get content
