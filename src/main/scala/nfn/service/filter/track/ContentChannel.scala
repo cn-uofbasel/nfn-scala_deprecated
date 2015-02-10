@@ -17,8 +17,6 @@ import nfn.service._
  *      (northpole filtering)
  *
  */
-
-
 class ContentChannel extends NFNService {
 
   private def processFilterTrack(track:String, level:Int):String = {
