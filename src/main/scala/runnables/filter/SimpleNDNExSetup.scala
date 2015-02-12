@@ -10,9 +10,6 @@ import node.LocalNodeFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-import net.liftweb.json._
-
-
 object SimpleNDNExSetup extends App {
 
   implicit val conf: Config = ConfigFactory.load()

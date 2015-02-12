@@ -10,6 +10,7 @@ import nfn.NFNApi
 import akka.pattern._
 import akka.util.Timeout
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 import net.liftweb.json._
 
@@ -61,34 +62,42 @@ class KeyChannel extends NFNService {
    * @param ccnApi
    * @return
    */
-   private def processKeyTrack(track:String, node:String, level:Int, ccnApi: ActorRef):String = {
+   private def processKeyTrack(track:String, node:String, level:Int, ccnApi: ActorRef):Option[String] = {
+
+     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
+       (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
+     }
+
      // fetch content object with permissions
      implicit val timeout = Timeout(2000)
-     (ccnApi ? NFNApi.CCNSendReceive(Interest(CCNName(track.split("/").tail:_*)), false)).mapTo[Content].onComplete{
 
+    val i = Interest(CCNName(track.split("/").tail:_*))
+    val futServiceContent: Future[Content] = loadFromCacheOrNetwork(i)
+    futServiceContent.onComplete{
        // If content object with permissions received...
        case Success(c) => {
+         // Ensure permissions
          checkPermission(c.data, node, level) match {
            case true => {
              // access allowed: return key
-             "this-is-the-secret-key"
+             Some("this-is-the-secret-key")
            }
            // return key
            case false => {
              // access denied: no not return key
-             "no-key"
+             None
            }
          }
        }
 
        // If no content object returned...
        case Failure(exception) =>{
-         "Failure"
+         None
        }
 
      }
 
-    "xxx"
+    Some("xxx")
 
    }
 
@@ -101,11 +110,17 @@ class KeyChannel extends NFNService {
    override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
      args match {
-       case Seq(NFNStringValue(track), NFNStringValue(node), NFNIntValue(level)) =>
-         NFNStringValue(processKeyTrack(new String(track), new String(node), level, ccnApi))
+       case Seq(NFNStringValue(track), NFNStringValue(node), NFNIntValue(level)) =>{
 
-       case _ =>
+         processKeyTrack(new String(track), new String(node), level, ccnApi) match {
+           case Some(key) => NFNStringValue(key)
+           case None => NFNEmptyValue() // TODO handle permission denied
+         }
+       }
+
+       case _ =>{
          throw new NFNServiceArgumentException(s"KeyChannel: Argument mismatch.")
+       }
      }
 
    }
