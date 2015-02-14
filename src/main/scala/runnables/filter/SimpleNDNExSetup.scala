@@ -10,6 +10,8 @@ import node.LocalNodeFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
+import filter_access.json._
+
 object SimpleNDNExSetup extends App {
 
   implicit val conf: Config = ConfigFactory.load()
@@ -76,26 +78,14 @@ object SimpleNDNExSetup extends App {
 
   // setup permission data
   val permissionName = dsu.localPrefix.append("trackPermission")
-  val permissionData =
-    """
-    {
-    "content": "/node/node1/permissionTrack",
-    "permissions": [
-        {
-          "name": "user1",
-          "level": 0
-        },
-        {
-          "name": "user2",
-          "level": 1
-        },
-        {
-          "name": "processor",
-          "level": 0
-        }
-      ]
-    }
-    """.getBytes
+  val permissionData = AccessChannelBuilder.buildPermissions(
+    List(
+      UserLevel("user1", 0),
+      UserLevel("user2", 1),
+      UserLevel("processor", 0)),
+    "/node/node1/permissionTrack"
+  ).getBytes
+
   dsu += Content(permissionName, permissionData)
 
   // --------------------------------------------------------------
@@ -161,7 +151,7 @@ object SimpleNDNExSetup extends App {
 
   Thread.sleep(1000)
 
-  val interest_key:Interest = keyTrack call("/node/node1/trackPermission", "user1", 1)
+  val interest_key:Interest = keyTrack call("/node/node1/trackPermission", "user1", 0)
 
   // send interest for permissions from dpu...
   val startTime3 = System.currentTimeMillis

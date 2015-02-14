@@ -11,8 +11,10 @@ import akka.pattern._
 import akka.util.Timeout
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
-import net.liftweb.json._
+import filter_access.json.AccessChannelParser._
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -28,26 +30,20 @@ class KeyChannel extends NFNService {
    * @param data Data extracted from the content object containing the permissions
    * @param node Identifier of the node
    * @param level Access level
-   * @return True, if access is allowed. False, if access is denied or content object can not be parsed.
+   * @return True, if access is allowed. False, if access is denied or json can not be parsed.
    */
   private def checkPermission(data: Array[Byte], node: String, level: Int): Boolean = {
 
-    // classes to turn JSON into
-    implicit val formats = DefaultFormats
-    case class UserLevel(name: String, level: Int)
-    case class Permissions(content: String, permissions: List[UserLevel])
+    //parse access level from json
+    val real_level = getAccessLevel(new String(data), node)
 
-    val json = new String(data)
-    val triedParsedJson: Try[JValue] = Try(parse(json))
-
-    triedParsedJson match {
-      case Success(parsedJson) => {
-        // parsing successfull, actual data extraction
-        val permissions = parsedJson.extract[Permissions].permissions
-        // NOTE: higher access permissions (lower access level) are also accepted
-        (for (l <- 0 to level) yield (!permissions.find(_ == UserLevel(node, l)).isEmpty)) contains true
+    // checking permissions
+    real_level match {
+      case Some(l) => {
+        // parsing successful, actual data extraction
+        l <= level
       }
-      case Failure(e) => {
+      case None => {
         // parsing failed
         false
       }
@@ -65,17 +61,19 @@ class KeyChannel extends NFNService {
   private def processKeyTrack(track: String, node: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
+      implicit val timeout = Timeout(2000)
       (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
     }
 
-    // fetch content object with permissions
-    implicit val timeout = Timeout(2000)
-
+    // form interest for permission data
     val i = Interest(CCNName(track.split("/").tail: _*))
+
+    // try to fetch permission data
     val futServiceContent: Future[Content] = loadFromCacheOrNetwork(i)
-    futServiceContent.onComplete {
+    Await.result(futServiceContent, 2 seconds) match {
+      // TODO with "2 seconds" is a compiler warning...
       // If content object with permissions received...
-      case Success(c) => {
+      case c: Content => {
         // Ensure permissions
         checkPermission(c.data, node, level) match {
           case true => {
@@ -89,15 +87,9 @@ class KeyChannel extends NFNService {
           }
         }
       }
-
-      // If no content object returned...
-      case Failure(exception) => {
-        None
-      }
-
     }
 
-    Some("xxx")
+    // TODO handle future timeout
 
   }
 
