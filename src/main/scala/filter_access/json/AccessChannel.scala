@@ -33,17 +33,23 @@ object AccessChannelParser {
    */
   def getAccessLevel(JSONObject: String, node: String): Option[Int] = {
 
-    // actual parsing
+    // parsing
     val triedParsedJson: Try[JValue] = Try(parse(JSONObject))
     triedParsedJson match {
       case Success(parsedJson) => {
-        // parsing successful
-        Some {
-          // actual data extraction
-          parsedJson.extract[Permissions].permissions
-            .filter(userLevel => userLevel.name == node)
-            .minBy(_.level)
-            .level
+        // actual data extraction
+        try {
+          Some {
+            parsedJson.extract[Permissions].permissions
+              .filter(userLevel => userLevel.name == node)
+              .minBy(_.level)
+              .level
+          }
+        }
+        catch {
+          // user not found
+          case _ => None
+
         }
       }
 
