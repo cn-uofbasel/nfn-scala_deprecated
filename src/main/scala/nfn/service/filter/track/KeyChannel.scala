@@ -71,7 +71,7 @@ class KeyChannel extends NFNService {
     // try to fetch permission data
     val futServiceContent: Future[Content] = loadFromCacheOrNetwork(i)
     Await.result(futServiceContent, 2 seconds) match {
-      // TODO with "2 seconds" is a compiler warning...
+      // TODO at "2 seconds" is a compiler warning...
       // If content object with permissions received...
       case c: Content => {
         // Ensure permissions
@@ -106,7 +106,7 @@ class KeyChannel extends NFNService {
 
         processKeyTrack(new String(track), new String(node), level, ccnApi) match {
           case Some(key) => NFNStringValue(key)
-          case None => NFNEmptyValue() // TODO handle permission denied
+          case None => NFNEmptyValue() // TODO handle permission denied -> No response.
         }
       }
 

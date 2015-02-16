@@ -1,4 +1,4 @@
-package runnables.filter
+package filter_access.runnables
 
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}

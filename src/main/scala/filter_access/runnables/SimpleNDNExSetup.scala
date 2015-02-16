@@ -1,16 +1,14 @@
-package runnables.filter
+package filter_access.runnables
 
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
-import lambdacalculus.parser.ast.Expr
+import filter_access.json._
 import monitor.Monitor
-import nfn.service.filter.track.{AccessChannel, KeyChannel, ContentChannel}
+import nfn.service.filter.track.{AccessChannel, ContentChannel, KeyChannel}
 import node.LocalNodeFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
-
-import filter_access.json._
 
 object SimpleNDNExSetup extends App {
 
