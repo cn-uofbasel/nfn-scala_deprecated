@@ -1,10 +1,10 @@
-package filter_access.runnables
+package filterAccess.runnables
 
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
-import filter_access.json._
+import filterAccess.json._
+import filterAccess.service.{KeyChannel, AccessChannel, ContentChannel}
 import monitor.Monitor
-import nfn.service.filter.track.{AccessChannel, ContentChannel, KeyChannel}
 import node.LocalNodeFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global

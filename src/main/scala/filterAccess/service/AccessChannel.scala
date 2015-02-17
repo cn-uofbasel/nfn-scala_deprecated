@@ -1,6 +1,7 @@
-package nfn.service.filter.track
+package filterAccess.service
 
 import akka.actor.ActorRef
+import filterAccess.json.{AccessChannelBuilder, UserLevel}
 import nfn.service._
 
 /**
@@ -14,10 +15,24 @@ import nfn.service._
  *
  */
 
-
+/**
+ * Created by Claudio Marxer <marxer@claudio.li>
+ *
+ * Filter:
+ * Filtering of GPS tracks (access channel)
+ *
+ */
 class AccessChannel extends NFNService {
 
    private def processAccessTrack(request:String, level:Int):String = {
+
+     val permissionData = AccessChannelBuilder.buildPermissions(
+       List(
+         UserLevel("user1", 0),
+         UserLevel("user2", 1),
+         UserLevel("processor", 0)),
+       "/node/node1/permissionTrack"
+     ).getBytes
 
      level match {
        case 0 => {

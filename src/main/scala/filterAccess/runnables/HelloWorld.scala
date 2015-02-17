@@ -1,9 +1,9 @@
-package filter_access.runnables
+package filterAccess.runnables
 
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
+import filterAccess.service.ContentChannel
 import monitor.Monitor
-import nfn.service.filter.track.ContentChannel
 import node.LocalNodeFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global

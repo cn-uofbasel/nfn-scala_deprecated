@@ -1,20 +1,15 @@
-package nfn.service.filter.track
+package filterAccess.service
 
 import akka.actor.ActorRef
-import nfn.service._
-
-import scala.util.{Try, Failure, Success}
-import ccn.packet._
-import nfn.NFNApi
-
 import akka.pattern._
 import akka.util.Timeout
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import ccn.packet._
+import filterAccess.json.AccessChannelParser._
+import nfn.NFNApi
+import nfn.service._
 
-import filter_access.json.AccessChannelParser._
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -94,7 +89,7 @@ class KeyChannel extends NFNService {
   }
 
   /**
-   * Entry point of that service
+   * Entry point of this service
    * @param args
    * @param ccnApi
    * @return

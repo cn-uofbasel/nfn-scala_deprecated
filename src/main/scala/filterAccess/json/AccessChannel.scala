@@ -1,4 +1,4 @@
-package filter_access.json
+package filterAccess.json
 
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
