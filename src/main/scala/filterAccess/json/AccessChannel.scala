@@ -11,10 +11,7 @@ import scala.util.{Failure, Success, Try}
  *
  */
 
-// classes to which JSON maps
-case class UserLevel(name: String, level: Int)
 
-case class Permissions(content: String, permissions: List[UserLevel])
 
 /**
  *
