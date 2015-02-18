@@ -48,7 +48,7 @@ object SimpleNDNExSetup extends App {
   // network setup
   val dsu = LocalNodeFactory.forId(1)
   val dpu = LocalNodeFactory.forId(2)
-  val dvu = LocalNodeFactory.forId(3)
+  val dvu = LocalNodeFactory.forId(3, isCCNOnly = true)
   val nodes = List(dsu, dpu, dvu)
   dsu <~> dpu
   dpu <~> dvu

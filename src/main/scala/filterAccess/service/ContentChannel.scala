@@ -57,6 +57,11 @@ class ContentChannel extends NFNService {
 
   }
 
+  /**
+   * Pin this service
+   */
+  override def pinned: Boolean = false // TODO
+
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {

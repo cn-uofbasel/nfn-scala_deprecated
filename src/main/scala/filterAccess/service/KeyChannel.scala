@@ -89,6 +89,11 @@ class KeyChannel extends NFNService {
   }
 
   /**
+   * Pin this service
+   */
+  override def pinned: Boolean = false // TODO
+
+  /**
    * Entry point of this service
    * @param args
    * @param ccnApi
