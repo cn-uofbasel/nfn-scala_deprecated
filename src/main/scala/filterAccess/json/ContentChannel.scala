@@ -2,7 +2,6 @@ package filterAccess.json
 
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
-import scala.util.{Failure, Success, Try}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>

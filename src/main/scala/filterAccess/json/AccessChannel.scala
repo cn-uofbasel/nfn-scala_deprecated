@@ -1,9 +1,7 @@
 package filterAccess.json
 
-import filterAccess.json.ContentChannelParser._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
-import scala.util.{Failure, Success, Try}
 
 
 /**
