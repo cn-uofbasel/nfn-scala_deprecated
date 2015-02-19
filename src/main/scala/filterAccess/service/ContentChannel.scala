@@ -3,6 +3,9 @@ package filterAccess.service
 import akka.actor.ActorRef
 import nfn.service._
 
+import filterAccess.json._
+import filterAccess.json.TrackPoint
+
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
@@ -19,41 +22,30 @@ import nfn.service._
  */
 class ContentChannel extends NFNService {
 
-  private def processFilterTrack(track:String, level:Int):String = {
+  private def processFilterTrack(track: String, level: Int): Option[String] = {
 
-    // convert from string to int array
-    val coordinates = track.split(" ").map(_.toInt)
+    // extract trace and name
+    val trace = ContentChannelParser.getTrace(track)
+    val name = ContentChannelParser.getName(track)
 
-    // set offset dependent on access level
-    val offset:List[Int] = level match {
-      case 0 =>
-        List(0,0,0)
-      case 1 =>
-        List(-coordinates(0), -coordinates(1), -coordinates(2))
-      case _ =>
-        throw new NFNServiceArgumentException(s"Invalid access level.")
+    (trace, name) match {
+      case (Some(t), Some(n)) => {
+        // actual filtering
+        val offset = level match {
+          case 0 => new TrackPoint(0, 0, 0)
+          case 1 => t(0)
+          case _ => throw new NFNServiceArgumentException(s"Invalid access level.")
+        }
+        val filtered_trace = (for (point <- t) yield point - offset).toList
+        
+        // rebuild json
+        Some {
+          ContentChannelBuilder.buildTrack(filtered_trace, n)
+        }
+
+      }
+      case _ => None
     }
-
-    // shift x-coordinates
-    for (i <- 0 until coordinates.length by 3) {
-      coordinates(i) = coordinates(i) + offset(0)
-    }
-
-    // shift y-coordinates
-    for (i <- 1 until coordinates.length by 3) {
-      coordinates(i) = coordinates(i) + offset(1)
-    }
-
-    // shift z-coordinates
-    for (i <- 2 until coordinates.length by 3) {
-      coordinates(i) = coordinates(i) + offset(2)
-    }
-
-    // convert back to string
-    " " + coordinates.mkString(" ")
-    // TODO FIX
-    // Problem when whitespace is missing!
-    // Occurs, then returned string starts with a number.
 
   }
 
@@ -65,11 +57,19 @@ class ContentChannel extends NFNService {
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
-      case Seq(NFNStringValue(track), NFNIntValue(level)) =>
-        NFNStringValue(processFilterTrack(track,level))
+      case Seq(NFNStringValue(track), NFNIntValue(level)) => {
+        processFilterTrack(track, level) match {
+          case Some(t) => NFNStringValue(t)
+          case None => ??? // TODO
+        }
+      }
 
-      case Seq(NFNContentObjectValue(_, track), NFNIntValue(level)) =>
-        NFNStringValue(processFilterTrack(new String(track),level))
+      case Seq(NFNContentObjectValue(_, track), NFNIntValue(level)) => {
+        processFilterTrack(new String(track), level) match {
+          case Some(t) => NFNStringValue(t)
+          case None => ??? // TODO
+        }
+      }
 
       case _ =>
         throw new NFNServiceArgumentException(s"ContentChannel: Argument mismatch.")

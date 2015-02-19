@@ -71,7 +71,18 @@ object SimpleNDNExSetup extends App {
 
   // setup track data
   val trackName = dsu.localPrefix.append("track")
-  val trackData = "3 4 6 4 4 6 4 5 6 4 6 7 6 6 5 5 6 5".getBytes
+  val trackData = ContentChannelBuilder.buildTrack(
+    List(
+      TrackPoint(3, 4, 6),
+      TrackPoint(4, 4, 6),
+      TrackPoint(4, 5, 6),
+      TrackPoint(4, 6, 7),
+      TrackPoint(6, 6, 5),
+      TrackPoint(5, 6, 5)
+    ),
+    "/the/trackname"
+  ).getBytes
+
   dsu += Content(trackName, trackData)
 
   // setup permission data
@@ -95,7 +106,7 @@ object SimpleNDNExSetup extends App {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  val interest_raw: Interest = contentTrack call(trackName, 0)
+  val interest_raw: Interest = contentTrack call(trackName, 1)
   val interest_northpole: Interest = contentTrack call(trackName, 1)
 
   // send interest_raw or interest_northpole?

@@ -16,7 +16,18 @@ package object json {
   // TODO
 
 
-  // Permission Channel
-  // TODO
+  // Content Channel
+  case class TrackPoint(x:Int, y:Int, z:Int) {
+
+    def +(s:TrackPoint):TrackPoint = {
+      new TrackPoint(this.x+s.x, this.y+s.y, this.z+s.z)
+    }
+
+    def -(s:TrackPoint):TrackPoint = {
+      new TrackPoint(this.x-s.x, this.y-s.y, this.z-s.z)
+    }
+  }
+
+  case class Track(content:String, trace: List[TrackPoint])
 
 }
