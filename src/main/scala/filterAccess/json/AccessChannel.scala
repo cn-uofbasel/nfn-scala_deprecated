@@ -44,16 +44,11 @@ object AccessChannelParser {
           }
         }
         catch {
-          // user not found
-          case _:Throwable => None
-
+          case _:Throwable => None // in most cases: user not found
         }
       }
 
-      // parsing failed
-      case Failure(e) => {
-        None
-      }
+      case Failure(e) => None // parsing failed
 
     }
 
@@ -70,7 +65,6 @@ object AccessChannelParser {
 object AccessChannelBuilder {
 
   implicit val formats = DefaultFormats
-
 
   def buildPermissions(userLevel: List[UserLevel], contentName: String): String = {
 

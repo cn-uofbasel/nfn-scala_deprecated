@@ -30,22 +30,13 @@ object ContentChannelParser {
     val triedParsedJson: Try[JValue] = Try(parse(JSONObject))
     triedParsedJson match {
       case Success(parsedJson) => {
-        try {
-          Some {
-            parsedJson.extract[Track].content
-          }
-        }
+        try Some (parsedJson.extract[Track].content)
         catch {
-          // user not found
-          case _:Throwable => None
-
+          case _:Throwable => None // in most cases: user not found
         }
       }
 
-      // parsing failed
-      case Failure(e) => {
-        None
-      }
+      case Failure(e) => None // parsing failed
 
     }
 
@@ -62,22 +53,13 @@ object ContentChannelParser {
     val triedParsedJson: Try[JValue] = Try(parse(JSONObject))
     triedParsedJson match {
       case Success(parsedJson) => {
-        try {
-          Some {
-            parsedJson.extract[Track].trace
-          }
-        }
+        try Some(parsedJson.extract[Track].trace)
         catch {
-          // user not found
-          case _:Throwable => None
-
+          case _:Throwable => None // in most cases: user not found
         }
       }
 
-      // parsing failed
-      case Failure(e) => {
-        None
-      }
+      case Failure(e) => None // parsing failed
 
     }
 
