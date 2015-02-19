@@ -1,5 +1,6 @@
 package filterAccess.json
 
+import filterAccess.json.ContentChannelParser._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import scala.util.{Failure, Success, Try}
@@ -18,7 +19,7 @@ import scala.util.{Failure, Success, Try}
  * Parses JSON objects contained by access channel packets.
  *
  */
-object AccessChannelParser {
+object AccessChannelParser extends ChannelParser{
 
   implicit val formats = DefaultFormats
 
@@ -30,27 +31,14 @@ object AccessChannelParser {
    */
   def getAccessLevel(JSONObject: String, node: String): Option[Int] = {
 
-    // parsing
-    val triedParsedJson: Try[JValue] = Try(parse(JSONObject))
-    triedParsedJson match {
-      case Success(parsedJson) => {
-        // actual data extraction
-        try {
-          Some {
-            parsedJson.extract[Permissions].permissions
-              .filter(userLevel => userLevel.name == node)
-              .minBy(_.level)
-              .level
-          }
-        }
-        catch {
-          case _:Throwable => None // in most cases: user not found
-        }
-      }
-
-      case Failure(e) => None // parsing failed
-
+    val extractor = (m:JValue) => {
+      m.extract[Permissions].permissions
+        .filter(userLevel => userLevel.name == node)
+        .minBy(_.level)
+        .level
     }
+
+    getElement[Int](JSONObject, extractor)
 
   }
 

@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
  * Parses JSON objects contained by content channel packets.
  *
  */
-object ContentChannelParser {
+object ContentChannelParser extends ChannelParser{
 
   implicit val formats = DefaultFormats
 
@@ -26,19 +26,8 @@ object ContentChannelParser {
    */
   def getName(JSONObject: String): Option[String] = {
 
-    // parsing
-    val triedParsedJson: Try[JValue] = Try(parse(JSONObject))
-    triedParsedJson match {
-      case Success(parsedJson) => {
-        try Some (parsedJson.extract[Track].content)
-        catch {
-          case _:Throwable => None // in most cases: user not found
-        }
-      }
-
-      case Failure(e) => None // parsing failed
-
-    }
+    val extractor = (m:JValue) => m.extract[Track].content
+    getElement[String](JSONObject, extractor)
 
   }
 
@@ -49,19 +38,8 @@ object ContentChannelParser {
    */
   def getTrace(JSONObject: String): Option[List[TrackPoint]] = {
 
-    // parsing
-    val triedParsedJson: Try[JValue] = Try(parse(JSONObject))
-    triedParsedJson match {
-      case Success(parsedJson) => {
-        try Some(parsedJson.extract[Track].trace)
-        catch {
-          case _:Throwable => None // in most cases: user not found
-        }
-      }
-
-      case Failure(e) => None // parsing failed
-
-    }
+    val extractor = (m:JValue) => m.extract[Track].trace
+    getElement[List[TrackPoint]](JSONObject, extractor)
 
   }
 

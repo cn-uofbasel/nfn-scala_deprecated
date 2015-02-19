@@ -160,7 +160,7 @@ object SimpleNDNExSetup extends App {
 
   Thread.sleep(1000)
 
-  val interest_key:Interest = keyTrack call("/node/node1/trackPermission", "user1", 0)
+  val interest_key:Interest = keyTrack call("/node/node1/trackPermission", "user2", 1)
 
   // send interest for permissions from dpu...
   val startTime3 = System.currentTimeMillis
