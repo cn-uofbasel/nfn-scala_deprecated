@@ -9,11 +9,13 @@ package filterAccess
 package object json {
 
   // Access Channel
+  case class AccessLevel(level:Int)
   case class UserLevel(name: String, level: Int)
   case class Permissions(content: String, permissions: List[UserLevel])
 
   // Key Channel
-  // TODO
+  case class LevelKey(key:Int)
+  case class Keys(content: String, keys:List[(AccessLevel, LevelKey)])
 
   // Content Channel
   case class TrackPoint(x:Int, y:Int, z:Int) {

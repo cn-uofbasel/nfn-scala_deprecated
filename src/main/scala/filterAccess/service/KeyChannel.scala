@@ -48,6 +48,31 @@ class KeyChannel extends NFNService {
   /**
    *
    * @param track
+   * @param ccnApi
+   * @param time
+   * @return
+   */
+  private def fetchPermissionData(track: String, ccnApi: ActorRef, time:Duration): Option[Content] = {
+
+    def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
+      implicit val timeout = Timeout(time.toMillis)
+      (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
+    }
+
+    // form interest for permission data
+    val i = Interest(CCNName(track.split("/").tail: _*))
+
+    // try to fetch permission data and return if successful
+    val futServiceContent: Future[Content] = loadFromCacheOrNetwork(i)
+    Await.result(futServiceContent, time) match {
+      case c: Content => Some(c)
+      case _ => None
+    }
+  }
+
+  /**
+   *
+   * @param track
    * @param node
    * @param level
    * @param ccnApi
@@ -55,20 +80,9 @@ class KeyChannel extends NFNService {
    */
   private def processKeyTrack(track: String, node: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
-    def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
-      implicit val timeout = Timeout(2000)
-      (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
-    }
-
-    // form interest for permission data
-    val i = Interest(CCNName(track.split("/").tail: _*))
-
-    // try to fetch permission data
-    val futServiceContent: Future[Content] = loadFromCacheOrNetwork(i)
-    Await.result(futServiceContent, 2 seconds) match {
-      // TODO at "2 seconds" is a compiler warning...
-      // If content object with permissions received...
-      case c: Content => {
+    // TODO at "2 seconds" is a compiler warning...
+    fetchPermissionData(track, ccnApi, 2 seconds) match {
+      case Some(c:Content) => {
         // Ensure permissions
         checkPermission(c.data, node, level) match {
           case true => {
@@ -82,9 +96,8 @@ class KeyChannel extends NFNService {
           }
         }
       }
+      case _ => ??? // TODO handle future timout
     }
-
-    // TODO handle future timeout
 
   }
 

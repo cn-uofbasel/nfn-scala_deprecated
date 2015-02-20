@@ -97,6 +97,24 @@ object SimpleNDNExSetup extends App {
 
   dsu += Content(permissionName, permissionData)
 
+  // setup key data
+  val keyName = dsu.localPrefix.append("trackKey")
+  val keyData = KeyChannelBuilder.buildKeys(
+    List(
+      (AccessLevel(0), LevelKey(99)),
+      (AccessLevel(1), LevelKey(44))
+    ),
+    "/key"
+  ).getBytes
+
+  println("==========")
+  println(new String(keyData))
+  println("==========")
+
+
+
+  dsu += Content(keyName, keyData)
+
   // --------------------------------------------------------------
 
   println("=== FETCH DATA FROM DVU ===")
