@@ -15,7 +15,6 @@ package object json {
   // Key Channel
   // TODO
 
-
   // Content Channel
   case class TrackPoint(x:Int, y:Int, z:Int) {
     def +(s:TrackPoint):TrackPoint = new TrackPoint(this.x+s.x, this.y+s.y, this.z+s.z)

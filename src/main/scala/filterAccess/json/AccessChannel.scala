@@ -36,7 +36,7 @@ object AccessChannelParser extends ChannelParser{
         .level
     }
 
-    getElement[Int](JSONObject, extractor)
+    extractElement[Int](JSONObject, extractor)
 
   }
 

@@ -26,7 +26,7 @@ object ContentChannelParser extends ChannelParser{
   def getName(JSONObject: String): Option[String] = {
 
     val extractor = (m:JValue) => m.extract[Track].content
-    getElement[String](JSONObject, extractor)
+    extractElement[String](JSONObject, extractor)
 
   }
 
@@ -38,7 +38,7 @@ object ContentChannelParser extends ChannelParser{
   def getTrace(JSONObject: String): Option[List[TrackPoint]] = {
 
     val extractor = (m:JValue) => m.extract[Track].trace
-    getElement[List[TrackPoint]](JSONObject, extractor)
+    extractElement[List[TrackPoint]](JSONObject, extractor)
 
   }
 
