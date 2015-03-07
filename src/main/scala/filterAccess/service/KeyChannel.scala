@@ -5,11 +5,16 @@ import akka.pattern._
 import akka.util.Timeout
 import ccn.packet._
 import filterAccess.json.AccessChannelParser._
+import filterAccess.json.KeyChannelParser._
 import nfn.NFNApi
 import nfn.service._
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+
+import filterAccess.tools.Networking.fetchContent
+
+import scala.language.postfixOps
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -47,56 +52,40 @@ class KeyChannel extends NFNService {
 
   /**
    *
-   * @param track
-   * @param ccnApi
-   * @param time
-   * @return
-   */
-  private def fetchPermissionData(track: String, ccnApi: ActorRef, time:Duration): Option[Content] = {
-
-    def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
-      implicit val timeout = Timeout(time.toMillis)
-      (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
-    }
-
-    // form interest for permission data
-    val i = Interest(CCNName(track.split("/").tail: _*))
-
-    // try to fetch permission data and return if successful
-    val futServiceContent: Future[Content] = loadFromCacheOrNetwork(i)
-    Await.result(futServiceContent, time) match {
-      case c: Content => Some(c)
-      case _ => None
-    }
-  }
-
-  /**
-   *
-   * @param track
-   * @param node
+   * @param name
    * @param level
    * @param ccnApi
    * @return
    */
-  private def processKeyTrack(track: String, node: String, level: Int, ccnApi: ActorRef): Option[String] = {
+  private def getLevelKey(name:String, level:Int, ccnApi:ActorRef):Option[Int] = {
 
-    // TODO at "2 seconds" is a compiler warning...
-    fetchPermissionData(track, ccnApi, 2 seconds) match {
+    fetchContent(name, ccnApi, 2 seconds) match {
+      case Some(c: Content) => extractLevelKey(new String(c.data), level)
+      case _ => ??? // TODO handle future timeout
+
+    }
+
+  }
+
+  /**
+   *
+   * @param name Name of content object containing the actual data (not keys!).
+   * @param user User
+   * @param level Access level
+   * @param ccnApi Actor Ref
+   * @return Key (if allowed)
+   */
+  private def processKeyTrack(name: String, user: String, level: Int, ccnApi: ActorRef): Option[Int] = {
+
+    fetchContent(name+"/permission", ccnApi, 2 seconds) match {
       case Some(c:Content) => {
         // Ensure permissions
-        checkPermission(c.data, node, level) match {
-          case true => {
-            // access allowed: return key
-            Some("this-is-the-secret-key")
-          }
-          // return key
-          case false => {
-            // access denied: no not return key
-            None
-          }
+        checkPermission(c.data, user, level) match {
+          case true => getLevelKey(name+"/key", level, ccnApi) // access allowed: return key
+          case false => None // access denied: no not return key
         }
       }
-      case _ => ??? // TODO handle future timout
+      case _ => ??? // TODO handle future timeout
     }
 
   }
@@ -107,7 +96,7 @@ class KeyChannel extends NFNService {
   override def pinned: Boolean = false // TODO
 
   /**
-   * Entry point of this service
+   * Entry point of this service.
    * @param args
    * @param ccnApi
    * @return
@@ -118,7 +107,7 @@ class KeyChannel extends NFNService {
       case Seq(NFNStringValue(track), NFNStringValue(node), NFNIntValue(level)) => {
 
         processKeyTrack(new String(track), new String(node), level, ccnApi) match {
-          case Some(key) => NFNStringValue(key)
+          case Some(key) => NFNIntValue(key)
           case None => NFNEmptyValue() // TODO handle permission denied -> No response.
         }
       }

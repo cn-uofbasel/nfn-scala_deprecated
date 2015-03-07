@@ -80,31 +80,31 @@ object SimpleNDNExSetup extends App {
       TrackPoint(6, 6, 5),
       TrackPoint(5, 6, 5)
     ),
-    "/the/trackname"
+    "/data/trackname"
   ).getBytes
 
   dsu += Content(trackName, trackData)
 
   // setup permission data
-  val permissionName = dsu.localPrefix.append("trackPermission")
+  val permissionName = dsu.localPrefix.append("track").append("permission")
   val permissionData = AccessChannelBuilder.buildPermissions(
     List(
       UserLevel("user1", 0),
       UserLevel("user2", 1),
       UserLevel("processor", 0)),
-    "/node/node1/permissionTrack"
+    "/node/node1/track/permission"
   ).getBytes
 
   dsu += Content(permissionName, permissionData)
 
   // setup key data
-  val keyName = dsu.localPrefix.append("trackKey")
+  val keyName = dsu.localPrefix.append("track").append("key")
   val keyData = KeyChannelBuilder.buildKeys(
     List(
-      (AccessLevel(0), LevelKey(99)),
-      (AccessLevel(1), LevelKey(44))
+      (AccessLevel(0) -> LevelKey(99)),
+      (AccessLevel(1) -> LevelKey(44))
     ),
-    "/key"
+    "/node/node1/track/key"
   ).getBytes
 
   println("==========")
@@ -178,7 +178,7 @@ object SimpleNDNExSetup extends App {
 
   Thread.sleep(1000)
 
-  val interest_key:Interest = keyTrack call("/node/node1/trackPermission", "user2", 1)
+  val interest_key:Interest = keyTrack call("/node/node1/track", "user1", 1)
 
   // send interest for permissions from dpu...
   val startTime3 = System.currentTimeMillis

@@ -36,7 +36,7 @@ object MainBuild extends Build {
         "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
         "com.typesafe" % "config" % "1.2.1",
         "org.slf4j" % "slf4j-api" % "1.7.5",
-        "net.liftweb" %% "lift-json" % "2.5.1",
+        "net.liftweb" %% "lift-json" % "2.6.+",
         "org.apache.bcel" % "bcel" % "5.2",
         "com.github.scopt" %% "scopt" % "3.3.0"
       ),
