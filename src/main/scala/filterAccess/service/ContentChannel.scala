@@ -3,6 +3,8 @@ package filterAccess.service
 import akka.actor.ActorRef
 import nfn.service._
 
+import filterAccess.tools.Exceptions._
+
 import filterAccess.json._
 import filterAccess.json.TrackPoint
 
@@ -60,14 +62,14 @@ class ContentChannel extends NFNService {
       case Seq(NFNStringValue(track), NFNIntValue(level)) => {
         processFilterTrack(track, level) match {
           case Some(t) => NFNStringValue(t)
-          case None => ??? // TODO
+          case None => throw new noReturnException("No return. Possibly caused by: Permission denied, invalid access level..")
         }
       }
 
       case Seq(NFNContentObjectValue(_, track), NFNIntValue(level)) => {
         processFilterTrack(new String(track), level) match {
           case Some(t) => NFNStringValue(t)
-          case None => ??? // TODO
+          case None => throw new noReturnException("No return. Possibly caused by: Permission denied, invalid access level..")
         }
       }
 
