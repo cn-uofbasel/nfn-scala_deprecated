@@ -23,8 +23,6 @@ trait ChannelParser {
    */
   def extractElement[ReType](JSONObject: String, extractor: (JValue => ReType)): Option[ReType] = {
 
-    println("----> "+ JSONObject +" <----")
-
     val ast: Try[JValue] = Try(parse(JSONObject))
     ast match {
       case Success(parsedJson) => {
@@ -34,10 +32,11 @@ trait ChannelParser {
         }
         catch {
           // JSONObject is valid JSON, but extraction still failed.
-          case e:Throwable => e.printStackTrace; None
-          // here might be a bug in net.liftweb.json
-          // see: https://stackoverflow.com/questions/15281779/scala-type-parameter-seems-to-be-getting-stuck
-          // see: https://github.com/lift/framework/issues/1417
+          case e:Throwable => {
+            // For Debugging: Comment in the following line..
+            // e.printStackTrace
+            None
+          }
         }
       }
 

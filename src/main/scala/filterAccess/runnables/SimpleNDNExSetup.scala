@@ -100,18 +100,12 @@ object SimpleNDNExSetup extends App {
   // setup key data
   val keyName = dsu.localPrefix.append("track").append("key")
   val keyData = KeyChannelBuilder.buildKeys(
-    List(
-      (AccessLevel(0) -> LevelKey(99)),
-      (AccessLevel(1) -> LevelKey(44))
+    Map(
+      AccessLevel(0) -> LevelKey(99),
+      AccessLevel(1) -> LevelKey(44)
     ),
     "/node/node1/track/key"
   ).getBytes
-
-  println("==========")
-  println(new String(keyData))
-  println("==========")
-
-
 
   dsu += Content(keyName, keyData)
 
@@ -178,7 +172,7 @@ object SimpleNDNExSetup extends App {
 
   Thread.sleep(1000)
 
-  val interest_key:Interest = keyTrack call("/node/node1/track", "user1", 1)
+  val interest_key:Interest = keyTrack call("/node/node1/track", "user1", 0)
 
   // send interest for permissions from dpu...
   val startTime3 = System.currentTimeMillis

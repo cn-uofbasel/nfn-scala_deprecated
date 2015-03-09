@@ -9,13 +9,17 @@ package filterAccess
 package object json {
 
   // Access Channel
-  case class AccessLevel(level:Int)
+  case class AccessLevel(level:Int) {
+    override def toString() = level.toString
+  }
   case class UserLevel(name: String, level: Int)
   case class Permissions(content: String, permissions: List[UserLevel])
 
   // Key Channel
-  case class LevelKey(key:Int)
-  case class Keys(content: String, keys:List[(AccessLevel, LevelKey)])
+  case class LevelKey(key:Int) {
+    override def toString() = key.toString
+  }
+  case class Keys(content: String, keys:Map[AccessLevel, LevelKey])
 
   // Content Channel
   case class TrackPoint(x:Int, y:Int, z:Int) {
