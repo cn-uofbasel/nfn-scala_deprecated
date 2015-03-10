@@ -3,6 +3,7 @@ package filterAccess.runnables
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
 import filterAccess.json._
+import filterAccess.dataGenerator.SimpleNDNExData
 import filterAccess.service.{KeyChannel, AccessChannel, ContentChannel}
 import monitor.Monitor
 import node.LocalNodeFactory
@@ -10,39 +11,41 @@ import node.LocalNodeFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
+
 object SimpleNDNExSetup extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
   /*
-  *
-  * SETUP:
-  *  Network with dsu, dpu and dvu.
-  *  Service "ContentChannel" on dpu
-  *  Sample data "track" and "permissions" on dsu
-  *
+   * Created by Claudio Marxer <marxer@claudio.li>
+   *
+   * SETUP:
+   *  Network with dsu, dpu and dvu.
+   *  Service "ContentChannel" on dpu
+   *  Sample data "track" and "permissions" on dsu
+   *
 
-          {track.KeyChannel}
-          {track.AccessChannel}     {track.ContentChannel}
-                     |                  |
-                 +-------+          +-------+
-        [track]--|  dsu  |**********|  dpu  |
-   [permission]  +-------+          +-------+
-                       *              *
-                        *            *
-                         *          *
-                          +-------+
-                          |  dvu  |
-                          +-------+
+           {track.KeyChannel}
+           {track.AccessChannel}     {track.ContentChannel}
+                      |                  |
+                  +-------+          +-------+
+         [track]--|  dsu  |**********|  dpu  |
+    [permission]  +-------+          +-------+
+                        *              *
+                         *            *
+                          *          *
+                           +-------+
+                           |  dvu  | <--- Sends out Interests...
+                           +-------+           (CCN Only)
 
 
-  *
-  * SCENARIO:
-  *  dvu requests "track" filtered with
-  *  "ContentChannel" on configurable
-  *  access level.
-  *
-  * */
+   *
+   * SCENARIO:
+   *  dvu requests "track" filtered with
+   *  "ContentChannel" on configurable
+   *  access level.
+   *
+   * */
 
 
 
@@ -88,42 +91,17 @@ object SimpleNDNExSetup extends App {
 
   // setup track data
   val trackName = dsu.localPrefix.append("track")
-  val trackData = ContentChannelBuilder.buildTrack(
-    List(
-      TrackPoint(3, 4, 6),
-      TrackPoint(4, 4, 6),
-      TrackPoint(4, 5, 6),
-      TrackPoint(4, 6, 7),
-      TrackPoint(6, 6, 5),
-      TrackPoint(5, 6, 5)
-    ),
-    "/data/trackname"
-  ).getBytes
-
+  val trackData = SimpleNDNExData.generateTrack("/data/trackname")
   dsu += Content(trackName, trackData)
 
   // setup permission data
   val permissionName = dsu.localPrefix.append("track").append("permission")
-  val permissionData = AccessChannelBuilder.buildPermissions(
-    List(
-      UserLevel("user1", 0),
-      UserLevel("user2", 1),
-      UserLevel("processor", 0)),
-    "/node/node1/track/permission"
-  ).getBytes
-
+  val permissionData = SimpleNDNExData.generatePermissions("/node/node1/track/permission")
   dsu += Content(permissionName, permissionData)
 
   // setup key data
   val keyName = dsu.localPrefix.append("track").append("key")
-  val keyData = KeyChannelBuilder.buildKeys(
-    Map(
-      AccessLevel(0) -> LevelKey(99),
-      AccessLevel(1) -> LevelKey(44)
-    ),
-    "/node/node1/track/key"
-  ).getBytes
-
+  val keyData = SimpleNDNExData.generateKeys("/node/node1/track/key")
   dsu += Content(keyName, keyData)
 
 
