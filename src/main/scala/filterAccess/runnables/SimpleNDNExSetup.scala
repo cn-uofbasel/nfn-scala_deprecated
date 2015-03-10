@@ -19,21 +19,21 @@ object SimpleNDNExSetup extends App {
   * SETUP:
   *  Network with dsu, dpu and dvu.
   *  Service "ContentChannel" on dpu
-  *  Sample data "track" and permissions on dsu
+  *  Sample data "track" and "permissions" on dsu
   *
 
-        {track.KeyChannel}
-      {track.AccessChannel}     {track.ContentChannel}
-                 |                  |
-             +-------+          +-------+
-    [track]--|  dsu  |**********|  dpu  |
-             +-------+          +-------+
-                   *              *
-                    *            *
-                     *          *
-                      +-------+
-                      |  dvu  |
-                      +-------+
+          {track.KeyChannel}
+          {track.AccessChannel}     {track.ContentChannel}
+                     |                  |
+                 +-------+          +-------+
+        [track]--|  dsu  |**********|  dpu  |
+   [permission]  +-------+          +-------+
+                       *              *
+                        *            *
+                         *          *
+                          +-------+
+                          |  dvu  |
+                          +-------+
 
 
   *
@@ -44,6 +44,11 @@ object SimpleNDNExSetup extends App {
   *
   * */
 
+
+
+  // -----------------------------------------------------------------------------
+  // ==== NETWORK SETUP ==========================================================
+  // -----------------------------------------------------------------------------
 
   // network setup
   val dsu = LocalNodeFactory.forId(1)
@@ -68,6 +73,12 @@ object SimpleNDNExSetup extends App {
   val keyTrackServ = new KeyChannel
   dpu.publishServiceLocalPrefix(keyTrackServ)
   val keyTrack = dpu.localPrefix.append(keyTrackServ.ccnName)
+
+
+
+  // -----------------------------------------------------------------------------
+  // ==== DATA SETUP =============================================================
+  // -----------------------------------------------------------------------------
 
   // setup track data
   val trackName = dsu.localPrefix.append("track")
@@ -109,7 +120,11 @@ object SimpleNDNExSetup extends App {
 
   dsu += Content(keyName, keyData)
 
-  // --------------------------------------------------------------
+
+
+  // -----------------------------------------------------------------------------
+  // ==== FETCH DATA FROM DVU ====================================================
+  // -----------------------------------------------------------------------------
 
   println("=== FETCH DATA FROM DVU ===")
 
@@ -141,7 +156,11 @@ object SimpleNDNExSetup extends App {
     }
   }
 
-  // --------------------------------------------------------------
+
+
+  // -----------------------------------------------------------------------------
+  // ==== FETCH PERMISSIONS FROM DPU =============================================
+  // -----------------------------------------------------------------------------
 
   println("=== FETCH PERMISSIONS FROM DPU ===")
 
@@ -166,7 +185,11 @@ object SimpleNDNExSetup extends App {
     }
   }
 
-  // --------------------------------------------------------------
+
+
+  // -----------------------------------------------------------------------------
+  // ==== FETCH KEY FROM DPU =====================================================
+  // -----------------------------------------------------------------------------
 
   println("=== FETCH KEY FROM DPU ===")
 
