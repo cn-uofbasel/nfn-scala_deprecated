@@ -4,6 +4,8 @@ import akka.actor.ActorRef
 import filterAccess.json.{AccessChannelBuilder, UserLevel}
 import nfn.service._
 
+import filterAccess.tools.Exceptions._
+
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
@@ -43,7 +45,7 @@ class AccessChannel extends NFNService {
           case "user2 track" => "1" // northpole filter
           case "user3 track" => "-1" // no permissions
           case "processor track" => "0" // full access
-          case _ => "xxx" // TODO - no permissions
+          case _ => throw new noReturnException("No response because permission denied.")
         }
 
       }

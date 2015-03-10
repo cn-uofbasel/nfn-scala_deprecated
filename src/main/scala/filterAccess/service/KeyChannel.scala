@@ -6,6 +6,7 @@ import akka.util.Timeout
 import ccn.packet._
 import filterAccess.json.AccessChannelParser._
 import filterAccess.json.KeyChannelParser._
+import filterAccess.tools.Exceptions._
 import nfn.NFNApi
 import nfn.service._
 
@@ -61,7 +62,7 @@ class KeyChannel extends NFNService {
 
     fetchContent(name, ccnApi, 2 seconds) match {
       case Some(c: Content) => extractLevelKey(new String(c.data), level)
-      case _ => ??? // TODO handle future timeout
+      case _ => throw new dataUnavailableException("Timeout: Could not fetch keys.")
 
     }
 
@@ -85,7 +86,7 @@ class KeyChannel extends NFNService {
           case false => None // access denied: no not return key
         }
       }
-      case _ => ??? // TODO handle future timeout
+      case _ => throw new dataUnavailableException("Timeout: Could not permissions.")
     }
 
   }
@@ -108,7 +109,7 @@ class KeyChannel extends NFNService {
 
         processKeyTrack(new String(track), new String(node), level, ccnApi) match {
           case Some(key) => NFNIntValue(key)
-          case None => NFNEmptyValue() // TODO handle permission denied -> No response.
+          case None => throw new noReturnException("No return. Possibly caused by: Permission denied, invalid access level..")
         }
       }
 
