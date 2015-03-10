@@ -59,6 +59,12 @@ object SimpleNDNExSetup extends App {
   dpu <~> dvu
   dvu <~> dsu
 
+
+
+  // -----------------------------------------------------------------------------
+  // ==== SERVICE SETUP ==========================================================
+  // -----------------------------------------------------------------------------
+
   // service setup (content channel)
   val filterTrackServ = new ContentChannel
   dpu.publishServiceLocalPrefix(filterTrackServ)
