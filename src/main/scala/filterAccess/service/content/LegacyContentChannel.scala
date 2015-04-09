@@ -1,15 +1,19 @@
-package filterAccess.service
+package filterAccess.service.content
 
 import akka.actor.ActorRef
-import nfn.service._
-
-import filterAccess.tools.Exceptions._
-
 import filterAccess.json._
-import filterAccess.json.TrackPoint
+import filterAccess.tools.Exceptions._
+import nfn.service._
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
+ *
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
+ *    DO NOT WORK WITH THIS CLASS!
+ *    THIS FILE IS JUST HOLD TO KEEP OLD RUNNABLES WORKING
+ *
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *
  * Filter:
  *  Filtering of GPS tracks (content channel)
@@ -22,7 +26,7 @@ import filterAccess.json.TrackPoint
  *       (northpole filtering)
  *
  */
-class ContentChannel extends NFNService {
+class LegacyContentChannel extends NFNService {
 
   private def processFilterTrack(track: String, level: Int): Option[String] = {
 
@@ -56,6 +60,12 @@ class ContentChannel extends NFNService {
    */
   override def pinned: Boolean = false // TODO
 
+  /**
+   * Hook up function of this service.
+   * @param args Function arguments
+   * @param ccnApi Akka Actor
+   * @return Execution result
+   */
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
@@ -74,7 +84,7 @@ class ContentChannel extends NFNService {
       }
 
       case _ =>
-        throw new NFNServiceArgumentException(s"ContentChannel: Argument mismatch.")
+        throw new NFNServiceArgumentException(s"LegacyContentChannel: Argument mismatch.")
     }
 
   }

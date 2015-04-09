@@ -1,30 +1,31 @@
-package filterAccess.service
+package filterAccess.service.key
 
 import akka.actor.ActorRef
-import akka.pattern._
-import akka.util.Timeout
 import ccn.packet._
 import filterAccess.json.AccessChannelParser._
 import filterAccess.json.KeyChannelParser._
 import filterAccess.tools.Exceptions._
-import nfn.NFNApi
+import filterAccess.tools.Networking.fetchContent
 import nfn.service._
 
-import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-
-import filterAccess.tools.Networking.fetchContent
-
 import scala.language.postfixOps
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
+ *    DO NOT WORK WITH THIS CLASS!
+ *    THIS FILE IS JUST HOLD TO KEEP OLD RUNNABLES WORKING
+ *
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
  * Filter:
  * Filtering of GPS tracks (key channel)
  *
  */
-class KeyChannel extends NFNService {
+class LegacyKeyChannel extends NFNService {
 
   /**
    * Check if certain user is allowed to access certain data at certain level
@@ -114,7 +115,7 @@ class KeyChannel extends NFNService {
       }
 
       case _ => {
-        throw new NFNServiceArgumentException(s"KeyChannel: Argument mismatch.")
+        throw new NFNServiceArgumentException(s"LegacyKeyChannel: Argument mismatch.")
       }
     }
 

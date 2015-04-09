@@ -2,7 +2,7 @@ package filterAccess.runnables
 
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
-import filterAccess.service.ContentChannel
+import filterAccess.service.content.LegacyContentChannel
 import monitor.Monitor
 import node.LocalNodeFactory
 
@@ -18,12 +18,12 @@ object HelloWorld extends App {
   *
   * SETUP:
   *  Network with node1 and node2
-  *  Service "ContentChannel" on node1
+  *  Service "LegacyContentChannel" on node1
   *  Sample data "track" on node1
   *
 
 
-     {ContentChannel}
+     {LegacyContentChannel}
           |
       +-------+           +-------+
       | node1 |***********| node2 |
@@ -35,7 +35,7 @@ object HelloWorld extends App {
   *
   * SCENARIO:
   *  node2 requests "track" filtered with
-  *  "ContentChannel" and different access
+  *  "LegacyContentChannel" and different access
   *  levels.
   *
   * */
@@ -47,7 +47,7 @@ object HelloWorld extends App {
   node1 <~> node2
 
   // service setup
-  val filterTrackServ = new ContentChannel()
+  val filterTrackServ = new LegacyContentChannel()
   node1.publishServiceLocalPrefix(filterTrackServ)
   val filterTrack = node1.localPrefix.append(filterTrackServ.ccnName)
 

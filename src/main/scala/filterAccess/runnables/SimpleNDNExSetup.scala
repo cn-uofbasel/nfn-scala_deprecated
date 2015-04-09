@@ -4,7 +4,9 @@ import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
 import filterAccess.json._
 import filterAccess.dataGenerator.SimpleNDNExData
-import filterAccess.service.{KeyChannel, AccessChannel, ContentChannel}
+import filterAccess.service.access.LegacyAccessChannel
+import filterAccess.service.content.LegacyContentChannel
+import filterAccess.service.key.LegacyKeyChannel
 import monitor.Monitor
 import node.LocalNodeFactory
 
@@ -21,12 +23,12 @@ object SimpleNDNExSetup extends App {
    *
    * SETUP:
    *  Network with dsu, dpu and dvu.
-   *  Service "ContentChannel" on dpu
+   *  Service "LegacyContentChannel" on dpu
    *  Sample data "track" and "permissions" on dsu
    *
 
-           {track.KeyChannel}
-           {track.AccessChannel}     {track.ContentChannel}
+           {track.LegacyKeyChannel}
+           {track.LegacyAccessChannel}     {track.LegacyContentChannel}
                       |                  |
                   +-------+          +-------+
          [track]--|  dsu  |**********|  dpu  |
@@ -42,7 +44,7 @@ object SimpleNDNExSetup extends App {
    *
    * SCENARIO:
    *  dvu requests "track" filtered with
-   *  "ContentChannel" on configurable
+   *  "LegacyContentChannel" on configurable
    *  access level.
    *
    * */
@@ -69,17 +71,17 @@ object SimpleNDNExSetup extends App {
   // -----------------------------------------------------------------------------
 
   // service setup (content channel)
-  val filterTrackServ = new ContentChannel
+  val filterTrackServ = new LegacyContentChannel
   dpu.publishServiceLocalPrefix(filterTrackServ)
   val contentTrack = dpu.localPrefix.append(filterTrackServ.ccnName)
 
   // service setup (access/permission channel)
-  val accessTrackServ = new AccessChannel
+  val accessTrackServ = new LegacyAccessChannel
   dpu.publishServiceLocalPrefix(accessTrackServ)
   val accessTrack = dpu.localPrefix.append(accessTrackServ.ccnName)
 
   // service setup (key channel)
-  val keyTrackServ = new KeyChannel
+  val keyTrackServ = new LegacyKeyChannel
   dpu.publishServiceLocalPrefix(keyTrackServ)
   val keyTrack = dpu.localPrefix.append(keyTrackServ.ccnName)
 
@@ -101,7 +103,7 @@ object SimpleNDNExSetup extends App {
 
   // setup key data
   val keyName = dsu.localPrefix.append("track").append("key")
-  val keyData = SimpleNDNExData.generateKeys("/node/node1/track/key")
+  val keyData = SimpleNDNExData.generateKeys("/node/node1/track/key", 3)
   dsu += Content(keyName, keyData)
 
 
@@ -175,7 +177,7 @@ object SimpleNDNExSetup extends App {
   // ==== FETCH KEY FROM DPU =====================================================
   // -----------------------------------------------------------------------------
 
-  println("=== FETCH KEY FROM DPU ===")
+  println("FETCH KEY FROM DPU")
 
   Thread.sleep(1000)
 

@@ -1,5 +1,6 @@
 package filterAccess.json
 
+import akka.actor.ActorRef
 import filterAccess.json.AccessChannelParser._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
@@ -48,6 +49,32 @@ object KeyChannelParser extends ChannelParser {
       case None => None
     }
 
+  }
+
+  /**
+   * Check if certain user is allowed to access certain data at certain level
+   *
+   * @param   data     JSON object with permission data
+   * @param   node     Identifier of the node
+   * @param   level    Access level
+   * @return           True, if access is allowed. False, if access is denied or json can not be parsed.
+   */
+  def checkPermission(data: String, node: String, level: Int): Boolean = {
+
+    //parse access level from json
+    val real_level = getAccessLevel(data, node)
+
+    // checking permissions
+    real_level match {
+      case Some(l) => {
+        // parsing successful, actual data extraction
+        l <= level
+      }
+      case None => {
+        // parsing failed
+        false
+      }
+    }
   }
 
 }

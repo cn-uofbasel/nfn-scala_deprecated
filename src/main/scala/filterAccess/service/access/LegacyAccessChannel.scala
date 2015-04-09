@@ -1,13 +1,20 @@
-package filterAccess.service
+package filterAccess.service.access
 
 import akka.actor.ActorRef
 import filterAccess.json.{AccessChannelBuilder, UserLevel}
-import nfn.service._
-
 import filterAccess.tools.Exceptions._
+import nfn.service._
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
+ *
+ *
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *
+ *    DO NOT WORK WITH THIS CLASS!
+ *    THIS FILE IS JUST HOLD TO KEEP OLD RUNNABLES WORKING
+ *
+ *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *
  * Filter:
  * Filtering of permissions for GPS tracks (access channel)
@@ -24,7 +31,7 @@ import filterAccess.tools.Exceptions._
  * Filtering of GPS tracks (access channel)
  *
  */
-class AccessChannel extends NFNService {
+class LegacyAccessChannel extends NFNService {
 
   private def processAccessTrack(request: String, level: Int): String = {
 
@@ -71,7 +78,7 @@ class AccessChannel extends NFNService {
         NFNStringValue(processAccessTrack(new String(request), level))
 
       case _ =>
-        throw new NFNServiceArgumentException(s"AccessChannel: Argument mismatch.")
+        throw new NFNServiceArgumentException(s"LegacyAccessChannel: Argument mismatch.")
     }
 
   }
