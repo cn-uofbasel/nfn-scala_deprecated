@@ -1,6 +1,8 @@
 package filterAccess.runnables
 
 
+import java.util.Base64
+
 import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
 
@@ -14,7 +16,7 @@ import node.LocalNodeFactory
 
 import filterAccess.tools.Logging._
 
-import filterAccess.encoding.Decryption._
+import filterAccess.crypto.Decryption._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
@@ -458,6 +460,7 @@ object NDNExSetup extends App {
     Thread.sleep(1000)
     subsection("Encryption")
     info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, 123456789).toInt))
+
   }
 }
 

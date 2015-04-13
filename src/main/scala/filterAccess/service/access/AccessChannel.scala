@@ -1,7 +1,7 @@
 package filterAccess.service.access
 
 import akka.actor.ActorRef
-import filterAccess.encoding.Encryption._
+import filterAccess.crypto.Encryption._
 import filterAccess.json.{AccessChannelBuilder, UserLevel}
 import filterAccess.json.KeyChannelParser._
 import filterAccess.persistency.{PermissionPersistency, KeyPersistency}

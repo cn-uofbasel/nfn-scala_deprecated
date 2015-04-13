@@ -1,7 +1,7 @@
 package filterAccess.service.content
 
 import akka.actor.ActorRef
-import filterAccess.encoding.Encryption._
+import filterAccess.crypto.Encryption._
 import filterAccess.json.KeyChannelParser._
 import filterAccess.persistency.{KeyPersistency, ContentPersistency}
 import filterAccess.tools.DataNaming

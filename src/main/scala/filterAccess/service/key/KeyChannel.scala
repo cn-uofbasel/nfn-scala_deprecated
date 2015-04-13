@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import filterAccess.json.KeyChannelParser._
 import filterAccess.persistency.KeyPersistency
 import filterAccess.persistency.PermissionPersistency
-import filterAccess.encoding.Encryption._
+import filterAccess.crypto.Encryption._
 import filterAccess.tools.DataNaming
 import filterAccess.tools.Exceptions._
 import nfn.service._

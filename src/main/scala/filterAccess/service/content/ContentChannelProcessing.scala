@@ -3,8 +3,8 @@ package filterAccess.service.content
 import akka.actor.ActorRef
 import ccn.packet._
 
-import filterAccess.encoding.Decryption._
-import filterAccess.encoding.Encryption._
+import filterAccess.crypto.Decryption._
+import filterAccess.crypto.Encryption._
 
 import filterAccess.json.ContentChannelParser
 import filterAccess.json.ContentChannelBuilder
