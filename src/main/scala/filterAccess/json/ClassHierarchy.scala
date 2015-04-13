@@ -15,7 +15,7 @@ case class UserLevel(name: String, level: Int)
 case class Permissions(content: String, permissions: List[UserLevel])
 
 // Key Channel
-case class LevelKey(key:Int) {
+case class LevelKey(key:String) {
   override def toString() = key.toString
 }
 case class Keys(content: String, keys:Map[AccessLevel, LevelKey])

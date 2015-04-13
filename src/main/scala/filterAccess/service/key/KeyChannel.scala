@@ -73,7 +73,7 @@ class KeyChannel extends NFNService {
                 // Extract symmetric key
                 val symKey = extractLevelKey(jsonSymKey, level)
                 // Encrypt symmetric key with users public key
-                Some(pubEncrypt(symKey.get.toString, id))
+                Some(pubEncrypt(symKey.get, id))
               }
               case _ => {
                 // Could not fetch data from persistent storage
@@ -118,7 +118,12 @@ class KeyChannel extends NFNService {
     args match {
       case Seq(NFNStringValue(content), NFNIntValue(level), NFNIntValue(id)) => {
         processKeyChannel(new String(content), level, id) match {
-          case Some(key) => NFNStringValue(key)
+          case Some(key) => {
+            // TODO
+            // If the first character is a number just parts of the string is returned
+            // -> CCNLite/NFN-Scala Bug?
+            NFNStringValue(key)
+          }
           case None => throw new noReturnException("No return. Possibly caused by: Permission denied, data not found, invalid access level")
         }
       }

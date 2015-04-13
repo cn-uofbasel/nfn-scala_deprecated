@@ -1,6 +1,8 @@
 package filterAccess.dataGenerator
 
 import filterAccess.json._
+import filterAccess.crypto.Helpers.computeHash
+
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -59,16 +61,17 @@ object SimpleNDNExData {
 
   /**
    * Generate symmetric keys to secure certain data
-   * @param name Content Object Name (added to JSON Object)
-   * @param i Parameter to influence keys (deterministic, different i generate different tracks)
-   * @return Keys as String (JSON Object)
+   *
+   * @param    name     Content Object Name (added to JSON Object)
+   * @param    i        Parameter to influence keys (deterministic, different i generate different tracks)
+   * @return            Keys as String (JSON Object)
    */
   def generateKeysJSON(name: String, i: Int): String = {
     KeyChannelBuilder.buildKeys(
       Map(
-        AccessLevel(0) -> LevelKey(111 + i * scala.math.floor(0.7*i).toInt), // Permission to access permission data
-        AccessLevel(1)  -> LevelKey(99 + i * i),
-        AccessLevel(2)  -> LevelKey(44 + i * scala.math.ceil(0.5 * i).toInt)
+        AccessLevel(0) -> LevelKey( computeHash((99111111*i).toString) ), // Permission to access permission data
+        AccessLevel(1) -> LevelKey( computeHash((99222222*i).toString) ),
+        AccessLevel(2) -> LevelKey( computeHash((99333333*i).toString) )
       ),
       name
     )

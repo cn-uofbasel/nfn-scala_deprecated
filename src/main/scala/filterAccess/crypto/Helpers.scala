@@ -40,7 +40,7 @@ object Helpers {
 
 
   /**
-   * Compute a SHA-256 hash of a given String.
+   * Compute a SHA-256 hash of a given Array[Byte].
    * The length of the returned hash is 256 bit or 32 byte respectively.
    *
    * This function is intended to produce keys for the symmetric encryption (AES-256) with proper length.
@@ -58,6 +58,17 @@ object Helpers {
     digester.digest
 
   }
+
+  /**
+   * Compute a SHA-256 hash of a given String.
+   * The length of the returned hash is 256 bit or 32 byte respectively.
+   *
+   * This function is intended to produce keys for the symmetric encryption (AES-256) with proper length.
+   *
+   * @param   s  Data to calculate a hash
+   * @return     SHA-256 Hash as Base64 encoded String
+   */
+  def computeHash(s:String):String = byteToString(computeHash(s.getBytes))
 
 
   /**

@@ -71,7 +71,7 @@ class ContentChannelProcessing extends ContentChannel {
    *
    * @param    name      Name
    * @param    level     Access Level
-   * @param    selector  Select which data should be returned (permission, content, key)
+   * @param    selector  Select which data should be returned (permission, content, symmetric key)
    * @param    ccnApi    Actor Reference
    * @param    timeout   Timeout (standard value: 5 seconds)
    * @return
@@ -111,7 +111,7 @@ class ContentChannelProcessing extends ContentChannel {
           fetchContent(keyInterest, ccnApi, timeout) match {
             case Some(key: Content) => {
               // decryption
-              val symKey = privateDecrypt(new String(key.data), getPrivKey).toInt
+              val symKey = privateDecrypt(new String(key.data), getPrivKey)
               Some(symDecrypt(new String(data.data), symKey))
             }
             case _ => None
@@ -176,7 +176,7 @@ class ContentChannelProcessing extends ContentChannel {
 
     // fetch all needed data (content, permission, symmetric key)
     fetchAndDecrypt(name, level, (false, true, true), ccnApi) match {
-      case (None, Some(content), Some(key)) => {
+      case (None, Some(content), Some(symKey)) => {
 
         // handle data type
         getType(name) match {
@@ -184,8 +184,8 @@ class ContentChannelProcessing extends ContentChannel {
           case Some("type:track") => {
             // call filtering function
             level match {
-              case 2 => Some( symEncrypt(filterTrack2(content).get, key.toInt) )
-              case 3 => Some( symEncrypt(filterTrack3(content).get, key.toInt) )
+              case 2 => Some( symEncrypt(filterTrack2(content).get, symKey) )
+              case 3 => Some( symEncrypt(filterTrack3(content).get, symKey) )
               case _ => throw new noReturnException(s"No return. Did not a filter for access level ${level}.")
             }
           }

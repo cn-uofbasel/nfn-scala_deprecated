@@ -18,13 +18,13 @@ object Decryption {
    * @param   key      Symmetric Key (To fully utilize AES-256, "key" should at least take 256 bits or 32 bytes)
    * @return           Decrypted Data as String (Base64 Encoding)
    */
-  def symDecrypt(data: String, key: Int): String = {
+  def symDecrypt(data: String, key: String): String = {
 
     // Prepare key
     //
     // Compute a SHA-256 hash of key:Int to make sure that key used to perform
     // the actual encryption is of length 256 bit.
-    val processingKey = computeHash( (key.toString).getBytes )
+    val processingKey = computeHash(key.getBytes)
 
     // Convert data from String to Array[Byte]
     val byteData = stringToByte(data)

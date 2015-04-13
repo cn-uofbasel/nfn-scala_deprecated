@@ -168,7 +168,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
 
-    val interest_key: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 0, 237494854)
+    val interest_key: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 2, 237494854)
 
     // send interest for permissions from dpu...
     val startTime3 = System.currentTimeMillis
@@ -262,7 +262,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
     subsection("Encryption")
-    info("Decrypted:     " + symDecrypt(permissionData, privateDecrypt(keyData, 123456789).toInt))
+    info("Decrypted:     " + symDecrypt(permissionData, privateDecrypt(keyData, 123456789)))
 
   }
 
@@ -341,7 +341,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
     subsection("Encryption")
-    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, 123456789).toInt))
+    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, 123456789)))
 
   }
 
@@ -459,7 +459,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
     subsection("Encryption")
-    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, 123456789).toInt))
+    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, 123456789)))
 
   }
 }

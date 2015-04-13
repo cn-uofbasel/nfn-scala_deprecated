@@ -29,7 +29,7 @@ object KeyChannelParser extends ChannelParser {
    * @param level Access level whose key should be returned
    * @return Key for the passed level
    */
-  def extractLevelKey(JSONObject: String, level: Int): Option[Int] = {
+  def extractLevelKey(JSONObject: String, level: Int): Option[String] = {
 
     // Extractor to get map[Int,Int] mapping AccessLevel to LevelKey
     val extractor = (m:JValue) => {
@@ -38,14 +38,14 @@ object KeyChannelParser extends ChannelParser {
       val list = (m \ "keys").children.children
 
       // convert to map
-      val x:Map[Int,Int] = (for(e <- list) yield ((e \ "level").extract[Int] -> (e \ "key").extract[Int]))(breakOut)
+      val x:Map[Int,String] = (for(e <- list) yield ((e \ "level").extract[Int] -> (e \ "key").extract[String]))(breakOut)
       x
 
     }
 
     //extract key for given level
-    extractElement[Map[Int,Int]](JSONObject, extractor) match {
-      case m:Some[Map[Int,Int]] => m.get.get(level)
+    extractElement[Map[Int,String]](JSONObject, extractor) match {
+      case m:Some[Map[Int,String]] => m.get.get(level)
       case None => None
     }
 
@@ -95,7 +95,7 @@ object KeyChannelBuilder {
         ("content" -> contentName) ~
           ("keys" ->
             keyList.map {
-              k => ("level" -> k._1.level) ~ ("key" -> k._2.key)
+              k => ("level" -> k._1.level) ~ ("key" -> k._2.key.toString)
             }
             )
         )

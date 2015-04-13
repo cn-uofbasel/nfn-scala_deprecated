@@ -59,7 +59,7 @@ class LegacyKeyChannel extends NFNService {
    * @param ccnApi
    * @return
    */
-  private def getLevelKey(name:String, level:Int, ccnApi:ActorRef):Option[Int] = {
+  private def getLevelKey(name:String, level:Int, ccnApi:ActorRef):Option[String] = {
 
     fetchContent(name, ccnApi, 2 seconds) match {
       case Some(c: Content) => extractLevelKey(new String(c.data), level)
@@ -77,7 +77,7 @@ class LegacyKeyChannel extends NFNService {
    * @param ccnApi Actor Ref
    * @return Key (if allowed)
    */
-  private def processKeyTrack(name: String, user: String, level: Int, ccnApi: ActorRef): Option[Int] = {
+  private def processKeyTrack(name: String, user: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
     fetchContent(name+"/permission", ccnApi, 2 seconds) match {
       case Some(c:Content) => {
@@ -109,7 +109,7 @@ class LegacyKeyChannel extends NFNService {
       case Seq(NFNStringValue(track), NFNStringValue(node), NFNIntValue(level)) => {
 
         processKeyTrack(new String(track), new String(node), level, ccnApi) match {
-          case Some(key) => NFNIntValue(key)
+          case Some(key) => NFNStringValue(key)
           case None => throw new noReturnException("No return. Possibly caused by: Permission denied, invalid access level..")
         }
       }
