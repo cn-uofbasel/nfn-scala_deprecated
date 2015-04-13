@@ -6,6 +6,9 @@ import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.spec.IvParameterSpec
 
+import java.security.KeyPairGenerator
+
+
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -116,6 +119,35 @@ object Helpers {
 
     // do encryption
     cipher.doFinal(data)
+  }
+
+  /**
+   * Generates a random public-private key pair for RSA (1024 bit)
+   *
+   * Note: This function is not deterministic.
+   *
+   * NOTE: BECAUSE DEVELOPMENT AND DEBUGGING WITH SHORTER KEYS IS MORE CONVENIENT,
+   *       THE ALGORITHM IS CHANGED TO RSA 512 BIT!
+   *
+   *       !!! CHANGE THIS ON PRODUCTION MODE !!!
+   *
+   * @return (public key, private key) - Encoded as base64.
+   */
+  def asymKeyGenerator(): (String, String) = {
+
+    // initialize RSA 1024 bit key pair generator
+    val generator = KeyPairGenerator.getInstance("RSA")
+    //generator.initialize(1024)
+    generator.initialize(512) // TODO change to 1024 on production mode...
+
+    // generate key
+    val keyPair = generator.generateKeyPair()
+
+    // return public and private key as base64
+    val publicKey = byteToString(keyPair.getPublic.getEncoded)
+    val privateKey = byteToString(keyPair.getPrivate.getEncoded)
+    (publicKey, privateKey)
+
   }
 
 }

@@ -54,7 +54,7 @@ object InterestBuilder {
    * @param      id            Public Key
    * @return                   Interest
    */
-  def buildKeyChannelInterest(name: String, accessLevel: Int, id: Int): Interest = {
+  def buildKeyChannelInterest(name: String, accessLevel: Int, id: String): Interest = {
 
     assert(accessLevel >= 0)
     keyChannelName call(name, accessLevel, id)

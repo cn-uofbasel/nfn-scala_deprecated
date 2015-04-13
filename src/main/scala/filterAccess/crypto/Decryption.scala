@@ -48,7 +48,7 @@ object Decryption {
    * @param   privateKey   Private Key
    * @return               Decrypted Data
    */
-  def privateDecrypt(data:String, privateKey: Int): String = {
+  def privateDecrypt(data:String, privateKey: String): String = {
 
     // TODO
     data

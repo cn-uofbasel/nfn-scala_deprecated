@@ -11,38 +11,40 @@ import nfn.service._
  */
 trait ContentChannel extends NFNService {
 
-  private var identity: Int = 237494854
-  private var privKey: Int = 0
+  // Setting publicKey via setPublicKey(...) does cause problems
+  // TODO - Why?
+  // Workaround: Hard-code this in here..
+  private var publicKey: String = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ=="
+  private var privateKey: String = "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ=="
 
   /**
-   * Set identity (public key) of this service.
+   * Set publicKey (public key) of this service.
    * @param   id    Public Key
    */
   // TODO
-  //def setIdentity(id: Int): Unit = {
-  //  identity = id
-  //}
+  def setPublicKey(id: String): Unit = {
+    publicKey = id
+  }
 
   /**
-   * Get identity (public key) of this service.
+   * Get publicKey (public key) of this service.
    * @return  Public Key
    */
-  def getIdentity: Int = identity
+  def getPublicKey: String = publicKey
 
   /**
-   * Set private key corresponding to public key (identity).
+   * Set private key corresponding to public key (publicKey).
    * @param   id    Public Key
    */
-  // TODO
-  //def setPrivKey(id: Int): Unit = {
-  //  privKey = id
-  //}
+  def setPrivateKey(id: String): Unit = {
+    privateKey = id
+  }
 
   /**
-   * Get private key corresponding to public key (identity).
+   * Get private key corresponding to public key (publicKey).
    * @return
    */
-  def getPrivKey: Int = privKey
+  def getPrivateKey: String = privateKey
 
   /**
    *

@@ -97,11 +97,11 @@ object SimpleNDNExData {
   def generatePermissionsJSON(name: String): String = {
     AccessChannelBuilder.buildPermissions(
       List(
-        UserLevel("18387373", 1),  // access unfiltered data
-        UserLevel("237494854", 0), // access permission data
-        UserLevel("237494854", 1), // access unfiltered data
-        UserLevel("237494854", 2), // access data on first filter level
-        UserLevel("348474", 1)     // access unfiltered data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIkI4jaasIJnSpB12KBQeqlkMx+/H1nZ1MI85JfeI4w/eOiPLog5if71TUyuf6Qy/dPVqTA/a5zPawDJE3nyykMCAwEAAQ==", 1),  // access unfiltered data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 0), // access permission data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 1), // access unfiltered data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 2), // access data on first filter level
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAI/KObiAb04130QaeKcE5QWVw/42b5uLaiO8jGDKFMn+Zefxx42rOSkwniJYKJWOqx6kzm4u7Dpma6J6/QVzjB8CAwEAAQ==", 1)     // access unfiltered data
       ),
       name
     )

@@ -50,7 +50,7 @@ object Encryption {
    * @param   pubKey       Public Key
    * @return               Encrypted Data
    */
-  def pubEncrypt(data:String, pubKey: Int): String = {
+  def pubEncrypt(data:String, pubKey: String): String = {
 
     // TODO
     data

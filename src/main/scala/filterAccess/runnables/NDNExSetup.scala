@@ -55,9 +55,9 @@ object NDNExSetup extends App {
 
    *
    * DATA:
-   *  /<dsu_prefix>/type:track/stadtlauf15/...
-   *  /<dsu_prefix>/type:track/paris-marathon/...
-   *  /<dsu_prefix>/type:track/jungfraujoch/...
+   *  /<dsu_prefix>//type:track//stadtlauf15/...
+   *  /<dsu_prefix>//type:track//paris-marathon/...
+   *  /<dsu_prefix>//type:track//jungfraujoch/...
    *
    * SCENARIO:
    *  tbd
@@ -89,39 +89,42 @@ object NDNExSetup extends App {
   // service setup (access/permission channel)
   subsection("access/permission channel")
   val accessChannelServ = new AccessChannel
-  accessChannelServ.setIdentity(237494854)
+  accessChannelServ.setPublicKey("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+  accessChannelServ.setPrivateKey("MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")
   dpu.publishServiceLocalPrefix(accessChannelServ)
   val accessChannelName = dpu.localPrefix.append(accessChannelServ.ccnName)
   info(s"Access channel installed on dpu: $accessChannelName")
-  info("Identity of access chanel service: " + accessChannelServ.getIdentity)
+  info("Identity (public key) of access chanel service: " + accessChannelServ.getPublicKey)
 
   // service setup (key channel)
   subsection("key channel")
   val keyChannelServ = new KeyChannel
-  keyChannelServ.setIdentity(237494854)
+  keyChannelServ.setPublicKey("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+  keyChannelServ.setPrivateKey("MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")
   dpu.publishServiceLocalPrefix(keyChannelServ)
   val keyChannelName = dpu.localPrefix.append(keyChannelServ.ccnName)
   info(s"Key channel installed on dpu: $keyChannelName")
-  info("Identity of access chanel service: " + keyChannelServ.getIdentity)
+  info("Identity (public key) of access chanel service: " + keyChannelServ.getPublicKey)
 
   // service setup (content channel - storage)
   subsection("content channel (storage)")
   val contentChannelStorageServ = new ContentChannelStorage
-  // contentChannelStorageServ.setIdentity(237494854)
+  // contentChannelStorageServ.setPublicKey("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+  // contentChannelStorageServ.setPrivateKey("MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")
   dsu.publishServiceLocalPrefix(contentChannelStorageServ)
   val contentChannelStorageName = dsu.localPrefix.append(contentChannelStorageServ.ccnName)
   info(s"Content channel (storage) installed on dsu: $contentChannelStorageName")
-  info("Identity of access chanel service: " + contentChannelStorageServ.getIdentity)
+  info("Identity (public key) of access chanel service: " + contentChannelStorageServ.getPublicKey)
 
   // service setup (content channel - processing)
   subsection("content channel (processing)")
   val contentChannelProcessingServ = new ContentChannelProcessing
-  // contentChannelProcessingServ.setIdentity(237494854)
+  // contentChannelProcessingServ.setPublicKey("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+  // contentChannelProcessingServ.setPrivateKey("MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")
   dpu.publishServiceLocalPrefix(contentChannelProcessingServ)
   val contentChannelProcessingName = dpu.localPrefix.append(contentChannelProcessingServ.ccnName)
   info(s"Content channel (processing) installed on dpu: $contentChannelProcessingName")
-  info("Identity of access chanel service: " + contentChannelProcessingServ.getIdentity)
-
+  info("Identity (public key) of access chanel service: " + contentChannelProcessingServ.getPublicKey)
 
 
   // -----------------------------------------------------------------------------
@@ -168,7 +171,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
 
-    val interest_key: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 2, 237494854)
+    val interest_key: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 2, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
 
     // send interest for permissions from dpu...
     val startTime3 = System.currentTimeMillis
@@ -233,7 +236,7 @@ object NDNExSetup extends App {
     Thread.sleep(1000)
     subsection("Key Channel")
 
-    val interest_key: Interest = keyChannelName call("/node/node2//type:track//stadtlauf2015", 0, 237494854)
+    val interest_key: Interest = keyChannelName call("/node/node2//type:track//stadtlauf2015", 0, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
 
     // send interest for permissions from dpu...
     val startTime3 = System.currentTimeMillis
@@ -262,7 +265,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
     subsection("Encryption")
-    info("Decrypted:     " + symDecrypt(permissionData, privateDecrypt(keyData, 123456789)))
+    info("Decrypted:     " + symDecrypt(permissionData, privateDecrypt(keyData, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")))
 
   }
 
@@ -311,7 +314,7 @@ object NDNExSetup extends App {
     Thread.sleep(1000)
     subsection("Key Channel")
 
-    val interest_key2: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 1, 237494854)
+    val interest_key2: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 1, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
 
     // send interest for permissions from dpu...
     val startTime4 = System.currentTimeMillis
@@ -341,7 +344,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
     subsection("Encryption")
-    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, 123456789)))
+    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")))
 
   }
 
@@ -389,7 +392,7 @@ object NDNExSetup extends App {
   // ==== FETCH A PROCESSED TRACK WITH CONTENT CHANNEL FROM DPU AND DECRYPT ======
   // -----------------------------------------------------------------------------
 
-  if (true) {
+  if (false) {
 
     var contentData: String = "to be fetched..."
     var keyData: String = "to be fetched..."
@@ -429,7 +432,7 @@ object NDNExSetup extends App {
     Thread.sleep(1000)
     subsection("Key Channel")
 
-    val interest_key2: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 2, 237494854)
+    val interest_key2: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 2, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
 
     // send interest for permissions from dpu...
     val startTime4 = System.currentTimeMillis
@@ -459,7 +462,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
     subsection("Encryption")
-    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, 123456789)))
+    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")))
 
   }
 }

@@ -29,36 +29,37 @@ import nfn.service._
  */
 class AccessChannel extends NFNService {
 
-  private var identity: Int = 0
-  private var privKey: Int = 0
+  private var publicKey: String = "missing public key"
+  private var privateKey: String = "missing private key"
 
   /**
-   * Set identity (public key) of this service.
+   * Set publicKey (public key) of this service.
    * @param   id    Public Key
    */
-  def setIdentity(id: Int): Unit = {
-    identity = id
+  // TODO
+  def setPublicKey(id: String): Unit = {
+    publicKey = id
   }
 
   /**
-   * Get identity (public key) of this service.
+   * Get publicKey (public key) of this service.
    * @return  Public Key
    */
-  def getIdentity: Int = identity
+  def getPublicKey: String = publicKey
 
   /**
-   * Set private key corresponding to public key (identity).
+   * Set private key corresponding to public key (publicKey).
    * @param   id    Public Key
    */
-  def setPrivKey(id: Int): Unit = {
-    privKey = id
+  def setPrivateKey(id: String): Unit = {
+    privateKey = id
   }
 
   /**
-   * Get private key corresponding to public key (identity).
+   * Get private key corresponding to public key (publicKey).
    * @return
    */
-  def getPrivKey: Int = privKey
+  def getPrivateKey: String = privateKey
 
   /**
    *

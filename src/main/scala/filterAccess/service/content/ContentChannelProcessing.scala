@@ -90,7 +90,7 @@ class ContentChannelProcessing extends ContentChannel {
       //fetch data (encrypted with public key)
       fetchContent(dataInterest, ccnApi, timeout) match {
         // decryption
-        case Some(data: Content) => Some(privateDecrypt(new String(data.data), getPrivKey))
+        case Some(data: Content) => Some(privateDecrypt(new String(data.data), getPrivateKey))
         case _ => None
       }
     }
@@ -111,7 +111,7 @@ class ContentChannelProcessing extends ContentChannel {
           fetchContent(keyInterest, ccnApi, timeout) match {
             case Some(key: Content) => {
               // decryption
-              val symKey = privateDecrypt(new String(key.data), getPrivKey)
+              val symKey = privateDecrypt(new String(key.data), getPrivateKey)
               Some(symDecrypt(new String(data.data), symKey))
             }
             case _ => None
@@ -126,7 +126,7 @@ class ContentChannelProcessing extends ContentChannel {
       case true => {
         // build interests for permission channel
         val permissionInterest = buildPermissionChannelInterest(name)
-        val permissionKeyInterest = buildKeyChannelInterest(name, 0, getIdentity)
+        val permissionKeyInterest = buildKeyChannelInterest(name, 0, getPublicKey)
         //fetch
         performFetchAndDecryptSymmetric(permissionInterest, permissionKeyInterest)
       }
@@ -138,7 +138,7 @@ class ContentChannelProcessing extends ContentChannel {
       case true => {
         // build interests for content channel
         val contentInterest = buildContentChannelInterest(name, 1)
-        val contentKeyInterest = buildKeyChannelInterest(name, 1, getIdentity)
+        val contentKeyInterest = buildKeyChannelInterest(name, 1, getPublicKey)
         //fetch
         performFetchAndDecryptSymmetric(contentInterest, contentKeyInterest)
       }
@@ -149,7 +149,7 @@ class ContentChannelProcessing extends ContentChannel {
     val keyResult = selector._3 match {
       case true => {
         // build interest for key channel
-        val keyInterest = buildKeyChannelInterest(name, level, getIdentity)
+        val keyInterest = buildKeyChannelInterest(name, level, getPublicKey)
         //fetch
         performFetchAndDecryptAsymmetric(keyInterest)
       }

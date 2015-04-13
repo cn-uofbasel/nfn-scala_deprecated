@@ -18,36 +18,37 @@ import scala.language.postfixOps
  */
 class KeyChannel extends NFNService {
 
-  private var identity: Int = 0
-  private var privKey: Int = 0
+  private var publicKey: String = "missing public key"
+  private var privateKey: String = "missing private key"
 
   /**
-   * Set identity (public key) of this service.
+   * Set publicKey (public key) of this service.
    * @param   id    Public Key
    */
-  def setIdentity(id: Int): Unit = {
-    identity = id
+  // TODO
+  def setPublicKey(id: String): Unit = {
+    publicKey = id
   }
 
   /**
-   * Get identity (public key) of this service.
+   * Get publicKey (public key) of this service.
    * @return  Public Key
    */
-  def getIdentity: Int = identity
+  def getPublicKey: String = publicKey
 
   /**
-   * Set private key corresponding to public key (identity).
+   * Set private key corresponding to public key (publicKey).
    * @param   id    Public Key
    */
-  def setPrivKey(id: Int): Unit = {
-    privKey = id
+  def setPrivateKey(id: String): Unit = {
+    privateKey = id
   }
 
   /**
-   * Get private key corresponding to public key (identity).
+   * Get private key corresponding to public key (publicKey).
    * @return
    */
-  def getPrivKey: Int = privKey
+  def getPrivateKey: String = privateKey
 
   /**
    *
@@ -56,7 +57,7 @@ class KeyChannel extends NFNService {
    * @param   id        User Identity (PubKey)
    * @return            Key (if allowed)
    */
-  private def processKeyChannel(content: String, level: Int, id: Int): Option[String] = {
+  private def processKeyChannel(content: String, level: Int, id: String): Option[String] = {
 
     // Extract name of actual data
     DataNaming.getName(content) match {
@@ -64,7 +65,7 @@ class KeyChannel extends NFNService {
       case Some(n) => {
         // Check permission
         val jsonPermission = PermissionPersistency.getPersistentPermission(n)
-        checkPermission(jsonPermission.get, id.toString, level) match {
+        checkPermission(jsonPermission.get, id, level) match {
           case true => {
 
             // Fetch json object with symmetric key
@@ -116,8 +117,8 @@ class KeyChannel extends NFNService {
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
-      case Seq(NFNStringValue(content), NFNIntValue(level), NFNIntValue(id)) => {
-        processKeyChannel(new String(content), level, id) match {
+      case Seq(NFNStringValue(content), NFNIntValue(level), NFNStringValue(id)) => {
+        processKeyChannel(new String(content), level, new String(id)) match {
           case Some(key) => {
             // TODO
             // If the first character is a number just parts of the string is returned
