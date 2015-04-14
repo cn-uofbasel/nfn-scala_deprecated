@@ -1,5 +1,9 @@
 package filterAccess.crypto
 
+import java.security.KeyFactory
+import java.security.spec.X509EncodedKeySpec
+import javax.crypto.Cipher
+
 import filterAccess.crypto.Helpers._
 
 /**
@@ -41,19 +45,26 @@ object Encryption {
 
 
   /**
-   * Encryption with public key.
+   * Asymmetric Encryption with RSA.
    *
-   * This implementation is for testing purposes only.
-   * Later on, this function should implement a stronger encryption algorithm!
-   *
-   * @param   data         Data
-   * @param   pubKey       Public Key
-   * @return               Encrypted Data
+   * @param   data         Data as String
+   * @param   pubKey       Public Key (base64 encoded)
+   * @return               Encrypted Data (base64 encoded)
    */
   def pubEncrypt(data:String, pubKey: String): String = {
 
-    // TODO
-    data
+    // Restore public key
+    val byteKey = stringToByte(pubKey)
+    val pubKeySpec = new X509EncodedKeySpec(byteKey)
+    val restoredKey = KeyFactory.getInstance("RSA").generatePublic(pubKeySpec)
+
+    // initialize cypher
+    val cipher = Cipher.getInstance("RSA")
+    cipher.init(Cipher.ENCRYPT_MODE, restoredKey)
+
+    // do encryption
+    val result = cipher.doFinal(data.getBytes);
+    byteToString(result)
 
   }
 

@@ -1,5 +1,10 @@
 package filterAccess.crypto
 
+import java.security.PrivateKey
+import java.security.KeyFactory
+import java.security.spec.PKCS8EncodedKeySpec
+import javax.crypto.Cipher
+
 import filterAccess.crypto.Helpers._
 
 /**
@@ -39,20 +44,28 @@ object Decryption {
 
 
   /**
-   * Decryption with private key.
-   *
-   * This implementation is for testing purposes only.
-   * Later on, this function should implement a stronger encryption algorithm!
-   *
-   * @param   data         Data
-   * @param   privateKey   Private Key
-   * @return               Decrypted Data
+   * Asymmetric Decryption with RSA.
+   * *
+   * @param   data         Data (base64 encoded)
+   * @param   privateKey   Private Key (base64 encoded)
+   * @return               Decrypted Data as String
    */
   def privateDecrypt(data:String, privateKey: String): String = {
 
-    // TODO
-    data
+    // Restore public key
+    val byteKey = stringToByte(privateKey)
+    val privKeySpec = new PKCS8EncodedKeySpec(byteKey)
+    val restoredKey = KeyFactory.getInstance("RSA").generatePrivate(privKeySpec)
+
+    // initialize cypher
+    val cipher = Cipher.getInstance("RSA")
+    cipher.init(Cipher.DECRYPT_MODE, restoredKey)
+
+    // do encryption
+    val result = cipher.doFinal(stringToByte(data))
+    new String(result)
 
   }
+
 
 }
