@@ -29,7 +29,10 @@ import nfn.service._
  */
 class AccessChannel extends NFNService {
 
+  /** public key (identity) */
   private var publicKey: String = "missing public key"
+
+  /** corresponding private key */
   private var privateKey: String = "missing private key"
 
   /**

@@ -8,7 +8,7 @@ import filterAccess.dataGenerator.SimpleNDNExData._
  * Makes symmetric keys persistent.
  *
  * For now, persistent data is hard-coded in this file.
- * In the long run, data might accessed through a database.
+ * In the long run, data might be accessed through a database.
  */
 object KeyPersistency {
 
@@ -17,8 +17,8 @@ object KeyPersistency {
    *
    * In the long run, this function should connect to a database, ohmage or ..
    *
-   * @param name Name of actual content
-   * @return
+   * @param     name     Name of actual content
+   * @return             xxx
    */
   def getPersistentKey(name: String): Option[String] = {
     name match {

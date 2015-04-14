@@ -1,22 +1,21 @@
 package filterAccess.dataGenerator
 
 import filterAccess.json._
-import filterAccess.crypto.Helpers.computeHash
-
+import filterAccess.crypto.Helpers.symKeyGenerator
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Sample data generator for SimpleNDNExSetup (and possibly other runnables)
+ * Sample data generator (JSON format) for NDNExSetup (and possibly other runnables).
  *
  * Content Channel
- * Track - 6 Track Points
+ *  Track with 6 track points
  *
  * Key Channel
- * Keys - Permission Level 0 with Key 99, Permission Level 1 with Key 44
+ *  AES-256 Keys for access level 1, 2, 3
  *
  * Permission Channel
- * Permissions - 3 Users (user1 on level 0, user2 on level 1, user3 on level 0)
+ *  Certain Permissions for 3 different users
  *
  */
 object SimpleNDNExData {
@@ -26,10 +25,11 @@ object SimpleNDNExData {
   // -----------------------------------------------------------------------------
 
   /**
-   * Generate a Track
-   * @param name Content Object Name (added to JSON Object)
-   * @param i Parameter to influence coordinates of track (deterministic, different i generate different tracks)
-   * @return Track as String (JSON Object)
+   * Generate content data (track with 6 track points)
+   *
+   * @param    name   Raw data name
+   * @param    i      Parameter to influence coordinates of track (deterministic, different i generate different tracks)
+   * @return          Content data (track) as String (JSON Object)
    */
   def generateTrackJSON(name: String, i: Int = 0): String = {
     ContentChannelBuilder.buildTrack(
@@ -45,44 +45,49 @@ object SimpleNDNExData {
     )
   }
 
+
   /**
-   * Same data as generateTrackJSON but in Array[Byte]
-   * @param name Content Object Name (added to JSON Object)
-   * @param i Parameter to influence coordinates of track (deterministic, different i generate different tracks)
-   * @return Track as Array[Byte]
+   * Same data as generateTrackJSON but in Array[Byte] (track with 6 track points)
+   *
+   * @param    name   Raw data name
+   * @param    i      Parameter to influence coordinates of track (deterministic, different i generate most likely different tracks)
+   * @return          Content data (track) as Array[Byte]
    */
-  def generateTrack(name: String, i: Int = 0): Array[Byte] = generateTrackJSON(name, i).getBytes
+  def generateTrack(name: String, i: Int = 0): Array[Byte] =
+    generateTrackJSON(name, i).getBytes
 
 
   // -----------------------------------------------------------------------------
   // ==== KEY CHANNEL ============================================================
   // -----------------------------------------------------------------------------
 
-
   /**
-   * Generate symmetric keys to secure certain data
+   * Generate key data (AES-256 Keys for access level 1, 2, 3)
    *
-   * @param    name     Content Object Name (added to JSON Object)
-   * @param    i        Parameter to influence keys (deterministic, different i generate different tracks)
-   * @return            Keys as String (JSON Object)
+   * @param    name     Raw data name
+   * @param    i        Parameter to influence keys (deterministic, different i generate most likely different tracks)
+   * @return            Key data as String (JSON Object)
    */
   def generateKeysJSON(name: String, i: Int): String = {
     KeyChannelBuilder.buildKeys(
       Map(
-        AccessLevel(0) -> LevelKey( computeHash((99111111*i).toString) ), // Permission to access permission data
-        AccessLevel(1) -> LevelKey( computeHash((99222222*i).toString) ),
-        AccessLevel(2) -> LevelKey( computeHash((99333333*i).toString) )
+        AccessLevel(0) -> LevelKey(symKeyGenerator((99111111 * i).toString)),   // Symmetric key to encrypt/decrypt permission data
+        AccessLevel(1) -> LevelKey(symKeyGenerator((99222222 * i).toString)),   // Symmetric key to encrypt/decrypt unfiltered data
+        AccessLevel(2) -> LevelKey(symKeyGenerator((99333333 * i).toString))    // Symmetric key to encrypt/decrypt filtered data of first access level
       ),
       name
     )
   }
 
+
   /**
-   * Returns same data as generateKeysJSON but in Array[Byte]
-   * @param name Content Object Name (added to JSON Object)
-   * @return Keys as Array[Byte]
+   * Returns same data as generateKeysJSON but in Array[Byte] (AES-256 Keys for access level 1, 2, 3)
+   *
+   * @param    name   Raw data name
+   * @return          Key data as Array[Byte]
    */
-  def generateKeys(name: String, i: Int): Array[Byte] = generateKeysJSON(name, i).getBytes
+  def generateKeys(name: String, i: Int): Array[Byte] =
+    generateKeysJSON(name, i).getBytes
 
 
   // -----------------------------------------------------------------------------
@@ -90,28 +95,32 @@ object SimpleNDNExData {
   // -----------------------------------------------------------------------------
 
   /**
-   * Generate Permissions
-   * @param name Content Object Name (added to JSON Object)
-   * @return Permissions as String (JSON Object)
+   * Generate permission data (certain permissions for 3 different users)
+   *
+   * @param    name   Raw data name
+   * @return          Permission data as String (JSON Object)
    */
   def generatePermissionsJSON(name: String): String = {
     AccessChannelBuilder.buildPermissions(
       List(
-        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIkI4jaasIJnSpB12KBQeqlkMx+/H1nZ1MI85JfeI4w/eOiPLog5if71TUyuf6Qy/dPVqTA/a5zPawDJE3nyykMCAwEAAQ==", 1),  // access unfiltered data
-        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 0), // access permission data
-        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 1), // access unfiltered data
-        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 2), // access data on first filter level
-        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAI/KObiAb04130QaeKcE5QWVw/42b5uLaiO8jGDKFMn+Zefxx42rOSkwniJYKJWOqx6kzm4u7Dpma6J6/QVzjB8CAwEAAQ==", 1)     // access unfiltered data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIkI4jaasIJnSpB12KBQeqlkMx+/H1nZ1MI85JfeI4w/eOiPLog5if71TUyuf6Qy/dPVqTA/a5zPawDJE3nyykMCAwEAAQ==", 1),  // permission to access unfiltered data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 0),  // permission to access permission data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 1),  // permission to access unfiltered data
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 2),  // permission to access data on first filter level
+        UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAI/KObiAb04130QaeKcE5QWVw/42b5uLaiO8jGDKFMn+Zefxx42rOSkwniJYKJWOqx6kzm4u7Dpma6J6/QVzjB8CAwEAAQ==", 1)   // permission to access unfiltered data
       ),
       name
     )
   }
 
+
   /**
-   * Same data as generateKPermissionsJSON but in Array[Byte]
-   * @param name Content Object Name (added to JSON Object)
-   * @return Permissions as Array[Byte]
+   * Same data as generateKPermissionsJSON but in Array[Byte] (certain permissions for 3 different users)
+   *
+   * @param    name   Raw data name
+   * @return          Permission data as Array[Byte]
    */
-  def generatePermissions(name: String): Array[Byte] = generatePermissionsJSON(name).getBytes
+  def generatePermissions(name: String): Array[Byte] =
+    generatePermissionsJSON(name).getBytes
 
 }

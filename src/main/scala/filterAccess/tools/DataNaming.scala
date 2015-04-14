@@ -2,15 +2,16 @@ package filterAccess.tools
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
- * Handles "names" of raw data.
+ *
+ * Handling of raw data names.
  *
  */
 object DataNaming {
 
   /**
-   * TODO
-   * @param n TODO
-   * @return TODO
+   * xxx
+   * @param    n   xxx
+   * @return       xxx
    */
   def unapply(n:String): Option[(String,String,String)] = {
     val parts = n split "//"
@@ -20,8 +21,8 @@ object DataNaming {
 
   /**
    * Extract name of actual data.
-   * @param n
-   * @return
+   * @param    n   xxx
+   * @return       xxx
    */
   def getName(n:String): Option[String] = {
     unapply(n) match {
@@ -32,8 +33,8 @@ object DataNaming {
 
   /**
    * Extract type of actual data.
-   * @param n
-   * @return
+   * @param    n   xxx
+   * @return       xxx
    */
   def getType(n:String): Option[String] = {
     unapply(n) match {

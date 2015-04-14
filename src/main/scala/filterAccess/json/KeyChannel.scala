@@ -1,6 +1,5 @@
 package filterAccess.json
 
-import akka.actor.ActorRef
 import filterAccess.json.AccessChannelParser._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._

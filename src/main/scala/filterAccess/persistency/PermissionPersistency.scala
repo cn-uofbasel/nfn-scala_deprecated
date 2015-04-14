@@ -8,14 +8,15 @@ import filterAccess.dataGenerator.SimpleNDNExData._
  * Makes permission data persistent
  *
  * For now, persistent data is hard-coded in this file.
- * In the long run, data might accessed through a database.
+ * In the long run, data might be accessed through a database.
  */
 object PermissionPersistency {
 
   /**
+   * xxx
    *
-   * @param name
-   * @return
+   * @param     name     Name of actual content
+   * @return             xxx
    */
   def getPersistentPermission(name: String): Option[String] = {
 

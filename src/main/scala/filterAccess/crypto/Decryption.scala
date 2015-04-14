@@ -1,6 +1,5 @@
 package filterAccess.crypto
 
-import java.security.PrivateKey
 import java.security.KeyFactory
 import java.security.spec.PKCS8EncodedKeySpec
 import javax.crypto.Cipher
@@ -10,7 +9,10 @@ import filterAccess.crypto.Helpers._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Decryption (Symmetric and Pub/Private)
+ * Decryption
+ *
+ *   Symmetric:        AES-256
+ *   Public/Private:   RSA
  *
  */
 object Decryption {
@@ -19,9 +21,9 @@ object Decryption {
   /**
    * Symmetric Decryption with AES-256
    *
-   * @param   data     Data
-   * @param   key      Symmetric Key (To fully utilize AES-256, "key" should at least take 256 bits or 32 bytes)
-   * @return           Decrypted Data as String (Base64 Encoding)
+   * @param   data         Data to decrypt (base64 encoded)
+   * @param   key          Symmetric Key
+   * @return               Decrypted Data as String (Base64 Encoding)
    */
   def symDecrypt(data: String, key: String): String = {
 
@@ -45,8 +47,8 @@ object Decryption {
 
   /**
    * Asymmetric Decryption with RSA.
-   * *
-   * @param   data         Data (base64 encoded)
+   *
+   * @param   data         Data to decrypt (base64 encoded)
    * @param   privateKey   Private Key (base64 encoded)
    * @return               Decrypted Data as String
    */
@@ -66,6 +68,5 @@ object Decryption {
     new String(result)
 
   }
-
 
 }

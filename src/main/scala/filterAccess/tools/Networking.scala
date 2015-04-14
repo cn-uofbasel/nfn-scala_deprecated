@@ -22,6 +22,7 @@ object Networking {
 
   /**
    * Try to fetch content object by given interest.
+   *
    * @param    interest Interest to send out
    * @param    ccnApi   Actor Reference
    * @param    time     Timeout
@@ -45,6 +46,7 @@ object Networking {
 
   /**
    * Try to fetch content object by name.
+   *
    * @param    name     Name
    * @param    ccnApi   Actor
    * @param    time     Timeout

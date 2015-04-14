@@ -11,18 +11,19 @@ import filterAccess.crypto.Helpers._
  *
  * Encryption
  *
- *   Symmetric:  AES-256
- *   Pub/Priv:   TODO
+ *   Symmetric:        AES-256
+ *   Public/Private:   RSA
  *
  */
 object Encryption {
 
+
   /**
    * Symmetric Encryption with AES-256
    *
-   * @param   data     Data
-   * @param   key      Symmetric Key (To fully utilize AES-256, the "key" should at least take 256 bits or 32 bytes)
-   * @return           Encrypted Data as String (Base64 Encoding)
+   * @param   data     Data to encrypt
+   * @param   key      Symmetric Key (To fully utilize AES-256, "key" should at least take 256 bits even though variable key size in accepted)
+   * @return           Encrypted Data (base64 encoded)
    */
   def symEncrypt(data: String, key: String): String = {
 
@@ -47,7 +48,7 @@ object Encryption {
   /**
    * Asymmetric Encryption with RSA.
    *
-   * @param   data         Data as String
+   * @param   data         Data to encrypt
    * @param   pubKey       Public Key (base64 encoded)
    * @return               Encrypted Data (base64 encoded)
    */

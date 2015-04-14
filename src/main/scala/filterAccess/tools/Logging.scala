@@ -2,6 +2,7 @@ package filterAccess.tools
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
+ *
  * Helper functions for logging.
  *
  */
@@ -21,7 +22,8 @@ object Logging {
 
   /**
    * Print info message
-   * @param m Message
+   *
+   * @param   m   Message
    */
   def info(m:String): Unit = {
     if (print_info == true)
@@ -30,7 +32,8 @@ object Logging {
 
   /**
    * Print warning
-   * @param m Message
+   *
+   * @param   m   Message
    */
   def warning(m:String): Unit = {
     if (print_warning == true)
@@ -39,7 +42,8 @@ object Logging {
 
   /**
    * Print section
-   * @param t Title
+   *
+   * @param   t   Title
    */
   def section(t:String): Unit = {
     if (print_warning == true)
@@ -48,13 +52,17 @@ object Logging {
 
   /**
    * Print subsection
-   * @param t Title
+   *
+   * @param   t   Title
    */
   def subsection(t:String): Unit = {
     if (print_warning == true)
       println("\n--- " + t.toUpperCase + " ---")
   }
 
+  /**
+   * Print horizontal line
+   */
   def hline: Unit = {
     if (print_hline == true)
       println(" | - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
