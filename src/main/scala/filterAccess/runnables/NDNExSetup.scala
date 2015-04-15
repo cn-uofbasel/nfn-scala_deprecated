@@ -71,9 +71,9 @@ object NDNExSetup extends App {
   // -----------------------------------------------------------------------------
 
   // network setup
-  val dsu = LocalNodeFactory.forId(1)
-  val dpu = LocalNodeFactory.forId(2)
-  val dvu = LocalNodeFactory.forId(3, isCCNOnly = true)
+  val dsu = LocalNodeFactory.forId(1, prefix=Option(CCNName("serviceprovider", "health", "storage")))
+  val dpu = LocalNodeFactory.forId(2, prefix=Option(CCNName("serviceprovider", "health", "processing")))
+  val dvu = LocalNodeFactory.forId(3, prefix=Option(CCNName("personal", "device")), isCCNOnly = true)
   val proxy = LocalNodeFactory.forId(4, prefix=Option(CCNName("own", "machine")))
   val nodes = List(dsu, dpu, dvu, proxy)
   dsu <~> dpu
@@ -529,7 +529,7 @@ object NDNExSetup extends App {
   // ==== FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU ====
   // -----------------------------------------------------------------------------
 
-  if (false) {
+  if (true) {
 
     section("FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU")
 
