@@ -8,6 +8,7 @@ import filterAccess.service.key.KeyChannel
 import filterAccess.service.access.AccessChannel
 import filterAccess.service.content.ContentChannelStorage
 import filterAccess.service.content.ContentChannelProcessing
+import filterAccess.service.content.ProxyContentChannel
 
 import monitor.Monitor
 import node.LocalNodeFactory
@@ -33,13 +34,16 @@ object NDNExSetup extends App {
    * Created by Claudio Marxer <marxer@claudio.li>
    *
    * SETUP:
-   *  Network with dsu, dpu and dvu.
-   *  Service "ContentChannel" on dpu.
-   *  Services "KeyChannel" and "AccessChannel" on dsu.
+   *  Network with dsu, dpu and dvu and proxy.
+   *  Service "ContentChannelProcessing" on dpu.
+   *  Services "KeyChannel" and "AccessChannel" and "ContentChannelStorage" on dsu.
+   *  Service "ContentChannelProxy" on proxy.
    *
 
-           {track.KeyChannel}
-           {track.AccessChannel}     {track.ContentChannel}
+
+  {Content Channel Storage}
+               {KeyChannel}
+            {AccessChannel}     {ContentChannel Processing}
                       |                  |
                   +-------+          +-------+
                   |  dsu  |**********|  dpu  |
@@ -48,19 +52,18 @@ object NDNExSetup extends App {
                          *            *
                           *          *
                            +-------+
+                           | proxy | -- {Content Channel Proxy}
+                           +-------+
+                               *
+                               *
+                           +-------+
                            |  dvu  | <--- Sends out Interests...
-                           +-------+           (CCN Only)
+                           +-------+        (CCN-only node)
+
 
    *
-   * DATA:
-   *  /<dsu_prefix>//type:track//stadtlauf15/...
-   *  /<dsu_prefix>//type:track//paris-marathon/...
-   *  /<dsu_prefix>//type:track//jungfraujoch/...
    *
-   * SCENARIO:
-   *  tbd
-   *
-   * */
+   **/
 
 
   // -----------------------------------------------------------------------------
@@ -71,11 +74,46 @@ object NDNExSetup extends App {
   val dsu = LocalNodeFactory.forId(1)
   val dpu = LocalNodeFactory.forId(2)
   val dvu = LocalNodeFactory.forId(3, isCCNOnly = true)
-  val nodes = List(dsu, dpu, dvu)
+  val proxy = LocalNodeFactory.forId(4)
+  val nodes = List(dsu, dpu, dvu, proxy)
   dsu <~> dpu
-  dpu <~> dvu
-  dvu <~> dsu
+  dpu <~> proxy
+  dsu <~> proxy
+  dvu <~> proxy
 
+  // routing
+  dvu.registerPrefixToNodes(proxy, List(dsu, dpu)) // TODO --- check sif this is setup the right way..
+
+  section("network setup")
+
+  println(
+    """
+         *  Network with dsu, dpu and dvu and proxy.
+         *  Service "ContentChannelProcessing" on dpu.
+         *  Services "KeyChannel" and "AccessChannel" and "ContentChannelStorage" on dsu.
+         *  Service "ContentChannelProxy" on proxy.
+
+        {Content Channel Storage}
+                    {Key Channel}
+                 {Access Channel}     {Content Channel Processing}
+                            |                  |
+                        +-------+          +-------+
+                        |  dsu  |**********|  dpu  |
+                        +-------+          +-------+
+                              *              *
+                               *            *
+                                *          *
+                                 +-------+
+                                 | proxy | -- {Content Channel Proxy}
+                                 +-------+
+                                     *
+                                     *
+                                 +-------+
+                                 |  dvu  | <--- Sends out Interests...
+                                 +-------+        (CCN-only node)
+
+
+    """)
 
 
   // -----------------------------------------------------------------------------
@@ -121,8 +159,34 @@ object NDNExSetup extends App {
   // contentChannelProcessingServ.setPrivateKey("MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")
   dpu.publishServiceLocalPrefix(contentChannelProcessingServ)
   val contentChannelProcessingName = dpu.localPrefix.append(contentChannelProcessingServ.ccnName)
-  info(s"Content channel (processing) installed on dpu: $contentChannelProcessingName")
+  info(s"Content channel proxy installed on dpu: $contentChannelProcessingName")
   info("Identity (public key) of access chanel service: " + contentChannelProcessingServ.getPublicKey)
+
+  // -----------------------------------------------------------------------------
+  // ==== PROXY SETUP ============================================================
+  // -----------------------------------------------------------------------------
+
+  section("proxy setup")
+
+  // service setup (content channel)
+  subsection("content channel")
+  val proxyContentChannelServ = new ProxyContentChannel
+  proxy.publishServiceLocalPrefix(proxyContentChannelServ)
+  val proxyContentChannelName = proxy.localPrefix.append(proxyContentChannelServ.ccnName)
+  info(s"Content channel proxy installed on proxy: $proxyContentChannelName")
+
+  /*
+  // service setup (content channel)
+  subsection("content channel")
+  val proxyContentChannelServ = new ProxyContentChannel
+  proxy.publishServiceCustomPrefix(proxyContentChannelServ, CCNName("own/machine"))
+  val proxyContentChannelName = CCNName("own/machine").append(proxyContentChannelServ.ccnName)
+  info(s"Content channel proxy installed on proxy: $proxyContentChannelName")
+  */
+
+  //============================================================================//
+  //============================================================================//
+  //============================================================================//
 
 
   // -----------------------------------------------------------------------------
@@ -463,5 +527,49 @@ object NDNExSetup extends App {
     info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")))
 
   }
+
+  //============================================================================//
+  //============================================================================//
+  //============================================================================//
+
+  // -----------------------------------------------------------------------------
+  // ==== FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU ====
+  // -----------------------------------------------------------------------------
+
+  if (true) {
+
+    section("FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU")
+
+    Thread.sleep(1000)
+    subsection("Content Channel (Processing) through proxy")
+
+    val interest_key: Interest = proxyContentChannelName call("/node/node2//type:track//paris-marathon", 2)
+
+    // send interest for permissions from dpu...
+    val startTime3 = System.currentTimeMillis
+    info("Send interest: " + interest_key)
+    dvu ? interest_key onComplete {
+      // ... and receive content
+      case Success(resultContent) => {
+        info("Result:        " + new String(resultContent.data))
+        info("Time:          " + (System.currentTimeMillis - startTime3) + "ms")
+        Monitor.monitor ! Monitor.Visualize()
+        Thread.sleep(20000)
+        nodes foreach {
+          _.shutdown()
+        }
+      }
+      // ... but do not get content
+      case Failure(e) => {
+        info("No content received.")
+        Monitor.monitor ! Monitor.Visualize()
+        nodes foreach {
+          _.shutdown()
+        }
+      }
+    }
+
+  }
+
 }
 

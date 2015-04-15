@@ -74,13 +74,16 @@ object InterestBuilder {
    */
   def buildContentChannelInterest(name: String, accessLevel: Int): Interest = {
 
-    assert(accessLevel >= 0)
+    assert(accessLevel > 0)
 
+    // distinct between storage and processing
     accessLevel match {
-      case al if al == 0 || al == 1 => contentChannelStorageName call(name, al)
-      case al if al > 1 => contentChannelProcessingName call(name, 1)
+      case 1 => contentChannelStorageName call(name, 1)
+      case l if l > 1 => contentChannelProcessingName call(name, l)
     }
 
   }
 
 }
+
+
