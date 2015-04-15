@@ -1,15 +1,16 @@
 package filterAccess.service.key
 
+import filterAccess.service.Channel
+import nfn.service._
 import akka.actor.ActorRef
+
 import filterAccess.json.KeyChannelParser._
 import filterAccess.persistency.KeyPersistency
 import filterAccess.persistency.PermissionPersistency
 import filterAccess.crypto.Encryption._
 import filterAccess.tools.DataNaming
 import filterAccess.tools.Exceptions._
-import nfn.service._
 
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
 /**
@@ -18,47 +19,8 @@ import scala.language.postfixOps
  * This class is used to set up a service for the key channel.
  *
  */
-class KeyChannel extends NFNService {
+class KeyChannel extends Channel {
 
-  /** public key (identity) */
-  private var publicKey: String = "missing public key"
-
-  /** corresponding private key */
-  private var privateKey: String = "missing private key"
-
-
-  /**
-   * Set publicKey (public key) of this service.
-   *
-   * @param   id    Public Key
-   */
-  // TODO
-  def setPublicKey(id: String): Unit = {
-    publicKey = id
-  }
-
-  /**
-   * Get publicKey (public key) of this service.
-   *
-   * @return  Public Key
-   */
-  def getPublicKey: String = publicKey
-
-  /**
-   * Set private key corresponding to public key (publicKey).
-   *
-   * @param   id    Public Key
-   */
-  def setPrivateKey(id: String): Unit = {
-    privateKey = id
-  }
-
-  /**
-   * Get private key corresponding to public key (publicKey).
-   *
-   * @return  Private Key
-   */
-  def getPrivateKey: String = privateKey
 
   /**
    * This function is called by entry point of this service to handle the actual work.

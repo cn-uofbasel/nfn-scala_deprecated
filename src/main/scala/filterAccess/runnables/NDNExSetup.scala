@@ -74,7 +74,7 @@ object NDNExSetup extends App {
   val dsu = LocalNodeFactory.forId(1)
   val dpu = LocalNodeFactory.forId(2)
   val dvu = LocalNodeFactory.forId(3, isCCNOnly = true)
-  val proxy = LocalNodeFactory.forId(4)
+  val proxy = LocalNodeFactory.forId(4, prefix=Option(CCNName("own", "machine")))
   val nodes = List(dsu, dpu, dvu, proxy)
   dsu <~> dpu
   dpu <~> proxy
@@ -168,6 +168,7 @@ object NDNExSetup extends App {
 
   section("proxy setup")
 
+
   // service setup (content channel)
   subsection("content channel")
   val proxyContentChannelServ = new ProxyContentChannel
@@ -175,14 +176,6 @@ object NDNExSetup extends App {
   val proxyContentChannelName = proxy.localPrefix.append(proxyContentChannelServ.ccnName)
   info(s"Content channel proxy installed on proxy: $proxyContentChannelName")
 
-  /*
-  // service setup (content channel)
-  subsection("content channel")
-  val proxyContentChannelServ = new ProxyContentChannel
-  proxy.publishServiceCustomPrefix(proxyContentChannelServ, CCNName("own/machine"))
-  val proxyContentChannelName = CCNName("own/machine").append(proxyContentChannelServ.ccnName)
-  info(s"Content channel proxy installed on proxy: $proxyContentChannelName")
-  */
 
   //============================================================================//
   //============================================================================//
@@ -536,7 +529,7 @@ object NDNExSetup extends App {
   // ==== FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU ====
   // -----------------------------------------------------------------------------
 
-  if (true) {
+  if (false) {
 
     section("FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU")
 
