@@ -5,13 +5,15 @@ import net.liftweb.json.JsonDSL._
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
+ *
  * Parse and build JSON objects contained by content channel packets.
  *
  */
 
+
 /**
  *
- * Parses JSON objects contained by content channel packets.
+ * Parse JSON objects contained by content channel packets.
  *
  */
 object ContentChannelParser extends ChannelParser{
@@ -19,9 +21,10 @@ object ContentChannelParser extends ChannelParser{
   implicit val formats = DefaultFormats
 
   /**
-   * Extracts the contents name from a JSON object.
-   * @param JSONObject JSON object containing data
-   * @return Contents name
+   * Extract raw data name from a JSON object.
+   *
+   * @param    JSONObject    JSON object
+   * @return                 Raw data name
    */
   def getName(JSONObject: String): Option[String] = {
 
@@ -31,9 +34,10 @@ object ContentChannelParser extends ChannelParser{
   }
 
   /**
-   * Extracts the trace from a JSON object.
-   * @param JSONObject
-   * @return Trace as List of TrackPoints
+   * Extracts the trace from a JSON object with type "track".
+   *
+   * @param     JSONObject   JSON object
+   * @return                 Trace as List of TrackPoints
    */
   def getTrace(JSONObject: String): Option[List[TrackPoint]] = {
 
@@ -46,13 +50,20 @@ object ContentChannelParser extends ChannelParser{
 
 /**
  *
- * Builds JSON objects contained by content channel packets.
+ * Build JSON objects contained by content channel packets.
  *
  */
 object ContentChannelBuilder {
 
   implicit val formats = DefaultFormats
 
+  /**
+   * Build a JSON object of type "track" contained by content channel packets.
+   *
+   * @param    trace          List of track points
+   * @param    contentName    Raw data name
+   * @return                  JSON object
+   */
   def buildTrack(trace: List[TrackPoint], contentName: String): String = {
 
     val json =

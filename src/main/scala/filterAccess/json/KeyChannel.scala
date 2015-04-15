@@ -9,13 +9,15 @@ import scala.collection.breakOut
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
+ *
  * Parse and build JSON objects contained by key channel packets.
  *
  */
 
+
 /**
  *
- * Parses JSON objects contained by key channel packets.
+ * Parse JSON objects contained by key channel packets.
  *
  */
 object KeyChannelParser extends ChannelParser {
@@ -80,13 +82,20 @@ object KeyChannelParser extends ChannelParser {
 
 /**
  *
- * Builds JSON objects contained by key channel packets.
+ * Build JSON objects contained by key channel packets.
  *
  */
 object KeyChannelBuilder {
 
   implicit val formats = DefaultFormats
 
+  /**
+   * Build a JSON object contained by key channel packets.
+   *
+   * @param    keyList        set of access level mapped to level key
+   * @param    contentName    Raw data name
+   * @return                  JSON object
+   */
   def buildKeys(keyList: Map[AccessLevel, LevelKey], contentName: String): String = {
 
     val json =

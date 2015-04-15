@@ -14,13 +14,16 @@ import nfn.LambdaNFNImplicits._
  */
 object InterestBuilder {
 
-  /**
-   * Hard-coded ccn names of services for content, key and access/permission channel.
-   *
-   */
+  /** Hard-coded ccn name of service for access channel */
   val accessChannelName: CCNName = CCNName("node/node2/filterAccess_service_access_AccessChannel")
+
+  /** Hard-coded ccn name of service for key channel */
   val keyChannelName: CCNName = CCNName("node/node2/filterAccess_service_key_KeyChannel")
+
+  /** Hard-coded ccn name of service for content channel (storage) */
   val contentChannelStorageName: CCNName = CCNName("node/node1/filterAccess_service_content_ContentChannelStorage")
+
+  /** Hard-coded ccn name of service for content channel (processing) */
   val contentChannelProcessingName: CCNName = CCNName("node/node2/filterAccess_service_content_ContentChannelProcessing")
 
   /*

@@ -21,13 +21,16 @@ import filterAccess.tools.DataNaming._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
+ * This class is used to set up a service for the content channel (processing on DPU).
+ *
  */
 class ContentChannelProcessing extends ContentChannel {
 
   /**
+   * Filtering function for type:track on first filtering level (access level 2).
    *
-   * @param data
-   * @return
+   * @param   data   Unfiltered data
+   * @return         Filtered data
    */
   def filterTrack2(data: String): Option[String] = {
     // extract trace and name
@@ -46,9 +49,10 @@ class ContentChannelProcessing extends ContentChannel {
   }
 
   /**
+   * Filtering function for type:track on second filtering level (access level 3).
    *
-   * @param data
-   * @return
+   * @param   data   Unfiltered data
+   * @return         Filtered data
    */
   def filterTrack3(data: String): Option[String] = {
     // extract trace and name
@@ -74,7 +78,7 @@ class ContentChannelProcessing extends ContentChannel {
    * @param    selector  Select which data should be returned (permission, content, symmetric key)
    * @param    ccnApi    Actor Reference
    * @param    timeout   Timeout (standard value: 5 seconds)
-   * @return
+   * @return             (permission, content, key)
    */
 
   def fetchAndDecrypt(name: String, level: Int, selector: (Boolean, Boolean, Boolean), ccnApi: ActorRef, timeout: FiniteDuration = 5 seconds): (Option[String], Option[String], Option[String]) = {
@@ -84,7 +88,7 @@ class ContentChannelProcessing extends ContentChannel {
      *
      * @param    dataInterest     Interest to fetch certain data
      * @param    timeout          Timeout
-     * @return
+     * @return                    Content
      */
     def performFetchAndDecryptAsymmetric(dataInterest: Interest, timeout: FiniteDuration = timeout): Option[String] = {
       //fetch data (encrypted with public key)
@@ -101,7 +105,7 @@ class ContentChannelProcessing extends ContentChannel {
      * @param    dataInterest     Interest to fetch certain data
      * @param    keyInterest      Interest to fetch corresponding key
      * @param    timeout          Timeout
-     * @return
+     * @return                    Content
      */
     def performFetchAndDecryptSymmetric(dataInterest: Interest, keyInterest: Interest, timeout: FiniteDuration = timeout): Option[String] = {
       // fetch data (encrypted with public key)
@@ -162,12 +166,7 @@ class ContentChannelProcessing extends ContentChannel {
   }
 
 
-  /**
-   *
-   * @param name
-   * @param level
-   * @return
-   */
+
   override def processContentChannel(name: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
     // check if this call should be satisfied by a processing service/unit

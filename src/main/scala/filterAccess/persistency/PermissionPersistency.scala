@@ -5,7 +5,7 @@ import filterAccess.dataGenerator.SimpleNDNExData._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Makes permission data persistent
+ * Persistency of permission channel data.
  *
  * For now, persistent data is hard-coded in this file.
  * In the long run, data might be accessed through a database.
@@ -13,10 +13,10 @@ import filterAccess.dataGenerator.SimpleNDNExData._
 object PermissionPersistency {
 
   /**
-   * xxx
+   * Get permission channel data by name
    *
-   * @param     name     Name of actual content
-   * @return             xxx
+   * @param     name     Name of content
+   * @return             Permissions as JSON object
    */
   def getPersistentPermission(name: String): Option[String] = {
 

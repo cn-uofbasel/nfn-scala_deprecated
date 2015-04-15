@@ -9,9 +9,10 @@ package filterAccess.tools
 object DataNaming {
 
   /**
-   * xxx
-   * @param    n   xxx
-   * @return       xxx
+   * Extract raw data name components of a raw data name.
+   *
+   * @param    n   Raw data name
+   * @return       Name components of n (prefix, type, name)
    */
   def unapply(n:String): Option[(String,String,String)] = {
     val parts = n split "//"
@@ -21,8 +22,9 @@ object DataNaming {
 
   /**
    * Extract name of actual data.
-   * @param    n   xxx
-   * @return       xxx
+   *
+   * @param    n   Raw data name
+   * @return       Name component of n
    */
   def getName(n:String): Option[String] = {
     unapply(n) match {
@@ -33,8 +35,9 @@ object DataNaming {
 
   /**
    * Extract type of actual data.
-   * @param    n   xxx
-   * @return       xxx
+   *
+   * @param    n   Raw data name
+   * @return       Type component of n
    */
   def getType(n:String): Option[String] = {
     unapply(n) match {

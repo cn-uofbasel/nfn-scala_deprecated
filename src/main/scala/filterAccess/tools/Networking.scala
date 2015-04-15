@@ -17,16 +17,15 @@ import scala.language.postfixOps
  * Helper functions for networking tasks.
  *
  */
-
 object Networking {
 
   /**
    * Try to fetch content object by given interest.
    *
-   * @param    interest Interest to send out
-   * @param    ccnApi   Actor Reference
-   * @param    time     Timeout
-   * @return
+   * @param    interest   Interest to send out
+   * @param    ccnApi     Actor Reference
+   * @param    time       Timeout
+   * @return              Content Object (on success)
    */
   def fetchContent(interest: Interest, ccnApi: ActorRef, time: Duration): Option[Content] = {
     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
@@ -34,9 +33,7 @@ object Networking {
       (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
     }
 
-    // form interest for permission data
-
-    // try to fetch permission data and return if successful
+    // try to fetch data and return if successful
     val futServiceContent: Future[Content] = loadFromCacheOrNetwork(interest)
     Await.result(futServiceContent, time) match {
       case c: Content => Some(c)
@@ -47,10 +44,10 @@ object Networking {
   /**
    * Try to fetch content object by name.
    *
-   * @param    name     Name
-   * @param    ccnApi   Actor
-   * @param    time     Timeout
-   * @return
+   * @param    name       Name
+   * @param    ccnApi     Actor
+   * @param    time       Timeout
+   * @return              Content Object (on success)
    */
   def fetchContent(name: String, ccnApi: ActorRef, time: Duration): Option[Content] = {
     val i = Interest(CCNName(name.split("/").tail: _*))

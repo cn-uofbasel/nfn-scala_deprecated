@@ -3,22 +3,32 @@ package filterAccess.tools
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Helper functions for logging.
+ * Helper functions for logging and output.
  *
  */
 object Logging {
 
-  /**
-   * Settings
-   */
-  val prefix = " |>> "
+  /** print info? */
   val print_info = true
+
+  /** print warning? */
   val print_warning = true
+
+  /** print section? */
   val print_section = true
+
+  /** print subsection? */
   val print_subsection = true
+
+  /** print hline? */
   val print_hline = true
 
-  // Note: Settings for akka output under src/main/resources/reference.conf
+  /** prefix of output */
+  val prefix = " |>> "
+
+
+  /*** NOTE: AKKA output is configurable in src/main/resources/reference.conf ***/
+
 
   /**
    * Print info message
@@ -30,6 +40,7 @@ object Logging {
       println(prefix + m)
   }
 
+
   /**
    * Print warning
    *
@@ -39,6 +50,7 @@ object Logging {
     if (print_warning == true)
       println(prefix + m)
   }
+
 
   /**
    * Print section
@@ -50,6 +62,7 @@ object Logging {
       println("\n======= " + t.toUpperCase + " =======")
   }
 
+
   /**
    * Print subsection
    *
@@ -59,6 +72,7 @@ object Logging {
     if (print_warning == true)
       println("\n--- " + t.toUpperCase + " ---")
   }
+
 
   /**
    * Print horizontal line

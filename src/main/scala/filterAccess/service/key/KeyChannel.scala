@@ -15,6 +15,8 @@ import scala.language.postfixOps
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
+ * This class is used to set up a service for the key channel.
+ *
  */
 class KeyChannel extends NFNService {
 
@@ -24,8 +26,10 @@ class KeyChannel extends NFNService {
   /** corresponding private key */
   private var privateKey: String = "missing private key"
 
+
   /**
    * Set publicKey (public key) of this service.
+   *
    * @param   id    Public Key
    */
   // TODO
@@ -35,12 +39,14 @@ class KeyChannel extends NFNService {
 
   /**
    * Get publicKey (public key) of this service.
+   *
    * @return  Public Key
    */
   def getPublicKey: String = publicKey
 
   /**
    * Set private key corresponding to public key (publicKey).
+   *
    * @param   id    Public Key
    */
   def setPrivateKey(id: String): Unit = {
@@ -49,16 +55,18 @@ class KeyChannel extends NFNService {
 
   /**
    * Get private key corresponding to public key (publicKey).
-   * @return
+   *
+   * @return  Private Key
    */
   def getPrivateKey: String = privateKey
 
   /**
+   * This function is called by entry point of this service to handle the actual work.
    *
-   * @param   content   Name of content object containing the actual data
-   * @param   level     Access level
-   * @param   id        User Identity (PubKey)
-   * @return            Key (if allowed)
+   * @param    content   Raw data name
+   * @param    level     Access level
+   * @param    id        User Identity (PubKey)
+   * @return             JSON Object
    */
   private def processKeyChannel(content: String, level: Int, id: String): Option[String] = {
 
@@ -94,28 +102,25 @@ class KeyChannel extends NFNService {
 
       }
 
-      // could not parse name
+      // Could not parse name
       case _ => None
 
     }
 
   }
 
-  /**
-   * Set a custom name for this Service
-   */
+  /** Set a custom name for this Service */
   // override def ccnName: CCNName = CCNName("key")
 
-  /**
-   * Pin this service
-   */
+  /** Pin this service */
   override def pinned: Boolean = false // TODO
 
   /**
    * Entry point of this service.
-   * @param args
-   * @param ccnApi
-   * @return
+   *
+   * @param    args     Function arguments
+   * @param    ccnApi   Akka Actor
+   * @return            Functions result
    */
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 

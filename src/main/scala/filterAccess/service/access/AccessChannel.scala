@@ -12,19 +12,7 @@ import nfn.service._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Filter:
- * Filtering of permissions for GPS tracks (access channel)
- *
- * Access Levels:
- * 0   Full information (no filtering)
- *
- */
-
-/**
- * Created by Claudio Marxer <marxer@claudio.li>
- *
- * Filter:
- * Filtering of GPS tracks (access channel)
+ * This class is used to set up a service for the access channel.
  *
  */
 class AccessChannel extends NFNService {
@@ -35,8 +23,10 @@ class AccessChannel extends NFNService {
   /** corresponding private key */
   private var privateKey: String = "missing private key"
 
+
   /**
    * Set publicKey (public key) of this service.
+   *
    * @param   id    Public Key
    */
   // TODO
@@ -46,12 +36,14 @@ class AccessChannel extends NFNService {
 
   /**
    * Get publicKey (public key) of this service.
+   *
    * @return  Public Key
    */
   def getPublicKey: String = publicKey
 
   /**
    * Set private key corresponding to public key (publicKey).
+   *
    * @param   id    Public Key
    */
   def setPrivateKey(id: String): Unit = {
@@ -60,14 +52,17 @@ class AccessChannel extends NFNService {
 
   /**
    * Get private key corresponding to public key (publicKey).
-   * @return
+   *
+   * @return  Private Key
    */
   def getPrivateKey: String = privateKey
 
   /**
    *
-   * @param content
-   * @return
+   * This function is called by entry point of this service to handle the actual work.
+   *
+   * @param    content   Raw data name
+   * @return             JSON Object
    */
   private def processAccessChannel(content: String): Option[String] = {
 
@@ -103,18 +98,23 @@ class AccessChannel extends NFNService {
 
       }
 
-      // cound not parse name
+      // Could not parse name
       case _ => None
 
     }
 
   }
 
-  /**
-   * Pin this service
-   */
+  /** Pin this service */
   override def pinned: Boolean = false // TODO
 
+  /**
+   * Entry point of this service.
+   *
+   * @param    args     Function arguments
+   * @param    ccnApi   Akka Actor
+   * @return            Functions result
+   */
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {

@@ -5,7 +5,7 @@ import filterAccess.dataGenerator.SimpleNDNExData._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Makes symmetric keys persistent.
+ * Persistency of key channel data (symmetric keys).
  *
  * For now, persistent data is hard-coded in this file.
  * In the long run, data might be accessed through a database.
@@ -13,12 +13,10 @@ import filterAccess.dataGenerator.SimpleNDNExData._
 object KeyPersistency {
 
   /**
-   * xxx
+   * Get key channel data by name
    *
-   * In the long run, this function should connect to a database, ohmage or ..
-   *
-   * @param     name     Name of actual content
-   * @return             xxx
+   * @param     name     Name of content
+   * @return             Key data as JSON object
    */
   def getPersistentKey(name: String): Option[String] = {
     name match {

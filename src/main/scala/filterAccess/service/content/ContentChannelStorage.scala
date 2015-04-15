@@ -10,14 +10,11 @@ import filterAccess.tools.Exceptions.noReturnException
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
+ * This class is used to set up a service for the content channel (storage on DSU).
+ *
  */
 class ContentChannelStorage extends ContentChannel {
 
-  /**
-   *
-   * @param name
-   * @return
-   */
   override def processContentChannel(name: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
     // check if this call should be satisfied by a storage service/unit
@@ -55,7 +52,7 @@ class ContentChannelStorage extends ContentChannel {
 
       }
 
-      // could not parse name
+      // Could not parse name
       case _ => None
 
     }
