@@ -1,5 +1,6 @@
 package filterAccess.service
 
+import ccn.packet.CCNName
 import nfn.service._
 
 /**
@@ -9,6 +10,7 @@ import nfn.service._
  *
  */
 abstract class Channel extends NFNService {
+
 
   /** public key (identity) */
   protected var publicKey:String = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ=="

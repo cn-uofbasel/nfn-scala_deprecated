@@ -5,10 +5,10 @@ import filterAccess.tools.Logging._
 import java.io.{File, FileWriter}
 
 
-/*
+/**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Generates data for NDNExSetup by making use of the generator class SimpleNDNExData.
+ * Generates data for NDNExSetup by making use of the generator class [[filterAccess.dataGenerator.SimpleNDNExData]].
  * The generated data is stored in files under a certain path (see configuration section).
  *
  * ATTENTION: If a file already exists, its content is overwritten!

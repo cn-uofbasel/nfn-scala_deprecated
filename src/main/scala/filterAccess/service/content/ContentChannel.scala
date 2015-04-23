@@ -10,7 +10,7 @@ import filterAccess.tools.Exceptions._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * This trait is used implement classes to set up the services for the content channel (processing and storage).
+ * Used implement classes to set up the services for the content channel (processing and storage as well as proxy).
  *
  */
 abstract class ContentChannel extends Channel {
