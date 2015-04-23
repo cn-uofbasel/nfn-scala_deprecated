@@ -26,9 +26,10 @@ object KeyChannelParser extends ChannelParser {
 
   /**
    * Extracts the key to a certain access level from a JSON object.
-   * @param JSONObject JSON object with keys
-   * @param level Access level whose key should be returned
-   * @return Key for the passed level
+   *
+   * @param    JSONObject    JSON object with keys
+   * @param    level         Access level whose key should be returned
+   * @return                 Key for the passed level
    */
   def extractLevelKey(JSONObject: String, level: Int): Option[String] = {
 
@@ -93,7 +94,7 @@ object KeyChannelBuilder {
    * Build a JSON object contained by key channel packets.
    *
    * @param    keyList        set of access level mapped to level key
-   * @param    contentName    Raw data name
+   * @param    contentName    Relative data name
    * @return                  JSON object
    */
   def buildKeys(keyList: Map[AccessLevel, LevelKey], contentName: String): String = {

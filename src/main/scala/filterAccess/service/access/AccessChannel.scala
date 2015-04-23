@@ -3,12 +3,6 @@ package filterAccess.service.access
 import filterAccess.service.Channel
 import nfn.service._
 import akka.actor.ActorRef
-
-import filterAccess.crypto.Encryption._
-import filterAccess.json.{AccessChannelBuilder, UserLevel}
-import filterAccess.json.KeyChannelParser._
-import filterAccess.persistency.{PermissionPersistency, KeyPersistency}
-import filterAccess.tools.DataNaming
 import filterAccess.tools.Exceptions._
 
 /**
@@ -23,12 +17,12 @@ abstract class AccessChannel extends Channel {
    *
    * This function is called by entry point of this service to handle the actual work.
    *
-   * @param    content   Raw data name
+   * @param    rdn       Relative data name
    * @param    ccnApi    Akka Actor
    * @return             JSON Object
    */
 
-  def processAccessChannel(content: String, ccnApi: ActorRef): Option[String]
+  def processAccessChannel(rdn: String, ccnApi: ActorRef): Option[String]
 
 
   /** Pin this service */
@@ -44,8 +38,8 @@ abstract class AccessChannel extends Channel {
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
-      case Seq(NFNStringValue(name)) =>
-        processAccessChannel(name, ccnApi) match {
+      case Seq(NFNStringValue(rdn)) =>
+        processAccessChannel(rdn, ccnApi) match {
           case Some(res) => NFNStringValue(res)
           case None => throw new noReturnException("No return. Possibly caused by: Data not found")
         }

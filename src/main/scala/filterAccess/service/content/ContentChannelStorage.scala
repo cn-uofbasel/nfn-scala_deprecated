@@ -15,14 +15,22 @@ import filterAccess.tools.Exceptions.noReturnException
  */
 class ContentChannelStorage extends ContentChannel {
 
-  override def processContentChannel(name: String, level: Int, ccnApi: ActorRef): Option[String] = {
+  /**
+   * This function is called by entry point of this service to handle the actual work.
+   *
+   * @param    rdn      Relative data name
+   * @param    level    Access level
+   * @param    ccnApi   Akka Actor
+   * @return            JSON Object
+   */
+  override def processContentChannel(rdn: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
     // check if this call should be satisfied by a storage service/unit
     if (level != 1)
       throw new noReturnException("No return. This is a storage unit so only unprocessed data is delivered. You asked for access level " + level + ".")
 
     // Extract name of actual data
-    DataNaming.getName(name) match {
+    DataNaming.getName(rdn) match {
 
       case Some(n) => {
 

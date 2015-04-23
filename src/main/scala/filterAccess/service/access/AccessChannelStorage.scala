@@ -4,10 +4,7 @@ import akka.actor.ActorRef
 import filterAccess.crypto.Encryption._
 import filterAccess.json.KeyChannelParser._
 import filterAccess.persistency.{KeyPersistency, PermissionPersistency}
-import filterAccess.service.Channel
 import filterAccess.tools.DataNaming
-import filterAccess.tools.Exceptions._
-import nfn.service._
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -21,13 +18,13 @@ class AccessChannelStorage extends AccessChannel {
    *
    * This function is called by entry point of this service to handle the actual work.
    *
-   * @param    name      Raw data name
+   * @param    rdn       Relative data name
    * @return             JSON Object
    */
-  override def processAccessChannel(name: String, ccnApi: ActorRef): Option[String] = {
+  override def processAccessChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
 
     // Extract name of actual data
-    DataNaming.getName(name) match {
+    DataNaming.getName(rdn) match {
 
       case Some(n) => {
 

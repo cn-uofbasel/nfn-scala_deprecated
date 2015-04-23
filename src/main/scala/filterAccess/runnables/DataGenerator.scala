@@ -80,7 +80,7 @@ object DataGenerator extends App {
 
   /** Location of the data repository in the local file system */
   val storageLocation = "/home/claudio/mt/repo"
-  /** Raw data name (rdn) prefix */
+  /** Relative data name (rdn) prefix */
   val prefix = "/ch/unibas/data"
   /** List of available data types */
   val dataTypes = List("track")

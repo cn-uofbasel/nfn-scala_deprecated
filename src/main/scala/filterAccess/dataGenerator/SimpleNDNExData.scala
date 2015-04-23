@@ -27,7 +27,7 @@ object SimpleNDNExData {
   /**
    * Generate content data (track with 6 track points)
    *
-   * @param    name   Raw data name
+   * @param    name   Relative data name
    * @param    i      Parameter to influence coordinates of track (deterministic, different i generate different tracks)
    * @return          Content data (track) as String (JSON Object)
    */
@@ -49,7 +49,7 @@ object SimpleNDNExData {
   /**
    * Same data as generateTrackJSON but in Array[Byte] (track with 6 track points)
    *
-   * @param    name   Raw data name
+   * @param    name   Relative data name
    * @param    i      Parameter to influence coordinates of track (deterministic, different i generate most likely different tracks)
    * @return          Content data (track) as Array[Byte]
    */
@@ -64,7 +64,7 @@ object SimpleNDNExData {
   /**
    * Generate key data (AES-256 Keys for access level 1, 2, 3)
    *
-   * @param    name     Raw data name
+   * @param    name     Relative data name
    * @param    i        Parameter to influence keys (deterministic, different i generate most likely different tracks)
    * @return            Key data as String (JSON Object)
    */
@@ -83,7 +83,7 @@ object SimpleNDNExData {
   /**
    * Returns same data as generateKeysJSON but in Array[Byte] (AES-256 Keys for access level 1, 2, 3)
    *
-   * @param    name   Raw data name
+   * @param    name   Relative data name
    * @return          Key data as Array[Byte]
    */
   def generateKeys(name: String, i: Int): Array[Byte] =
@@ -97,7 +97,7 @@ object SimpleNDNExData {
   /**
    * Generate permission data (certain permissions for 3 different users)
    *
-   * @param    name   Raw data name
+   * @param    name   Relative data name
    * @return          Permission data as String (JSON Object)
    */
   def generatePermissionsJSON(name: String): String = {
@@ -117,7 +117,7 @@ object SimpleNDNExData {
   /**
    * Same data as generateKPermissionsJSON but in Array[Byte] (certain permissions for 3 different users)
    *
-   * @param    name   Raw data name
+   * @param    name   Relative data name
    * @return          Permission data as Array[Byte]
    */
   def generatePermissions(name: String): Array[Byte] =

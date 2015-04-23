@@ -6,6 +6,9 @@ import scala.concurrent.duration._
 
 import filterAccess.tools.Networking.fetchContent
 
+// enable postfix operator seconds
+import scala.language.postfixOps
+
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
@@ -18,16 +21,16 @@ class ProxyKeyChannel extends KeyChannel {
 
   /**
    *
-   * @param    name      Raw data name
+   * @param    rdn       Relative data name
    * @param    level     Access level
    * @param    id        User Identity (PubKey)
    * @param    ccnApi    Akka Actor
    * @return             JSON Object
    */
-  override def processKeyChannel(name: String, level: Int, id: String, ccnApi: ActorRef): Option[String] = {
+  override def processKeyChannel(rdn: String, level: Int, id: String, ccnApi: ActorRef): Option[String] = {
 
     // build interest
-    val interest = buildKeyChannelInterest(name, level, id)
+    val interest = buildKeyChannelInterest(rdn, level, id)
 
     // fetch and return
     fetchContent(interest, ccnApi, 5 seconds) match {

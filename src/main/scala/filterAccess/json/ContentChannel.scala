@@ -21,10 +21,10 @@ object ContentChannelParser extends ChannelParser{
   implicit val formats = DefaultFormats
 
   /**
-   * Extract raw data name from a JSON object.
+   * Extract relative data name from a JSON object.
    *
    * @param    JSONObject    JSON object
-   * @return                 Raw data name
+   * @return                 Relative data name
    */
   def getName(JSONObject: String): Option[String] = {
 
@@ -61,7 +61,7 @@ object ContentChannelBuilder {
    * Build a JSON object of type "track" contained by content channel packets.
    *
    * @param    trace          List of track points
-   * @param    contentName    Raw data name
+   * @param    contentName    Relative data name
    * @return                  JSON object
    */
   def buildTrack(trace: List[TrackPoint], contentName: String): String = {

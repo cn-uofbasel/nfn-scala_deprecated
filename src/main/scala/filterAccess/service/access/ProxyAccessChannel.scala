@@ -6,6 +6,9 @@ import scala.concurrent.duration._
 
 import filterAccess.tools.Networking.fetchContent
 
+// enable postfix operator seconds
+import scala.language.postfixOps
+
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
@@ -18,13 +21,13 @@ class ProxyAccessChannel extends AccessChannel {
    *
    * This function is called by entry point of this service to handle the actual work.
    *
-   * @param    name      Raw data name
+   * @param    rdn       Relative data name
    * @return             JSON Object
    */
-  override def processAccessChannel(name: String, ccnApi: ActorRef): Option[String] = {
+  override def processAccessChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
 
     // build interest
-    val interest = buildPermissionChannelInterest(name)
+    val interest = buildPermissionChannelInterest(rdn)
 
     // fetch and return
     fetchContent(interest, ccnApi, 5 seconds) match {

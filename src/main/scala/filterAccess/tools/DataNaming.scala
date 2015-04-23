@@ -3,15 +3,15 @@ package filterAccess.tools
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Handling of raw data names.
+ * Handling of relative data names.
  *
  */
 object DataNaming {
 
   /**
-   * Extract raw data name components of a raw data name.
+   * Extract components of a relative data name.
    *
-   * @param    n   Raw data name
+   * @param    n   Relative data name
    * @return       Name components of n (prefix, type, name)
    */
   def unapply(n:String): Option[(String,String,String)] = {
@@ -21,9 +21,9 @@ object DataNaming {
   }
 
   /**
-   * Extract name of actual data.
+   * Extract name component of a relative data.
    *
-   * @param    n   Raw data name
+   * @param    n   Relative data name
    * @return       Name component of n
    */
   def getName(n:String): Option[String] = {
@@ -34,9 +34,9 @@ object DataNaming {
   }
 
   /**
-   * Extract type of actual data.
+   * Extract type component of a relative data name.
    *
-   * @param    n   Raw data name
+   * @param    n   Relative data name
    * @return       Type component of n
    */
   def getType(n:String): Option[String] = {

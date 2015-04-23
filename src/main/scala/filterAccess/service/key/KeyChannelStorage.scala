@@ -4,10 +4,7 @@ import akka.actor.ActorRef
 import filterAccess.crypto.Encryption._
 import filterAccess.json.KeyChannelParser._
 import filterAccess.persistency.{KeyPersistency, PermissionPersistency}
-import filterAccess.service.Channel
 import filterAccess.tools.DataNaming
-import filterAccess.tools.Exceptions._
-import nfn.service._
 
 import scala.language.postfixOps
 
@@ -22,16 +19,16 @@ class KeyChannelStorage extends KeyChannel {
 
   /**
    *
-   * @param    name      Raw data name
+   * @param    rdn       Relative data name
    * @param    level     Access level
    * @param    id        User Identity (PubKey)
    * @param    ccnApi    Akka Actor
    * @return             JSON Object
    */
-  override def processKeyChannel(name: String, level: Int, id: String, ccnApi: ActorRef): Option[String] = {
+  override def processKeyChannel(rdn: String, level: Int, id: String, ccnApi: ActorRef): Option[String] = {
 
     // Extract name of actual data
-    DataNaming.getName(name) match {
+    DataNaming.getName(rdn) match {
 
       case Some(n) => {
         // Check permission

@@ -57,7 +57,7 @@ object AccessChannelBuilder {
    * Build a JSON object contained by access channel packets.
    *
    * @param    userLevel      List of users with access level
-   * @param    contentName    Raw data name
+   * @param    contentName    Relative data name
    * @return                  JSON object
    */
   def buildPermissions(userLevel: List[UserLevel], contentName: String): String = {

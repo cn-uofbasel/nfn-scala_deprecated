@@ -7,6 +7,8 @@ import filterAccess.tools.Exceptions.noReturnException
 import filterAccess.tools.InterestBuilder.buildContentChannelInterest
 import filterAccess.tools.Networking.fetchContent
 
+// enable postfix operator seconds
+import scala.language.postfixOps
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -18,7 +20,15 @@ import filterAccess.tools.Networking.fetchContent
  */
 class ProxyContentChannel extends ContentChannel {
 
-  override def processContentChannel(name: String, level: Int, ccnApi: ActorRef): Option[String] = {
+  /**
+   * This function is called by entry point of this service to handle the actual work.
+   *
+   * @param    rdn      Relative data name
+   * @param    level    Access level
+   * @param    ccnApi   Akka Actor
+   * @return            JSON Object
+   */
+  override def processContentChannel(rdn: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
     // build interest
     val interest = level match {
@@ -27,12 +37,12 @@ class ProxyContentChannel extends ContentChannel {
         throw new noReturnException("No return. Invalid access level. You asked for access level " + level + ".")
       }
       case 1 => {
-        // raw data
-        buildContentChannelInterest(name, 1)
+        // unprocessed data
+        buildContentChannelInterest(rdn, 1)
       }
       case l if l>1 => {
         // processed data
-        buildContentChannelInterest(name, l)
+        buildContentChannelInterest(rdn, l)
       }
     }
 

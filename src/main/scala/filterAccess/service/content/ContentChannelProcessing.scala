@@ -73,7 +73,7 @@ class ContentChannelProcessing extends ContentChannel {
   /**
    * Fetch and decrypt unprocessed (access level 0 and 1) content channel, permission/access channel and key channel data by name.
    *
-   * @param    name      Name
+   * @param    rdn       Relative data name
    * @param    level     Access Level
    * @param    selector  Select which data should be returned (permission, content, symmetric key)
    * @param    ccnApi    Actor Reference
@@ -166,19 +166,26 @@ class ContentChannelProcessing extends ContentChannel {
   }
 
 
-
-  override def processContentChannel(name: String, level: Int, ccnApi: ActorRef): Option[String] = {
+  /**
+   * This function is called by entry point of this service to handle the actual work.
+   *
+   * @param    rdn      Relative data name
+   * @param    level    Access level
+   * @param    ccnApi   Akka Actor
+   * @return            JSON Object
+   */
+  override def processContentChannel(rdn: String, level: Int, ccnApi: ActorRef): Option[String] = {
 
     // check if this call should be satisfied by a processing service/unit
     if (level < 2)
       throw new noReturnException(s"No return. This is a processing unit so only processed data is delivered. You asked for access level ${level}.")
 
     // fetch all needed data (content, permission, symmetric key)
-    fetchAndDecrypt(name, level, (false, true, true), ccnApi) match {
+    fetchAndDecrypt(rdn, level, (false, true, true), ccnApi) match {
       case (None, Some(content), Some(symKey)) => {
 
         // handle data type
-        getType(name) match {
+        getType(rdn) match {
 
           case Some("type:track") => {
             // call filtering function
