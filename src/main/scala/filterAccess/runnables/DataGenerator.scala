@@ -152,7 +152,7 @@ object DataGenerator extends App {
 
   // track
   tracks.foreach(e => {
-    val path = storageLocation + prefix + "/track/" + e._1 + "/" + "access_channel"
+    val path = storageLocation + prefix + "/track/" + e._1 + "/" + "permission_channel"
     val content = generatePermissionsJSON("/" + e._1)
     writeToFile(path, content)
   })
