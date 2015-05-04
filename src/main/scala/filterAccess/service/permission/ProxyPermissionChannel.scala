@@ -28,7 +28,7 @@ class ProxyPermissionChannel extends PermissionChannel {
   override def processPermissionChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
 
     // build interest
-    val interest = buildPermissionChannelInterest(rdn)
+    val interest = buildDirectPermissionChannelInterest(rdn)
 
     // fetch and return
     fetchContent(interest, ccnApi, 5 seconds) match {

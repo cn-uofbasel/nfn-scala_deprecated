@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import scala.concurrent.duration._
 
 import filterAccess.tools.Exceptions.noReturnException
-import filterAccess.tools.InterestBuilder.buildContentChannelInterest
+import filterAccess.tools.InterestBuilder.buildDirectContentChannelInterest
 import filterAccess.tools.Networking.fetchContent
 
 // enable postfix operator seconds
@@ -38,11 +38,11 @@ class ProxyContentChannel extends ContentChannel {
       }
       case 1 => {
         // unprocessed data
-        buildContentChannelInterest(rdn, 1)
+        buildDirectContentChannelInterest(rdn, 1)
       }
       case l if l>1 => {
         // processed data
-        buildContentChannelInterest(rdn, l)
+        buildDirectContentChannelInterest(rdn, l)
       }
     }
 

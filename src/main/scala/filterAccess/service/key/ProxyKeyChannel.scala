@@ -30,7 +30,7 @@ class ProxyKeyChannel extends KeyChannel {
   override def processKeyChannel(rdn: String, level: Int, id: String, ccnApi: ActorRef): Option[String] = {
 
     // build interest
-    val interest = buildKeyChannelInterest(rdn, level, id)
+    val interest = buildDirectKeyChannelInterest(rdn, level, id)
 
     // fetch and return
     fetchContent(interest, ccnApi, 5 seconds) match {
