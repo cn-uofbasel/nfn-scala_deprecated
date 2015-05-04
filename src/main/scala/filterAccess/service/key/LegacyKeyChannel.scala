@@ -2,7 +2,7 @@ package filterAccess.service.key
 
 import akka.actor.ActorRef
 import ccn.packet._
-import filterAccess.json.AccessChannelParser._
+import filterAccess.json.PermissionChannelParser._
 import filterAccess.json.KeyChannelParser._
 import filterAccess.tools.Exceptions._
 import filterAccess.tools.Networking.fetchContent

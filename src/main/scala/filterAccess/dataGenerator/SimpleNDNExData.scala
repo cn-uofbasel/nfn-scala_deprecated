@@ -101,7 +101,7 @@ object SimpleNDNExData {
    * @return          Permission data as String (JSON Object)
    */
   def generatePermissionsJSON(name: String): String = {
-    AccessChannelBuilder.buildPermissions(
+    PermissionChannelBuilder.buildPermissions(
       List(
         UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIkI4jaasIJnSpB12KBQeqlkMx+/H1nZ1MI85JfeI4w/eOiPLog5if71TUyuf6Qy/dPVqTA/a5zPawDJE3nyykMCAwEAAQ==", 1),  // permission to access unfiltered data
         UserLevel("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==", 0),  // permission to access permission data

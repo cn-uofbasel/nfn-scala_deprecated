@@ -1,4 +1,4 @@
-package filterAccess.service.access
+package filterAccess.service.permission
 
 import akka.actor.ActorRef
 import filterAccess.tools.InterestBuilder._
@@ -12,10 +12,11 @@ import scala.language.postfixOps
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * This class is used to set up a access channel proxy. This kind of service hands an interest over to more specialized
- * service. In this case, a request is just redirected to another service. A proxy might also implement load balancing.
+ * This class is used to set up a permission channel proxy. This kind of service hands an interest over to more
+ * specialized service. In this case, a request is just redirected to another service. A proxy might also
+ * implement load balancing.
  */
-class ProxyAccessChannel extends AccessChannel {
+class ProxyPermissionChannel extends PermissionChannel {
 
   /**
    *
@@ -24,7 +25,7 @@ class ProxyAccessChannel extends AccessChannel {
    * @param    rdn       Relative data name
    * @return             JSON Object
    */
-  override def processAccessChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
+  override def processPermissionChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
 
     // build interest
     val interest = buildPermissionChannelInterest(rdn)

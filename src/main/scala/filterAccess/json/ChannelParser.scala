@@ -7,7 +7,7 @@ import scala.util.{Failure, Success, Try}
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Trait for access channel, content channel and key channel parser.
+ * Trait for permission channel, content channel and key channel parser.
  * (And possibly for kind other JSON objects parser)
  *
  */

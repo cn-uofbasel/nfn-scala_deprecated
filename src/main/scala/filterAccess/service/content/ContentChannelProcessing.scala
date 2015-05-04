@@ -71,7 +71,7 @@ class ContentChannelProcessing extends ContentChannel {
 
 
   /**
-   * Fetch and decrypt unprocessed (access level 0 and 1) content channel, permission/access channel and key channel data by name.
+   * Fetch and decrypt unprocessed (access level 0 and 1) content channel, permission channel and key channel data by name.
    *
    * @param    rdn       Relative data name
    * @param    level     Access Level
@@ -100,7 +100,7 @@ class ContentChannelProcessing extends ContentChannel {
     }
 
     /**
-     * Perform actual fetching and decryption with symmetric encryption (access/permission or content channel)
+     * Perform actual fetching and decryption with symmetric encryption (permission or content channel)
      *
      * @param    dataInterest     Interest to fetch certain data
      * @param    keyInterest      Interest to fetch corresponding key

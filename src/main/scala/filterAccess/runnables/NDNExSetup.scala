@@ -5,7 +5,7 @@ import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
 
 import filterAccess.service.key.{ProxyKeyChannel, KeyChannelStorage, KeyChannel}
-import filterAccess.service.access.{ProxyAccessChannel, AccessChannelStorage, AccessChannel}
+import filterAccess.service.permission.{ProxyPermissionChannel, PermissionChannelStorage, PermissionChannel}
 import filterAccess.service.content.ContentChannelStorage
 import filterAccess.service.content.ContentChannelProcessing
 import filterAccess.service.content.ProxyContentChannel
@@ -36,14 +36,14 @@ object NDNExSetup extends App {
    * SETUP:
    *  Network with dsu, dpu and dvu and proxy.
    *  Service "ContentChannelProcessing" on dpu.
-   *  Services "KeyChannel" and "AccessChannel" and "ContentChannelStorage" on dsu.
+   *  Services "KeyChannel" and "PermissionChannel" and "ContentChannelStorage" on dsu.
    *  Service "ContentChannelProxy" on proxy.
    *
 
 
   {Content Channel Storage}
                {KeyChannel}
-            {AccessChannel}     {ContentChannel Processing}
+        {PermissionChannel}     {ContentChannel Processing}
                       |                  |
                   +-------+          +-------+
                   |  dsu  |**********|  dpu  |
@@ -90,12 +90,12 @@ object NDNExSetup extends App {
     """
          *  Network with dsu, dpu and dvu and proxy.
          *  Service "ContentChannelProcessing" on dpu.
-         *  Services "KeyChannel" and "AccessChannel" and "ContentChannelStorage" on dsu.
+         *  Services "KeyChannel" and "PermissionChannel" and "ContentChannelStorage" on dsu.
          *  Service "ContentChannelProxy" on proxy.
 
         {Content Channel Storage}
                     {Key Channel}
-                 {Access Channel}     {Content Channel Processing}
+             {Permission Channel}     {Content Channel Processing}
                             |                  |
                         +-------+          +-------+
                         |  dsu  |**********|  dpu  |
@@ -123,15 +123,15 @@ object NDNExSetup extends App {
 
   section("service setup")
 
-  // service setup (access/permission channel)
-  subsection("access/permission channel")
-  val accessChannelServ = new AccessChannelStorage
-  accessChannelServ.setPublicKey("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
-  accessChannelServ.setPrivateKey("MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")
-  dpu.publishServiceLocalPrefix(accessChannelServ)
-  val accessChannelName = dpu.localPrefix.append(accessChannelServ.ccnName)
-  info(s"Access channel installed on dpu: $accessChannelName")
-  info("Identity (public key) of access channel service: " + accessChannelServ.getPublicKey)
+  // service setup (permission channel)
+  subsection("permission channel")
+  val permissionChannelServ = new PermissionChannelStorage
+  permissionChannelServ.setPublicKey("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+  permissionChannelServ.setPrivateKey("MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")
+  dpu.publishServiceLocalPrefix(permissionChannelServ)
+  val permissionChannelName = dpu.localPrefix.append(permissionChannelServ.ccnName)
+  info(s"Permission channel installed on dpu: $permissionChannelName")
+  info("Identity (public key) of permission channel service: " + permissionChannelServ.getPublicKey)
 
   // service setup (key channel - storage)
   subsection("key channel")
@@ -177,12 +177,12 @@ object NDNExSetup extends App {
   val proxyContentChannelName = proxy.localPrefix.append(proxyContentChannelServ.ccnName)
   info(s"Content channel proxy installed on proxy: $proxyContentChannelName")
 
-  // service setup (access channel)
-  subsection("access channel")
-  val proxyAccessChannelServ = new ProxyAccessChannel
-  proxy.publishServiceLocalPrefix(proxyAccessChannelServ)
-  val proxyAccessChannelName = proxy.localPrefix.append(proxyAccessChannelServ.ccnName)
-  info(s"Content channel proxy installed on proxy: $proxyAccessChannelName")
+  // service setup (permission channel)
+  subsection("permission channel")
+  val proxyPermissionChannelServ = new ProxyPermissionChannel
+  proxy.publishServiceLocalPrefix(proxyPermissionChannelServ)
+  val proxyPermissionChannelName = proxy.localPrefix.append(proxyPermissionChannelServ.ccnName)
+  info(s"Content channel proxy installed on proxy: $proxyPermissionChannelName")
 
   // service setup (key channel)
   subsection("key channel")
@@ -207,7 +207,7 @@ object NDNExSetup extends App {
 
     Thread.sleep(1000)
 
-    val interest_permissions: Interest = accessChannelName call ("/node/node2//type:track//stadtlauf2015")
+    val interest_permissions: Interest = permissionChannelName call ("/node/node2//type:track//stadtlauf2015")
 
     // send interest for permissions from dpu...
     val startTime2 = System.currentTimeMillis
@@ -283,7 +283,7 @@ object NDNExSetup extends App {
     Thread.sleep(1000)
     subsection("Access Channel")
 
-    val interest_permissions: Interest = accessChannelName call ("/node/node2//type:track//stadtlauf2015")
+    val interest_permissions: Interest = permissionChannelName call ("/node/node2//type:track//stadtlauf2015")
 
     // send interest for permissions from dpu...
     val startTime4 = System.currentTimeMillis
@@ -462,7 +462,7 @@ object NDNExSetup extends App {
   // ==== FETCH A PROCESSED TRACK WITH CONTENT CHANNEL FROM DPU AND DECRYPT ======
   // -----------------------------------------------------------------------------
 
-  if (true) {
+  if (false) {
 
     var contentData: String = "to be fetched..."
     var keyData: String = "to be fetched..."
@@ -544,14 +544,14 @@ object NDNExSetup extends App {
   // ==== FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU ====
   // -----------------------------------------------------------------------------
 
-  if (false) {
+  if (true) {
 
     section("FETCH PERMISSIONS WITH ACCESS THROUGH PROXY FROM DSU")
 
     Thread.sleep(1000)
     subsection("Access Channel through proxy")
 
-    val interest_key: Interest = proxyAccessChannelName call("/node/node2//type:track//paris-marathon")
+    val interest_key: Interest = proxyPermissionChannelName call("/node/node2//type:track//paris-marathon")
 
     // send interest for permissions from dpu...
     val startTime3 = System.currentTimeMillis
@@ -578,6 +578,8 @@ object NDNExSetup extends App {
     }
 
   }
+
+  section("END")
 
 }
 

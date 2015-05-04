@@ -32,15 +32,15 @@ import java.io.{File, FileWriter}
  *            `-- data
  *                `-- track
  *                    |-- jungfraujoch
- *                    |   |-- access_channel
+ *                    |   |-- permission_channel
  *                    |   |-- content_channel
  *                    |   `-- key_channel
  *                    |-- paris-marathon
- *                   |   |-- access_channel
+ *                   |   |-- permission_channel
  *                    |   |-- content_channel
  *                    |   `-- key_channel
  *                    `-- stadtlauf2015
- *                        |-- access_channel
+ *                        |-- permission_channel
  *                        |-- content_channel
  *                        `-- key_channel
  *
@@ -148,7 +148,7 @@ object DataGenerator extends App {
     writeToFile(path, content)
   })
 
-  subsection("Access Channel")
+  subsection("Permission Channel")
 
   // track
   tracks.foreach(e => {

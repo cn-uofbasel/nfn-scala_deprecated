@@ -1,4 +1,4 @@
-package filterAccess.service.access
+package filterAccess.service.permission
 
 import akka.actor.ActorRef
 import filterAccess.crypto.Encryption._
@@ -9,10 +9,10 @@ import filterAccess.tools.DataNaming
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * This class is used to set up a service for the access channel.
+ * This class is used to set up a service for the permission channel.
  *
  */
-class AccessChannelStorage extends AccessChannel {
+class PermissionChannelStorage extends PermissionChannel {
 
   /**
    *
@@ -21,7 +21,7 @@ class AccessChannelStorage extends AccessChannel {
    * @param    rdn       Relative data name
    * @return             JSON Object
    */
-  override def processAccessChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
+  override def processPermissionChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
 
     // Extract name of actual data
     DataNaming.getName(rdn) match {

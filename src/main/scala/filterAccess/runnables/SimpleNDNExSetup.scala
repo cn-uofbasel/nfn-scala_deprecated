@@ -4,7 +4,7 @@ import ccn.packet._
 import com.typesafe.config.{Config, ConfigFactory}
 import filterAccess.json._
 import filterAccess.dataGenerator.SimpleNDNExData
-import filterAccess.service.access.LegacyAccessChannel
+import filterAccess.service.permission.LegacyPermissionChannel
 import filterAccess.service.content.LegacyContentChannel
 import filterAccess.service.key.LegacyKeyChannel
 import monitor.Monitor
@@ -28,7 +28,7 @@ object SimpleNDNExSetup extends App {
    *
 
            {track.LegacyKeyChannel}
-           {track.LegacyAccessChannel}     {track.LegacyContentChannel}
+    {track.LegacyPermissionChannel}     {track.LegacyContentChannel}
                       |                  |
                   +-------+          +-------+
          [track]--|  dsu  |**********|  dpu  |
@@ -75,10 +75,10 @@ object SimpleNDNExSetup extends App {
   dpu.publishServiceLocalPrefix(filterTrackServ)
   val contentTrack = dpu.localPrefix.append(filterTrackServ.ccnName)
 
-  // service setup (access/permission channel)
-  val accessTrackServ = new LegacyAccessChannel
-  dpu.publishServiceLocalPrefix(accessTrackServ)
-  val accessTrack = dpu.localPrefix.append(accessTrackServ.ccnName)
+  // service setup (permission channel)
+  val permissionTrackServ = new LegacyPermissionChannel
+  dpu.publishServiceLocalPrefix(permissionTrackServ)
+  val permissionTrack = dpu.localPrefix.append(permissionTrackServ.ccnName)
 
   // service setup (key channel)
   val keyTrackServ = new LegacyKeyChannel
@@ -152,7 +152,7 @@ object SimpleNDNExSetup extends App {
 
   Thread.sleep(1000)
 
-  val interest_permissions:Interest = accessTrack call("user1 track", 0)
+  val interest_permissions:Interest = permissionTrack call("user1 track", 0)
 
   // send interest for permissions from dpu...
   val startTime2 = System.currentTimeMillis

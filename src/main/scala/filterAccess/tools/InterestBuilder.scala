@@ -14,8 +14,8 @@ import nfn.LambdaNFNImplicits._
  */
 object InterestBuilder {
 
-  /** Hard-coded ccn name of service for access channel */
-  val accessChannelName: CCNName = CCNName("serviceprovider/health/processing/filterAccess_service_access_AccessChannelStorage")
+  /** Hard-coded ccn name of service for permission channel */
+  val permissionChannelName: CCNName = CCNName("serviceprovider/health/processing/filterAccess_service_permission_PermissionChannelStorage")
 
   /** Hard-coded ccn name of service for key channel */
   val keyChannelName: CCNName = CCNName("serviceprovider/health/processing/filterAccess_service_key_KeyChannelStorage")
@@ -47,7 +47,7 @@ object InterestBuilder {
    * @return                   Interest
    */
   def buildPermissionChannelInterest(name: String): Interest =
-    accessChannelName call (name)
+    permissionChannelName call (name)
 
   /**
    * Build an Interest to fetch a key by name and access level and encrypted with a given public key.

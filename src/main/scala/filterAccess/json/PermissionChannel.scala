@@ -7,17 +7,17 @@ import net.liftweb.json.JsonDSL._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Parse and build JSON objects contained by access channel packets.
+ * Parse and build JSON objects contained by permission channel packets.
  *
  */
 
 
 /**
  *
- * Parse JSON objects contained by access channel packets.
+ * Parse JSON objects contained by permission channel packets.
  *
  */
-object AccessChannelParser extends ChannelParser{
+object PermissionChannelParser extends ChannelParser{
 
   implicit val formats = DefaultFormats
 
@@ -46,15 +46,15 @@ object AccessChannelParser extends ChannelParser{
 
 /**
  *
- * Build JSON objects contained by access channel packets.
+ * Build JSON objects contained by permission channel packets.
  *
  */
-object AccessChannelBuilder {
+object PermissionChannelBuilder {
 
   implicit val formats = DefaultFormats
 
   /**
-   * Build a JSON object contained by access channel packets.
+   * Build a JSON object contained by permission channel packets.
    *
    * @param    userLevel      List of users with access level
    * @param    contentName    Relative data name

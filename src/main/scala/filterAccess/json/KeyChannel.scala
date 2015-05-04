@@ -1,6 +1,6 @@
 package filterAccess.json
 
-import filterAccess.json.AccessChannelParser._
+import filterAccess.json.PermissionChannelParser._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 

@@ -1,4 +1,4 @@
-package filterAccess.service.access
+package filterAccess.service.permission
 
 import filterAccess.service.Channel
 import nfn.service._
@@ -8,10 +8,10 @@ import filterAccess.tools.Exceptions._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
- * Used implement classes to set up the services for the access channel (storage as well as proxy).
+ * Used implement classes to set up the services for the permission channel (storage as well as proxy).
  *
  */
-abstract class AccessChannel extends Channel {
+abstract class PermissionChannel extends Channel {
 
   /**
    *
@@ -22,7 +22,7 @@ abstract class AccessChannel extends Channel {
    * @return             JSON Object
    */
 
-  def processAccessChannel(rdn: String, ccnApi: ActorRef): Option[String]
+  def processPermissionChannel(rdn: String, ccnApi: ActorRef): Option[String]
 
 
   /** Pin this service */
@@ -39,13 +39,13 @@ abstract class AccessChannel extends Channel {
 
     args match {
       case Seq(NFNStringValue(rdn)) =>
-        processAccessChannel(rdn, ccnApi) match {
+        processPermissionChannel(rdn, ccnApi) match {
           case Some(res) => NFNStringValue(res)
           case None => throw new noReturnException("No return. Possibly caused by: Data not found")
         }
 
       case _ =>
-        throw new NFNServiceArgumentException(s"AccessChannel: Argument mismatch.")
+        throw new NFNServiceArgumentException(s"PermissionChannel: Argument mismatch.")
     }
 
   }

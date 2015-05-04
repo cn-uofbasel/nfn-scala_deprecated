@@ -1,7 +1,7 @@
-package filterAccess.service.access
+package filterAccess.service.permission
 
 import akka.actor.ActorRef
-import filterAccess.json.{AccessChannelBuilder, UserLevel}
+import filterAccess.json.{PermissionChannelBuilder, UserLevel}
 import filterAccess.tools.Exceptions._
 import nfn.service._
 
@@ -17,7 +17,7 @@ import nfn.service._
  *   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *
  * Filter:
- * Filtering of permissions for GPS tracks (access channel)
+ * Filtering of permissions for GPS tracks (permission channel)
  *
  * Access Levels:
  * 0   Full information (no filtering)
@@ -28,14 +28,14 @@ import nfn.service._
  * Created by Claudio Marxer <marxer@claudio.li>
  *
  * Filter:
- * Filtering of GPS tracks (access channel)
+ * Filtering of GPS tracks (permission channel)
  *
  */
-class LegacyAccessChannel extends NFNService {
+class LegacyPermissionChannel extends NFNService {
 
-  private def processAccessTrack(request: String, level: Int): String = {
+  private def processPermissionTrack(request: String, level: Int): String = {
 
-    val permissionData = AccessChannelBuilder.buildPermissions(
+    val permissionData = PermissionChannelBuilder.buildPermissions(
       List(
         UserLevel("user1", 0),
         UserLevel("user2", 1),
@@ -72,13 +72,13 @@ class LegacyAccessChannel extends NFNService {
 
     args match {
       case Seq(NFNStringValue(request), NFNIntValue(level)) =>
-        NFNStringValue(processAccessTrack(request, level))
+        NFNStringValue(processPermissionTrack(request, level))
 
       case Seq(NFNContentObjectValue(_, request), NFNIntValue(level)) =>
-        NFNStringValue(processAccessTrack(new String(request), level))
+        NFNStringValue(processPermissionTrack(new String(request), level))
 
       case _ =>
-        throw new NFNServiceArgumentException(s"LegacyAccessChannel: Argument mismatch.")
+        throw new NFNServiceArgumentException(s"LegacyPermissionChannel: Argument mismatch.")
     }
 
   }
