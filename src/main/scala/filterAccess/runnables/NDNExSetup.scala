@@ -243,7 +243,7 @@ object NDNExSetup extends App {
 
     val interest_key: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 2, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime3 = System.currentTimeMillis
     info("Send interest: " + interest_key)
     dvu ? interest_key onComplete {
@@ -285,7 +285,7 @@ object NDNExSetup extends App {
 
     val interest_permissions: Interest = permissionChannelName call ("/node/node2//type:track//stadtlauf2015")
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime4 = System.currentTimeMillis
     info("Send interest: " + interest_permissions)
     dvu ? interest_permissions onComplete {
@@ -308,7 +308,7 @@ object NDNExSetup extends App {
 
     val interest_key: Interest = keyChannelName call("/node/node2//type:track//stadtlauf2015", 0, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime3 = System.currentTimeMillis
     info("Send interest: " + interest_key)
     dvu ? interest_key onComplete {
@@ -356,7 +356,7 @@ object NDNExSetup extends App {
 
     val interest_key: Interest = contentChannelStorageName call("/node/node2//type:track//paris-marathon", 1)
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime3 = System.currentTimeMillis
     info("Send interest: " + interest_key)
     dvu ? interest_key onComplete {
@@ -386,7 +386,7 @@ object NDNExSetup extends App {
 
     val interest_key2: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 1, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime4 = System.currentTimeMillis
     info("Send interest: " + interest_key2)
     dvu ? interest_key2 onComplete {
@@ -432,7 +432,7 @@ object NDNExSetup extends App {
 
     val interest_key: Interest = contentChannelProcessingName call("/node/node2//type:track//paris-marathon", 2)
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime3 = System.currentTimeMillis
     info("Send interest: " + interest_key)
     dvu ? interest_key onComplete {
@@ -474,7 +474,7 @@ object NDNExSetup extends App {
 
     val interest_key: Interest = contentChannelProcessingName call("/node/node2//type:track//paris-marathon", 2)
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime3 = System.currentTimeMillis
     info("Send interest: " + interest_key)
     dvu ? interest_key onComplete {
@@ -499,7 +499,8 @@ object NDNExSetup extends App {
       }
     }
 
-    Thread.sleep(1000)
+    // TODO -- Uncommenting the following line causes timeouts? why? Logging might be meshed up without that sleep..
+    // Thread.sleep(1000)
     subsection("Key Channel")
 
     val interest_key2: Interest = keyChannelName call("/node/node2//type:track//paris-marathon", 2, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
@@ -531,7 +532,7 @@ object NDNExSetup extends App {
     }
 
     Thread.sleep(1000)
-    subsection("Encryption")
+    subsection("Decryption")
     info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")))
 
   }
@@ -541,24 +542,26 @@ object NDNExSetup extends App {
   //============================================================================//
 
   // -----------------------------------------------------------------------------
-  // ==== FETCH A PROCESSED TRACK WITH CONTENT CHANNEL THROUGH PROXY FROM DPU ====
+  // ==== FETCH PERMISSION DATA AND KEY THROUGH PROXY AND DECRYPT ================
   // -----------------------------------------------------------------------------
 
-  if (true) {
+  if (false) {
 
-    section("FETCH PERMISSIONS WITH ACCESS THROUGH PROXY FROM DSU")
+    section("FETCH PERMISSION DATA AND KEY THROUGH PROXY AND DECRYPT")
 
     Thread.sleep(1000)
-    subsection("Access Channel through proxy")
+    subsection("Permission Channel through proxy")
 
     val interest_key: Interest = proxyPermissionChannelName call("/node/node2//type:track//paris-marathon")
 
-    // send interest for permissions from dpu...
+    // send interest for permissions from dvu...
     val startTime3 = System.currentTimeMillis
     info("Send interest: " + interest_key)
+    var contentData = "nothing for now.."
     dvu ? interest_key onComplete {
       // ... and receive content
       case Success(resultContent) => {
+        contentData = new String(resultContent.data)
         info("Result:        " + new String(resultContent.data))
         info("Time:          " + (System.currentTimeMillis - startTime3) + "ms")
         Monitor.monitor ! Monitor.Visualize()
@@ -576,6 +579,122 @@ object NDNExSetup extends App {
         }
       }
     }
+
+    Thread.sleep(1000)
+    subsection("Key Channel")
+
+    val interest_key2: Interest = proxyKeyChannelName call("/node/node2//type:track//paris-marathon", 0, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+
+    // send interest for key from dvu...
+    val startTime4 = System.currentTimeMillis
+    info("Send interest: " + interest_key2)
+    dvu ? interest_key2 onComplete {
+      // ... and receive content
+      case Success(resultContent) => {
+        keyData = new String(resultContent.data)
+        info("Result (Key):  " + new String(resultContent.data))
+        info("Time:          " + (System.currentTimeMillis - startTime4) + "ms")
+        Monitor.monitor ! Monitor.Visualize()
+        Thread.sleep(20000)
+        nodes foreach {
+          _.shutdown()
+        }
+      }
+      // ... but do not get content
+      case Failure(e) => {
+        info("No content received.")
+        Monitor.monitor ! Monitor.Visualize()
+        nodes foreach {
+          _.shutdown()
+        }
+      }
+
+    }
+
+    Thread.sleep(1000)
+    subsection("Decryption")
+    info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")))
+
+  }
+
+  // -----------------------------------------------------------------------------
+  // ==== FETCH PROCESSED DATA AND KEY THROUGH PROXY AND DECRYPT =================
+  // -----------------------------------------------------------------------------
+
+  if (true) {
+
+      var contentData: String = "to be fetched..."
+      var keyData: String = "to be fetched..."
+
+      section("FETCH PROCESSED DATA AND KEY THROUGH PROXY AND DECRYPT")
+
+      Thread.sleep(1000)
+      subsection("Content Channel (Processing)")
+
+      val interest_key: Interest = proxyContentChannelName call("/node/node2//type:track//paris-marathon", 2)
+
+      // send interest for permissions from dvu...
+      val startTime3 = System.currentTimeMillis
+      info("Send interest: " + interest_key)
+      dvu ? interest_key onComplete {
+        // ... and receive content
+        case Success(resultContent) => {
+          contentData = new String(resultContent.data)
+          info("Result:        " + new String(resultContent.data))
+          info("Time:          " + (System.currentTimeMillis - startTime3) + "ms")
+          Monitor.monitor ! Monitor.Visualize()
+          Thread.sleep(20000)
+          nodes foreach {
+            _.shutdown()
+          }
+        }
+        // ... but do not get content
+        case Failure(e) => {
+          info("No content received.")
+          Monitor.monitor ! Monitor.Visualize()
+          nodes foreach {
+            _.shutdown()
+          }
+        }
+      }
+
+      // TODO -- Uncommenting the following line causes timeouts? why? Logging might be meshed up without that sleep..
+      // Thread.sleep(1000)
+
+      subsection("Key Channel")
+
+      // TODO -- change to proxy
+      val interest_key2: Interest = proxyKeyChannelName call("/node/node2//type:track//paris-marathon", 2, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+
+      // send interest for key from dvu...
+      val startTime4 = System.currentTimeMillis
+      info("Send interest: " + interest_key2)
+      dvu ? interest_key2 onComplete {
+        // ... and receive content
+        case Success(resultContent) => {
+          keyData = new String(resultContent.data)
+          info("Result (Key):  " + new String(resultContent.data))
+          info("Time:          " + (System.currentTimeMillis - startTime4) + "ms")
+          Monitor.monitor ! Monitor.Visualize()
+          Thread.sleep(20000)
+          nodes foreach {
+            _.shutdown()
+          }
+        }
+        // ... but do not get content
+        case Failure(e) => {
+          info("No content received.")
+          Monitor.monitor ! Monitor.Visualize()
+          nodes foreach {
+            _.shutdown()
+          }
+        }
+
+      }
+
+      Thread.sleep(1000)
+      subsection("Decryption")
+      info("Decrypted:     " + symDecrypt(contentData, privateDecrypt(keyData, "MIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAmmgXeOVTP044WC8S2toUy5o64DbXUKTdQe4dOgzKzrm1Ps+q9jztU105+Uk3WhOqoi7Ldvwefivjl24kVz034wIDAQABAkAecJbwBoW63TjOablV29htqyIgQa+A/n+AF+k7IHp69mDE7CtlikW4bDQXsaPVw1Sp18UhnZUJgfEFCjGPmimBAiEA/YcXjwvgAL/bfvsOwMWg44LwjY4g/WXdVHxLp4VXnksCIQCb6Y2e+P4RdOAdgvMP3+riIBs7B2U4u0eIyR6NbaRtyQIgMBu2aLqEIyBE8m+JeSMHSKTMKNBTikIOIb4ETSGMYskCIDQzy8Y5ih/gKRXYfXeIOoXByDxIapzHH9lttXwXBOH5AiBLTG6tCPaSz3DdslndvdK6dfy8Beg0iV1QdiqyAYe/fQ==")))
 
   }
 
