@@ -19,7 +19,7 @@ object PaperExperiment extends App {
 
   implicit val conf: Config = ConfigFactory.load()
 
-  val expNum = 3
+  val expNum = 5
 
   val node1 = LocalNodeFactory.forId(1)
   val node2 = LocalNodeFactory.forId(2, isCCNOnly = true)

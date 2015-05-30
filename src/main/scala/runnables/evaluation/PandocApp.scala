@@ -49,6 +49,10 @@ object PandocApp extends App {
 
   sendAndPrintForName(exprTut)
 
+  //Thread.sleep(2000)
+
+  //sendAndPrintForName(exprTut)
+
 
 
   def sendAndPrintForName(interest: Interest) = {

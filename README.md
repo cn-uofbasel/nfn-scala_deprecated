@@ -32,7 +32,7 @@ which makes it easier to deploy it because you do not have to install sbt or sca
 To install ccn-lite and its dependencies follow the information [here](https://github.com/cn-uofbasel/ccn-lite).
 nfn-scala uses the commandline utilities of ccn-lite, therefore it needs to have the compiled utilities available.
 There are two possibilities, either you have CCNL_HOME set to your custom installation or you clone the repository with `--recursive` and use the submodule in `ccn-lite-nfn`.
-In general the ladder is the easier option, because the version of ccn-lite is always compatible with your nfn-scala.
+In general the latter is the easier option, because the version of ccn-lite is always compatible with your nfn-scala.
 To compile ccn-lite (either in the submodule or, if not checked out, `$CCNL_HOME`), you can type `sbt compileCCNLite`.
 Alternatively you can also build it manually, make sure that `USE_NFN=1` is set.
 
