@@ -23,7 +23,8 @@ JDK 7 should be available, otherwise it can be downloaded directly from [oracle]
 To install sbt you can use homebrew (`brew install sbt`).
 
 ### nfn-scala
-You can either use sbt to compile the project (e.g. `sbt compile`) or you can use `sbt assembly`.
+Swap to the nfn-scala root directory. 
+You can now use sbt to compile the project (e.g. `sbt compile`) or you can use `sbt assembly`.
 This command will build the jarfile `./target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar` with all dependency (even Scala itself!)
 which makes it easier to deploy it because you do not have to install sbt or scala (only JVM).
 
