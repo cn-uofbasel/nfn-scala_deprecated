@@ -23,7 +23,7 @@ For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://githu
 JDK 7 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
 To install sbt you can use homebrew (`brew install sbt`).
 
-#### ccn-lite
+#### CCN-Lite
 
 To install ccn-lite and its dependencies follow the information [here](https://github.com/cn-uofbasel/ccn-lite).
 nfn-scala uses the commandline utilities of ccn-lite, therefore it needs to have the compiled utilities available.
@@ -41,10 +41,6 @@ which makes it easier to deploy it because you do not have to install sbt or sca
 
 #### IDE
 If you want to use IntelliJ or eclipse you can use the sbt tasks `gen-idea` or `eclipse`.
-
-#### Uninstalling:
-* Uninstall sbt (and remove `~/.sbt` if it still exists)
-* Delete `~/.ivy2` (this will of course also delete all your cached Java jars if you are using ivy)
 
 ##Running nfn-scala
 
