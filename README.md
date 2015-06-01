@@ -32,7 +32,7 @@ In general the latter is the easier option, because the version of ccn-lite is a
 To compile ccn-lite (either in the submodule or, if not checked out, `$CCNL_HOME`), you can type `sbt compileCCNLite`.
 Alternatively you can also build it manually, make sure that `USE_NFN=1` is set.
 
-### nfn-scala
+### NFN-Scala
 Checkout or download nfn-scala and swap to the nfn-scala root directory. 
 You can now use sbt to compile the project (e.g. `sbt compile`) or you can use `sbt assembly`.
 This command will build the jarfile `./target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar` with all dependency (even Scala itself!)
