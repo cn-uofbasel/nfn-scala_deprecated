@@ -10,7 +10,7 @@ It can also be used to run CCN-Lite directly from Scala and to create a network 
 
 Installation is fairly straight forward, and boils down to an available Java JDK 7, sbt 0.13.5 and CCN-Lite.
 If you want to install the JVM or sbt you could also test it out within a Docker container.
-For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite/docs).
+For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite).
 
 #### JDK/sbt
 
