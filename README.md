@@ -6,42 +6,41 @@ It can also be used to run CCN-Lite directly from Scala and to create a network 
 
 ##Installation
 
+###Dependencies
+
 Installation is fairly straight forward, and boils down to an available Java JDK 7, sbt 0.13.5 and CCN-Lite.
 If you want to install the JVM or sbt you could also test it out within a Docker container.
-For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite/docs).
+For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite).
 
+#### JDK/sbt
 
-### JDK/sbt
-
-#### Ubuntu
+##### Ubuntu
 
 1. `sudo apt-get install openjdk-7-jdk`
 2. Follow [instructions](http://www.scala-sbt.org/0.13.5/docs/Getting-Started/Setup.html) to install sbt
 
-#### OSX
+##### OSX
 JDK 7 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
 To install sbt you can use homebrew (`brew install sbt`).
 
-### nfn-scala
-You can either use sbt to compile the project (e.g. `sbt compile`) or you can use `sbt assembly`.
-This command will build the jarfile `./target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar` with all dependency (even Scala itself!)
-which makes it easier to deploy it because you do not have to install sbt or scala (only JVM).
-
-### ccn-lite
+#### CCN-Lite
 
 To install ccn-lite and its dependencies follow the information [here](https://github.com/cn-uofbasel/ccn-lite).
 nfn-scala uses the commandline utilities of ccn-lite, therefore it needs to have the compiled utilities available.
 There are two possibilities, either you have CCNL_HOME set to your custom installation or you clone the repository with `--recursive` and use the submodule in `ccn-lite-nfn`.
-In general the ladder is the easier option, because the version of ccn-lite is always compatible with your nfn-scala.
+In general the latter is the easier option, because the version of ccn-lite is always compatible with your nfn-scala.
 To compile ccn-lite (either in the submodule or, if not checked out, `$CCNL_HOME`), you can type `sbt compileCCNLite`.
 Alternatively you can also build it manually, make sure that `USE_NFN=1` is set.
 
+### NFN-Scala
+Checkout or download nfn-scala and swap to the nfn-scala root directory. 
+You can now use sbt to compile the project (e.g. `sbt compile`) or you can use `sbt assembly`.
+This command will build the jarfile `./target/scala-2.10/nfn-assembly-0.1-SNAPSHOT.jar` with all dependency (even Scala itself!)
+which makes it easier to deploy it because you do not have to install sbt or scala (only JVM).
+
+
 #### IDE
 If you want to use IntelliJ or eclipse you can use the sbt tasks `gen-idea` or `eclipse`.
-
-#### Uninstalling:
-* Uninstall sbt (and remove `~/.sbt` if it still exists)
-* Delete `~/.ivy2` (this will of course also delete all your cached Java jars if you are using ivy)
 
 ##Running nfn-scala
 
