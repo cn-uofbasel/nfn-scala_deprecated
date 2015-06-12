@@ -6,6 +6,8 @@ object CCNWireFormat {
       case "ccnb" => Some(CCNBWireFormat())
       case "ndntlv" => Some(NDNTLVWireFormat())
       case "ccntlv" => Some(CCNTLVWireFormat())
+      case "cistlv" => Some(CISTLVWireFormat())
+      case "iottlv" => Some(IOTTLVWireFormat())
       case _ => None
     }
   }
@@ -20,5 +22,11 @@ case class NDNTLVWireFormat() extends CCNWireFormat {
 }
 case class CCNTLVWireFormat() extends CCNWireFormat {
   override def toString = "ccnx2014"
+}
+case class CISTLVWireFormat() extends CCNWireFormat {
+  override def toString = "cisco2015"
+}
+case class IOTTLVWireFormat() extends CCNWireFormat {
+  override def toString = "iot2014"
 }
 

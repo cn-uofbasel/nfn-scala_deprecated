@@ -21,6 +21,8 @@ object StaticConfig {
 
   private var maybeDebugLevel: Option[String] = Option.empty[String]
 
+  private var wireFormat: Option[CCNWireFormat] = None
+
   def config: Config = maybeConfig match {
     case Some(config) => config
     case None =>
@@ -48,15 +50,24 @@ object StaticConfig {
     LogLevelSLF4J.setLogLevel(lvl)
   }
 
+  def setWireFormat(wf: String) = {
+    wireFormat = CCNWireFormat.fromName(wf)
+  }
+
   def packetformat: CCNWireFormat = {
-    val path = "nfn-scala.packetformat"
-    val wfName = config.getString(path)
-    CCNWireFormat.fromName(wfName) match {
+    wireFormat match{
       case Some(wf) => wf
-      case None => throw new BadValue(path,
-        s"""
-        | can only be "ccnb" or "ndn" and not "$wfName"
+      case None => {
+        val path = "nfn-scala.packetformat"
+        val wfName = config.getString(path)
+        CCNWireFormat.fromName(wfName) match {
+          case Some(wf) => wf
+          case None => throw new BadValue(path,
+            s"""
+               | WireFormat cannot be "$wfName"
         """.stripMargin)
+        }
+      }
     }
   }
 }
