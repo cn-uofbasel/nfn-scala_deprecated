@@ -5,9 +5,13 @@ object CCNWireFormat {
     possibleFormatName match {
       case "ccnb" => Some(CCNBWireFormat())
       case "ndntlv" => Some(NDNTLVWireFormat())
+      case "ndn2013" => Some(NDNTLVWireFormat())
       case "ccntlv" => Some(CCNTLVWireFormat())
+      case "ccnx2015" => Some(CCNTLVWireFormat())
       case "cistlv" => Some(CISTLVWireFormat())
+      case "cisco2015" => Some(CISTLVWireFormat())
       case "iottlv" => Some(IOTTLVWireFormat())
+      case "iot2014" => Some(IOTTLVWireFormat())
       case _ => None
     }
   }
