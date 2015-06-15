@@ -25,7 +25,7 @@ case class NDNTLVWireFormat() extends CCNWireFormat {
   override def toString = "ndn2013"
 }
 case class CCNTLVWireFormat() extends CCNWireFormat {
-  override def toString = "ccnx2014"
+  override def toString = "ccnx2015"
 }
 case class CISTLVWireFormat() extends CCNWireFormat {
   override def toString = "cisco2015"
