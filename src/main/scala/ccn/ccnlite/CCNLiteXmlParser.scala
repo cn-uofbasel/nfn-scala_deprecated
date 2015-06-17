@@ -109,6 +109,16 @@ object CCNLiteXmlParser extends Logging {
       CCNName(nameComponents.toList, chunkNum)
     }
 
+    def iottlvParseName(packet: Node): CCNName = { //TODO Chunk Numbers
+      val nameComponents = packet \ "Name-ReqRepCtx" \ "PathName-NameCtx" \ "Component-PathNameCtx" map { ns => new String(decodeBase64(ns.text.trim)) }
+      /*val chunkNum:Option[Int] =
+        (packet \ "Name" \ "Chunk").headOption map {
+          c => unsignedByteToInt(decodeBase64(c.text.trim))
+        }*/
+
+      CCNName(nameComponents.toList, None)
+    }
+
     val cleanedXmlString = xmlString.trim.replace("&", "&amp;")
     val addToCacheAckStringBase64 = "MCvi6qVsYXN0AAGqfsXy+qVjY254APqFAPr1YWRkY2FjaGVvYmplY3QAAAGaAf0EygHVQ29udGVudCBzdWNjZXNzZnVsbHkgYWRkZWQ"
     val addToCacheAckStringBase642 ="8vqlY2NueAD6hQD69WFkZGNhY2hlb2JqZWN0AAABmgH9BMoB1UNvbnRlbnQgc3VjY2Vzc2Z1bGx5IGFkZGVk"
@@ -253,6 +263,25 @@ object CCNLiteXmlParser extends Logging {
               Nack(name)
             } else {
               Content(name, contentData, MetaInfo(lastChunkNum))
+            }
+          }
+          //IOTTLV Interest
+          case interest @ <Request-toplevelCtx>{_*}</Request-toplevelCtx> => {
+            val name = iottlvParseName(interest)
+            Interest(name)
+          }
+          //IOTTLV Content
+          case content @ <Object>{_*}</Object> => {
+
+            val name = iottlvParseName(content)
+            val contentData = content \ "Payload-ReqRepCtx" \ "Data-PayloadCtx" map {d => decodeBase64(d.text.trim) } reduceLeft(_ ++ _)
+            /*val lastChunkNum = (content \ "MetaData" \ "EndChunk").headOption map {
+              c => unsignedByteToInt(decodeBase64(c.text.trim))
+            }*/
+            if(contentData.startsWith(":NACK".getBytes)) {
+              Nack(name)
+            } else {
+              Content(name, contentData, MetaInfo(None))
             }
           }
           case _ => throw new Exception("XML parser cannot parse:\n" + cleanedXmlString)
