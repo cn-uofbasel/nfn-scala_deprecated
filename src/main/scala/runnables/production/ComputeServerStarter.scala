@@ -24,7 +24,9 @@ case class ComputeServerConfig(prefix: CCNName = ComputeServerConfigDefaults.pre
                                ccnlPort: Int = ComputeServerConfigDefaults.ccnlPort,
                                computeServerPort: Int = ComputeServerConfigDefaults.computeServerPort,
                                isCCNLiteAlreadyRunning: Boolean = ComputeServerConfigDefaults.isCCNLiteAlreadyRunning,
-                               logLevel: String = ComputeServerConfigDefaults.logLevel)
+                               logLevel: String = ComputeServerConfigDefaults.logLevel,
+                               suite: String = "")
+
 
 object ComputeServerStarter extends Logging {
 
@@ -41,6 +43,9 @@ object ComputeServerStarter extends Logging {
     opt[Int]('o', "ccnl-port") action { case (p, c) =>
         c.copy(ccnlPort = p)
     } text s"unused port ccnl should use or port of running ccnl (default: ${ComputeServerConfigDefaults.ccnlPort})"
+    opt[String]('s', "suite") action { case (s, c) =>
+      c.copy(suite = s)
+    } text s"wireformat to be used (default: ndntlv)"
     opt[Int]('p', "cs-port") action { case (p, c) =>
       c.copy(computeServerPort = p)
     } text s"port used by compute server, (default: ${ComputeServerConfigDefaults.computeServerPort})"
@@ -69,6 +74,11 @@ object ComputeServerStarter extends Logging {
     argsParser.parse(args, ComputeServerConfig()) match {
       case Some(config) =>
         StaticConfig.setDebugLevel(config.logLevel)
+
+        println("Suite is", config.suite)
+        if(config.suite != ""){
+          StaticConfig.setWireFormat(config.suite)
+        }
 
         logger.debug(s"config: $config")
 
