@@ -30,6 +30,7 @@ mkdir ../BUILDROOT/%name-%version-%release.%_arch/usr/local
 mkdir ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin
 cp -L ../../target/scala-2.10/nfn.* ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin/nfn.jar
 
+cp -L ../script/nfn ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin/nfn
 
 %files
 %doc
