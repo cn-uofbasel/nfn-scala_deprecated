@@ -28,13 +28,13 @@ NFN-scala is a Service layer implementation for CCN-lite
 mkdir ../BUILDROOT/%name-%version-%release.%_arch/usr
 mkdir ../BUILDROOT/%name-%version-%release.%_arch/usr/local
 mkdir ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin
-cp -L ../../target/scala-2.10/nfn.* ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin/nfn.jar
+cp  ../../../../target/scala-2.10/nfn.* ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin/nfn.jar
 
-cp -L ../script/nfn ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin/nfn
+cp  ../../../script/nfn ../BUILDROOT/%name-%version-%release.%_arch/usr/local/bin/nfn
 
 %files
 %doc
-/usr/local/bin/ccn*
+/usr/local/bin/nfn*
 
 
 %changelog
