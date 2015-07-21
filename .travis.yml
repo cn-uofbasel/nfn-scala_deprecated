@@ -23,6 +23,7 @@ addons:
         packages:
             - libssl-dev
             - build-essential
+            - pandoc
 #            - linux-headers-$(uname -r)
 
 script:
