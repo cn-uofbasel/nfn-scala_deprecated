@@ -1,0 +1,36 @@
+sudo: false # Enable container-based infrastructure
+
+language: scala
+scala:
+        - 2.10.4
+
+# cache: apt # Enable caching on APT when it is available for our repo
+
+os:
+    - linux
+    - osx
+
+branches:
+    only:
+        - master
+        - dev-master
+
+env:
+    - CCNL_HOME="/home/travis/build/cn-uofbasel/ccn-lite" PATH=$PATH:"$CCNL_HOME/bin"
+
+addons:
+    apt:
+        packages:
+            - libssl-dev
+            - build-essential
+#            - linux-headers-$(uname -r)
+
+script:
+    # Run build-test.sh
+    # Ideally, build-test should be run without specifying the targets.
+    # However, bt-lnxkernel, bt-demo-cisco2015, bt-nfn-ccnx2015, bt-nfn-cisco2015 removed because they fail
+    - cd $CCNL_HOME/src
+    - make clean all
+    - cd -
+    - sbt compile
+    - sbt run  
