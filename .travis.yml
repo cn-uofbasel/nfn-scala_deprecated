@@ -33,4 +33,4 @@ script:
     - make clean all
     - cd -
     - sbt compile
-    - sbt run  
+    - sbt 'runMain runnables.evaluation.PandocApp' 
