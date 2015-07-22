@@ -26,20 +26,16 @@ addons:
             - pandoc
 #            - linux-headers-$(uname -r)
 
-#   pull ccn lite!!!!!
-
 install:
     - cd ..
     - git clone https://github.com/cn-uofbasel/ccn-lite.git
     - cd -
 
 script:
-    # Run build-test.sh
-    # Ideally, build-test should be run without specifying the targets.
-    # However, bt-lnxkernel, bt-demo-cisco2015, bt-nfn-ccnx2015, bt-nfn-cisco2015 removed because they fail
     - cd $CCNL_HOME/src
     - pwd
     - echo $CCNL_HOME
+    - echo ~  
     - make clean all
     - cd -
     - sbt compile
