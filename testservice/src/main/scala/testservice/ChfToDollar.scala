@@ -11,7 +11,7 @@ class OtherClass() {
 }
 
 class ChfToDollar() extends NFNService {
-  
+
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     println("External service successfully loaded!")
     new OtherClass().foo(3)

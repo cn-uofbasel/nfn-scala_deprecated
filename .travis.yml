@@ -39,4 +39,4 @@ script:
     - make clean all
     - cd -
     - sbt compile
-    - sbt 'runMain runnables.evaluation.PandocApp' 
+    - sbt 'runMain runnables.evaluation.WordcountApp' 
