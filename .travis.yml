@@ -26,6 +26,11 @@ addons:
             - pandoc
 #            - linux-headers-$(uname -r)
 
+#   pull ccn lite!!!!!
+
+install:
+    - git pull https://github.com/cn-uofbasel/ccn-lite.git
+
 script:
     # Run build-test.sh
     # Ideally, build-test should be run without specifying the targets.
