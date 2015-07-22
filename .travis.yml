@@ -29,6 +29,8 @@ addons:
 #   pull ccn lite!!!!!
 
 install:
+    - pwd
+    - ls
     - git clone https://github.com/cn-uofbasel/ccn-lite.git
 
 script:
