@@ -29,7 +29,7 @@ addons:
 #   pull ccn lite!!!!!
 
 install:
-    - git pull https://github.com/cn-uofbasel/ccn-lite.git
+    - git clone https://github.com/cn-uofbasel/ccn-lite.git
 
 script:
     # Run build-test.sh
