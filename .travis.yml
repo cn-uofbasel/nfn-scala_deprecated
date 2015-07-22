@@ -16,7 +16,7 @@ branches:
         - dev-master
 
 env:
-    - CCNL_HOME="/home/travis/ccn-lite" PATH=$PATH:"$CCNL_HOME/bin"
+        - CCNL_HOME="/home/travis/build/cn-uofbasel/ccn-lite" PATH=$PATH:"$CCNL_HOME/bin"
 
 addons:
     apt:
@@ -29,9 +29,9 @@ addons:
 #   pull ccn lite!!!!!
 
 install:
-    - pwd
-    - ls
+    - cd ..
     - git clone https://github.com/cn-uofbasel/ccn-lite.git
+    - cd -
 
 script:
     # Run build-test.sh
