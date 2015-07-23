@@ -23,7 +23,7 @@ deb:
 	sed -i 's/<%= year %>/${year}/g' nfn-scala/DEBIAN/control
 	sed -i 's/<%= year %>/${year}/g' nfn-scala/DEBIAN/copyright
 	dpkg --build nfn-scala
-	rm -r ./nfn-scala	
+	#rm -r ./nfn-scala	
 	
 clean:
 	rm -rf ./nfn-scala
