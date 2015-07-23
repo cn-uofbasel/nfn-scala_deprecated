@@ -33,7 +33,7 @@ object ComputeServerStarter extends Logging {
   val argsParser =  new OptionParser[ComputeServerConfig]("") {
     override def showUsageOnError = true
 
-    head("nfn-scala: compute-server starter", "v0.1")
+    head("nfn-scala: compute-server starter", "v0.2.0")
     opt[String]('m', "mgmtsocket") action { (ms, c) =>
       c.copy(mgmtSocket = Some(ms))
     } text s"unix socket name for ccnl mgmt ops or of running ccnl, if not specified ccnl UDP socket is used (example: ${ComputeServerConfigDefaults.mgmtSocket})"
