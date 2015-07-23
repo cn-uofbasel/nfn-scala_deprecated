@@ -4,7 +4,7 @@ Release:	1%{?dist}
 Summary:	NFN-Scala
 
 Group:		Application/Internet
-License:	MIT
+License:	ISC
 URL:		ccn-lite.net
 
 #BuildRequires:	
