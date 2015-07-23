@@ -38,4 +38,4 @@ script:
     - make clean all
     - cd -
     - sbt compile
-    - sbt 'runMain runnables.evaluation.WordcountApp' 
+#    - sbt 'runMain runnables.evaluation.WordcountApp'
