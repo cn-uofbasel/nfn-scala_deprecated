@@ -27,7 +27,7 @@ abstract class ContentChannel extends Channel {
 
 
   /** Pin this service */
-  override def pinned: Boolean = false // TODO
+  override def pinned: Boolean = false
 
   /**
    * Entry point of this service.
@@ -42,7 +42,7 @@ abstract class ContentChannel extends Channel {
       case Seq(NFNStringValue(rdn), NFNIntValue(level)) => {
         processContentChannel(rdn, level, ccnApi) match {
           case Some(t) => NFNStringValue(t)
-          case None => throw new noReturnException("No return. Possibly caused by: Permission denied, invalid access level..")
+          case None => throw new noReturnException("No return. Possibly caused by: Permission denied, invalid rdn or ran")
         }
       }
       case _ =>

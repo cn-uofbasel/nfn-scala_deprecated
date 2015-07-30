@@ -26,6 +26,7 @@ import nfn.service._
  *       (northpole filtering)
  *
  */
+@deprecated("This was a first prototype", "unknown")
 class LegacyContentChannel extends NFNService {
 
   private def processFilterTrack(track: String, level: Int): Option[String] = {
@@ -58,7 +59,7 @@ class LegacyContentChannel extends NFNService {
   /**
    * Pin this service
    */
-  override def pinned: Boolean = false // TODO
+  override def pinned: Boolean = false
 
   /**
    * Hook up function of this service.

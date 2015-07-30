@@ -27,22 +27,20 @@ import java.io.{File, FileWriter}
  * - - - - - - - - - -
  *
  *     ../repo
- *     `-- ch
- *        `-- unibas
- *            `-- data
- *                `-- track
- *                    |-- jungfraujoch
- *                    |   |-- permission_channel
- *                    |   |-- content_channel
- *                    |   `-- key_channel
- *                    |-- paris-marathon
- *                   |   |-- permission_channel
- *                    |   |-- content_channel
- *                    |   `-- key_channel
- *                    `-- stadtlauf2015
- *                        |-- permission_channel
- *                        |-- content_channel
- *                        `-- key_channel
+ *     `-- john
+ *        `-- doe
+ *            |-- jungfraujoch
+ *            |   |-- permission_channel
+ *            |   |-- content_channel
+ *            |   `-- key_channel
+ *            |-- paris-marathon
+ *            |   |-- permission_channel
+ *            |   |-- content_channel
+ *            |   `-- key_channel
+ *            `-- stadtlauf2015
+ *                |-- permission_channel
+ *                |-- content_channel
+ *                `-- key_channel
  *
  *
  **/
@@ -60,7 +58,7 @@ object DataGenerator extends App {
   }
 
   /**
-   * Write to a file (overwrite in file already exists)
+   * Write to a file (overwrite if file already exists)
    * @param     path     Path of the file
    * @param     content  Content of the file
    */
@@ -81,7 +79,7 @@ object DataGenerator extends App {
   /** Location of the data repository in the local file system */
   val storageLocation = "/home/claudio/mt/repo"
   /** Relative data name (rdn) prefix */
-  val prefix = "/ch/unibas/data"
+  val prefix = "/john/doe"
   /** List of available data types */
   val dataTypes = List("track")
 
@@ -135,7 +133,7 @@ object DataGenerator extends App {
   // track
   tracks.foreach(e => {
     val path = storageLocation + prefix + "/track/" + e._1 + "/" + "content_channel"
-    val content = generateTrackJSON("/" + e._1)
+    val content = generateTrackJSON(prefix + "/track/" + e._1)
     writeToFile(path, content)
   })
 
@@ -144,16 +142,16 @@ object DataGenerator extends App {
   // track
   tracks.foreach( e => {
     val path = storageLocation + prefix + "/track/" + e._1 + "/" + "key_channel"
-    val content = generateKeysJSON("/" + e._1, e._2)
+    val content = generateKeysJSON(prefix + "/track/" + e._1, e._2)
     writeToFile(path, content)
   })
 
   subsection("Permission Channel")
 
-  // track
+  // tracks
   tracks.foreach(e => {
     val path = storageLocation + prefix + "/track/" + e._1 + "/" + "permission_channel"
-    val content = generatePermissionsJSON("/" + e._1)
+    val content = generatePermissionsJSON(prefix + "/track/" + e._1)
     writeToFile(path, content)
   })
 

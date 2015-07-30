@@ -3,6 +3,8 @@ package filterAccess.json
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 
+import scala.util.parsing.json.JSONObject
+
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
@@ -21,16 +23,25 @@ object ContentChannelParser extends ChannelParser{
   implicit val formats = DefaultFormats
 
   /**
+   * Converts a JSON object with type "track" to [[Track]]].
+   *
+   * @param     JSONObject   JSON object
+   * @return                 Trace as List of TrackPoints
+   */
+  def getTrack(JSONObject: String): Option[Track] = {
+    val extractor = (m:JValue) => m.extract[Track]
+    extractElement[Track](JSONObject, extractor)
+  }
+
+  /**
    * Extract relative data name from a JSON object.
    *
    * @param    JSONObject    JSON object
    * @return                 Relative data name
    */
   def getName(JSONObject: String): Option[String] = {
-
     val extractor = (m:JValue) => m.extract[Track].content
     extractElement[String](JSONObject, extractor)
-
   }
 
   /**
@@ -40,10 +51,8 @@ object ContentChannelParser extends ChannelParser{
    * @return                 Trace as List of TrackPoints
    */
   def getTrace(JSONObject: String): Option[List[TrackPoint]] = {
-
     val extractor = (m:JValue) => m.extract[Track].trace
     extractElement[List[TrackPoint]](JSONObject, extractor)
-
   }
 
 }

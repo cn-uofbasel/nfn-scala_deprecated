@@ -33,7 +33,7 @@ abstract class KeyChannel extends Channel {
   // override def ccnName: CCNName = CCNName("key")
 
   /** Pin this service */
-  override def pinned: Boolean = false // TODO
+  override def pinned: Boolean = false
 
   /**
    * Entry point of this service.
@@ -53,7 +53,7 @@ abstract class KeyChannel extends Channel {
             // -> CCNLite/NFN-Scala Bug?
             NFNStringValue(key)
           }
-          case None => throw new noReturnException("No return. Possibly caused by: Permission denied, data not found, invalid access level")
+          case None => throw new noReturnException("No return. Possibly caused by: Permission denied, invalid rdn or ran")
         }
       }
 

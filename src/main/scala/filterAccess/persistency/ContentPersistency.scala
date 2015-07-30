@@ -53,8 +53,7 @@ object ContentPersistency {
   private def readDataFileSystem(name:String): Option[String] = {
 
     // path of file in the file system containing the asked data
-    // TODO - data prefix is hard coded for now. Generalize this..
-    val path = storageLocation + "/ch/unibas/data/track" + name + "/content_channel"
+    val path = storageLocation + name + "/content_channel"
 
     // read file
     // TODO - error handling

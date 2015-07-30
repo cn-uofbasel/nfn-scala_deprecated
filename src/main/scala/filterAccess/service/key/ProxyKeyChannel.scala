@@ -1,7 +1,7 @@
 package filterAccess.service.key
 
 import akka.actor.ActorRef
-import filterAccess.tools.InterestBuilder._
+import filterAccess.tools.InterestBuilder.buildDirectKeyChannelInterest
 import scala.concurrent.duration._
 
 import filterAccess.tools.Networking.fetchContent
@@ -18,6 +18,8 @@ import scala.language.postfixOps
  */
 class ProxyKeyChannel extends KeyChannel {
 
+  /** Config: Prefix or key channel service */
+  val keyPrefix = "/serviceprovider/health/filtering"
 
   /**
    *
@@ -30,7 +32,7 @@ class ProxyKeyChannel extends KeyChannel {
   override def processKeyChannel(rdn: String, level: Int, id: String, ccnApi: ActorRef): Option[String] = {
 
     // build interest
-    val interest = buildDirectKeyChannelInterest(rdn, level, id)
+    val interest = buildDirectKeyChannelInterest(rdn, keyPrefix, level, id)
 
     // fetch and return
     fetchContent(interest, ccnApi, 5 seconds) match {

@@ -25,6 +25,7 @@ import scala.language.postfixOps
  * Filtering of GPS tracks (key channel)
  *
  */
+@deprecated("This was a first prototype", "unknown")
 class LegacyKeyChannel extends NFNService {
 
   /**
@@ -95,7 +96,7 @@ class LegacyKeyChannel extends NFNService {
   /**
    * Pin this service
    */
-  override def pinned: Boolean = false // TODO
+  override def pinned: Boolean = false
 
   /**
    * Entry point of this service.

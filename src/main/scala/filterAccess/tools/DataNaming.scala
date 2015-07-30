@@ -5,6 +5,8 @@ package filterAccess.tools
  *
  * Handling of relative data names.
  *
+ * THIS IS PARTIALLY OUTDATED DUE TO CHANGED STRUCTURE OR RELATIVE DATA NAMES!
+ *
  */
 object DataNaming {
 
@@ -14,21 +16,36 @@ object DataNaming {
    * @param    n   Relative data name
    * @return       Name components of n (prefix, type, name)
    */
-  def unapply(n:String): Option[(String,String,String)] = {
-    val parts = n split "//"
-    if(parts.length == 3) Some(parts(0), "/" + parts(1), "/" + parts(2))
+  def unapply(n:String): Option[(String,String)] = {
+    val parts = n split "@"
+    if(parts.length == 2) Some(parts(0), parts(1))
     else None
   }
 
   /**
-   * Extract name component of a relative data.
+   * Extract rdn component of a extended relative data name.
+   * Extended relative data name is of following form: <rdn>@<prefix>
    *
-   * @param    n   Relative data name
-   * @return       Name component of n
+   * @param    n   Extended relative data name
+   * @return       RDN component of n
    */
-  def getName(n:String): Option[String] = {
+  def getRDN(n:String): Option[String] = {
     unapply(n) match {
-      case Some((_, _, name)) => Some(name)
+      case Some((name, _)) => Some(name)
+      case _ => None
+    }
+  }
+
+  /**
+   * Extract prefix component of a extended relative data name.
+   * Extended relative data name is of following form: <rdn>@<prefix>
+   *
+   * @param    n   Extended relative data name
+   * @return       Prefix component of n
+   */
+  def getPrefix(n:String): Option[String] = {
+    unapply(n) match {
+      case Some((_, prefix)) => Some(prefix)
       case _ => None
     }
   }
@@ -36,14 +53,14 @@ object DataNaming {
   /**
    * Extract type component of a relative data name.
    *
+   * THIS IS OUTDATED! DO NOT USE!
+   *
    * @param    n   Relative data name
    * @return       Type component of n
    */
   def getType(n:String): Option[String] = {
-    unapply(n) match {
-      case Some((_, t, _)) => Some(t.substring(1))
-      case _ => None
-    }
+    // for prototyping all data are of type track...
+    Some("type:track") // TODO
   }
 
   // Concept: Extractors

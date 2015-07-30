@@ -13,7 +13,7 @@ import node.LocalNodeFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-
+@deprecated("This was a first prototype", "unknown")
 object SimpleNDNExSetup extends App {
 
   implicit val conf: Config = ConfigFactory.load()

@@ -26,7 +26,7 @@ abstract class PermissionChannel extends Channel {
 
 
   /** Pin this service */
-  override def pinned: Boolean = false // TODO
+  override def pinned: Boolean = false
 
   /**
    * Entry point of this service.

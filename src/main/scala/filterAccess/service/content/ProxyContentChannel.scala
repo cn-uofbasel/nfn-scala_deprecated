@@ -20,6 +20,12 @@ import scala.language.postfixOps
  */
 class ProxyContentChannel extends ContentChannel {
 
+  /** Config: Prefix or storage service */
+  val storagePrefix = "/serviceprovider/health/storage"
+
+  /** Config: Prefix or processing service */
+  val filteringPrefix = "/serviceprovider/health/filtering"
+
   /**
    * This function is called by entry point of this service to handle the actual work.
    *
@@ -38,11 +44,11 @@ class ProxyContentChannel extends ContentChannel {
       }
       case 1 => {
         // unprocessed data
-        buildDirectContentChannelInterest(rdn, 1)
+        buildDirectContentChannelInterest(rdn, storagePrefix, 1)
       }
       case l if l>1 => {
-        // processed data
-        buildDirectContentChannelInterest(rdn, l)
+        // filtered data
+        buildDirectContentChannelInterest(rdn, filteringPrefix, l)
       }
     }
 

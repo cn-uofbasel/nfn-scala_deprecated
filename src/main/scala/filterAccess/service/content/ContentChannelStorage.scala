@@ -29,42 +29,29 @@ class ContentChannelStorage extends ContentChannel {
     if (level != 1)
       throw new noReturnException("No return. This is a storage unit so only unprocessed data is delivered. You asked for access level " + level + ".")
 
-    // Extract name of actual data
-    DataNaming.getName(rdn) match {
-
-      case Some(n) => {
-
-        // Fetch json object with symmetric key
-        ContentPersistency.getPersistentContent(n) match {
-          case Some(content) => {
-            // Fetch JSON with symmetric keys
-            KeyPersistency.getPersistentKey(n) match {
-              case Some(jsonSymKey) => {
-                // Extract needed symmetric key
-                val symKey = extractLevelKey(jsonSymKey, level)
-                // Encrypt with symmetric key
-                Some(symEncrypt(content, symKey.get))
-              }
-              case _ => {
-                // Could not fetch data from persistent storage
-                None
-              }
-            }
+    // Fetch json object with symmetric key
+    ContentPersistency.getPersistentContent(rdn) match {
+      case Some(content) => {
+        // Fetch JSON with symmetric keys
+        KeyPersistency.getPersistentKey(rdn) match {
+          case Some(jsonSymKey) => {
+            // Extract needed symmetric key
+            val symKey = extractLevelKey(jsonSymKey, level)
+            // Encrypt with symmetric key
+            Some(symEncrypt(content, symKey.get))
           }
-
           case _ => {
             // Could not fetch data from persistent storage
             None
           }
         }
-
       }
 
-      // Could not parse name
-      case _ => None
-
+      case _ => {
+        // Could not fetch data from persistent storage
+        None
+      }
     }
-
   }
 
 }

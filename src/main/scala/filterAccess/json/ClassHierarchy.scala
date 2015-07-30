@@ -37,6 +37,16 @@ case class Keys(content: String, keys:Map[AccessLevel, LevelKey])
 case class TrackPoint(x:Int, y:Int, z:Int) {
   def +(s:TrackPoint):TrackPoint = new TrackPoint(this.x+s.x, this.y+s.y, this.z+s.z)
   def -(s:TrackPoint):TrackPoint = new TrackPoint(this.x-s.x, this.y-s.y, this.z-s.z)
+  def distance:Int = Math.sqrt(x*x + y*y + z*z).toInt // distance to origin (floor)
+  def distance(that:TrackPoint):Int = (this-that).distance // distance to another TrackPoint (floor)
 }
-case class Track(content:String, trace: List[TrackPoint])
+case class Track(content:String, trace: List[TrackPoint]) {
+  def length:Int = {
+    var sum = 0
+    for(i <- 0 to trace.length-2){
+      sum = sum + trace(i+1).distance(trace(i))
+    }
+    sum
+  }
+}
 

@@ -1,7 +1,7 @@
 package filterAccess.service.permission
 
 import akka.actor.ActorRef
-import filterAccess.tools.InterestBuilder._
+import filterAccess.tools.InterestBuilder.buildDirectPermissionChannelInterest
 import scala.concurrent.duration._
 
 import filterAccess.tools.Networking.fetchContent
@@ -18,6 +18,9 @@ import scala.language.postfixOps
  */
 class ProxyPermissionChannel extends PermissionChannel {
 
+  /** Config: Prefix or key channel service */
+  val permissionPrefix = "/serviceprovider/health/filtering"
+
   /**
    *
    * This function is called by entry point of this service to handle the actual work.
@@ -28,7 +31,7 @@ class ProxyPermissionChannel extends PermissionChannel {
   override def processPermissionChannel(rdn: String, ccnApi: ActorRef): Option[String] = {
 
     // build interest
-    val interest = buildDirectPermissionChannelInterest(rdn)
+    val interest = buildDirectPermissionChannelInterest(rdn, permissionPrefix)
 
     // fetch and return
     fetchContent(interest, ccnApi, 5 seconds) match {

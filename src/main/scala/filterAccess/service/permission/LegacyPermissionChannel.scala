@@ -31,6 +31,7 @@ import nfn.service._
  * Filtering of GPS tracks (permission channel)
  *
  */
+@deprecated("This was a first prototype", "unknown")
 class LegacyPermissionChannel extends NFNService {
 
   private def processPermissionTrack(request: String, level: Int): String = {
@@ -66,7 +67,7 @@ class LegacyPermissionChannel extends NFNService {
   /**
    * Pin this service
    */
-  override def pinned: Boolean = false // TODO
+  override def pinned: Boolean = false
 
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 

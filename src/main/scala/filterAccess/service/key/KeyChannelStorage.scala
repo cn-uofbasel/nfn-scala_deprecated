@@ -27,41 +27,31 @@ class KeyChannelStorage extends KeyChannel {
    */
   override def processKeyChannel(rdn: String, level: Int, id: String, ccnApi: ActorRef): Option[String] = {
 
-    // Extract name of actual data
-    DataNaming.getName(rdn) match {
 
-      case Some(n) => {
-        // Check permission
-        val jsonPermission = PermissionPersistency.getPersistentPermission(n)
-        checkPermission(jsonPermission.get, id, level) match {
-          case true => {
+    // Check permission
+    val jsonPermission = PermissionPersistency.getPersistentPermission(rdn)
+    checkPermission(jsonPermission.get, id, level) match {
+      case true => {
 
-            // Fetch json object with symmetric key
-            KeyPersistency.getPersistentKey(n) match {
-              case Some(jsonSymKey) => {
-                // Extract symmetric key
-                val symKey = extractLevelKey(jsonSymKey, level)
-                // Encrypt symmetric key with users public key
-                Some(pubEncrypt(symKey.get, id))
-              }
-              case _ => {
-                // Could not fetch data from persistent storage
-                None
-              }
-            }
-
+        // Fetch json object with symmetric key
+        KeyPersistency.getPersistentKey(rdn) match {
+          case Some(jsonSymKey) => {
+            // Extract symmetric key
+            val symKey = extractLevelKey(jsonSymKey, level)
+            // Encrypt symmetric key with users public key
+            Some(pubEncrypt(symKey.get, id))
           }
-          case false => {
-            // Permission denied
+          case _ => {
+            // Could not fetch data from persistent storage
             None
           }
         }
 
       }
-
-      // Could not parse name
-      case _ => None
-
+      case false => {
+        // Permission denied
+        None
+      }
     }
 
   }

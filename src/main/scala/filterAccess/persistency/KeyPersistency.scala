@@ -53,8 +53,7 @@ object KeyPersistency {
   private def readKeyFileSystem(name:String): Option[String] = {
 
     // path of file in the file system containing the asked data
-    // TODO - data prefix is hard coded for now. Generalize this..
-    val path = storageLocation + "/ch/unibas/data/track" + name + "/key_channel"
+    val path = storageLocation + name + "/key_channel"
 
     // read file
     // TODO - error handling
