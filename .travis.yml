@@ -1,4 +1,4 @@
-sudo: false # Enable container-based infrastructure
+sudo: true # Enable container-based infrastructure
 
 language: scala
 scala:
