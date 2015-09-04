@@ -44,7 +44,7 @@ If you want to use IntelliJ or eclipse you can use the sbt tasks `gen-idea` or `
 
 ##Running nfn-scala
 
-For a detailed tutorial on both running CCN-Lite as well as nfn-scala go to the [tutorial](https://github.com/cn-uofbasel/ccn-lite/blob/dev-master/doc/tutorial/tutorial.md).
+For a detailed tutorial on both running CCN-Lite as well as nfn-scala go to the [tutorial](https://github.com/cn-uofbasel/ccn-lite/blob/master/tutorial/tutorial.md).
 In the following two very basic ways to use nfn-scala.
 
 ### Running a test project
