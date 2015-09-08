@@ -1,6 +1,7 @@
 package filterAccess.persistency
 
 import filterAccess.dataGenerator.SimpleNDNExData._
+import filterAccess.tools.ConfigReader._
 
 import scala.io.Source._
 
@@ -18,14 +19,23 @@ object PermissionPersistency {
    * If true, data is taken from the filesystem.
    * Otherwise it us generated on the fly.
    */
-  val fromFilesystem = true
+  val fromFilesystem = getValueOrDefault("dsu.fromFilesystem", "true") match {
+    case Some(b)  => {
+      b match {
+        case "true" => true
+        case "false" => false
+        case _ => true
+      }
+    }
+    case None => true
+  }
 
   /**
    * Filesystem path of the data repository. This path is just used if fromFilesystem is set true.
    * Use [[filterAccess.runnables.DataGenerator]] to populate the data repository.
    *
    */
-  val storageLocation = "/home/claudio/mt/repo"
+  val storageLocation = getValueOrDefault("dsu.repoPath", "/home/claudio/mt/repo").get
 
 
   /**

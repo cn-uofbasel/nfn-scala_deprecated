@@ -1,6 +1,7 @@
 package filterAccess.runnables
 
 import filterAccess.dataGenerator.SimpleNDNExData._
+import filterAccess.tools.ConfigReader._
 import filterAccess.tools.Logging._
 import java.io.{File, FileWriter}
 
@@ -77,7 +78,7 @@ object DataGenerator extends App {
   section("configuration")
 
   /** Location of the data repository in the local file system */
-  val storageLocation = "/home/claudio/mt/repo"
+  val storageLocation = getValueOrDefault("repoPath", "/home/claudio/mt/repo")
   /** Relative data name (rdn) prefix */
   val prefix = "/john/doe"
   /** List of available data types */
