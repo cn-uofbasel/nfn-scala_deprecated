@@ -20,14 +20,9 @@ object ContentPersistency {
    * Otherwise it us generated on the fly.
    */
   val fromFilesystem = getValueOrDefault("dsu.fromFilesystem", "true") match {
-    case Some(b)  => {
-      b match {
         case "true" => true
         case "false" => false
         case _ => true
-      }
-    }
-    case None => true
   }
 
 
@@ -36,7 +31,7 @@ object ContentPersistency {
    * Use [[filterAccess.runnables.DataGenerator]] to populate the data repository.
    *
    */
-  val storageLocation = getValueOrDefault("dsu.repoPath", "/tmp/repo").get
+  val storageLocation = getValueOrDefault("dsu.repoPath", "/tmp/repo")
 
   /**
    * Get content channel data by name

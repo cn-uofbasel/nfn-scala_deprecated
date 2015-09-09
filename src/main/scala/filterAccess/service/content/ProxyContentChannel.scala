@@ -22,10 +22,10 @@ import scala.language.postfixOps
 class ProxyContentChannel extends ContentChannel {
 
   /** Config: Prefix or storage service */
-  val storagePrefix =  getValueOrDefault("dpu.prefix.content.storage", "/serviceprovider/health/storage").get
+  val storagePrefix =  getValueOrDefault("dpu.prefix.content.storage", "/serviceprovider/health/storage")
 
   /** Config: Prefix or processing service */
-  val filteringPrefix =  getValueOrDefault("dpu.prefix.content.filtering", "/serviceprovider/health/filtering").get
+  val filteringPrefix =  getValueOrDefault("dpu.prefix.content.filtering", "/serviceprovider/health/filtering")
 
 
   /**

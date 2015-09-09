@@ -78,7 +78,7 @@ object DataGenerator extends App {
   section("configuration")
 
   /** Location of the data repository in the local file system */
-  val storageLocation = getValueOrDefault("generator.repoPath", "/tmp/repo").get
+  val storageLocation = getValueOrDefault("generator.repoPath", "/tmp/repo")
   /** Relative data name (rdn) prefix */
   val prefix = "/john/doe"
   /** List of available data types */

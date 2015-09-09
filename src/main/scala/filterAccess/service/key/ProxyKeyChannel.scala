@@ -20,7 +20,7 @@ import scala.language.postfixOps
 class ProxyKeyChannel extends KeyChannel {
 
   /** Config: Prefix or key channel service */
-  val keyPrefix = getValueOrDefault("dpu.prefix.key", "/serviceprovider/health/storage").get
+  val keyPrefix = getValueOrDefault("dpu.prefix.key", "/serviceprovider/health/storage")
 
   /**
    *

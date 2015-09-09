@@ -20,7 +20,7 @@ import scala.language.postfixOps
 class ProxyPermissionChannel extends PermissionChannel {
 
   /** Config: Prefix or key channel service */
-  val permissionPrefix = getValueOrDefault("dpu.prefix.permission", "/serviceprovider/health/storage").get
+  val permissionPrefix = getValueOrDefault("dpu.prefix.permission", "/serviceprovider/health/storage")
 
 
   /**

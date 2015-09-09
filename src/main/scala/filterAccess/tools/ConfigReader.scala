@@ -70,10 +70,10 @@ object ConfigReader {
    * @param    configPath     Path to the config file (default: ~/nfn-scala.conf)
    * @return                  Retrieved value or otherwise default value
    */
-  def getValueOrDefault(key:String, defaultValue:String, configPath:String=defaultConfigPath): Option[String] = {
+  def getValueOrDefault(key:String, defaultValue:String, configPath:String=defaultConfigPath): String = {
     getValue(key, configPath) match {
-      case None => Some(defaultValue.trim)
-      case Some(v) => Some(v.trim)
+      case None => defaultValue.trim
+      case Some(v) => v.trim
     }
   }
 
