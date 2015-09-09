@@ -67,7 +67,7 @@ object ComputeServerStarter extends Logging {
       p => if(CCNName.fromString(p).isDefined) success else failure(s"Argument <node-prefix> must be a valid CCNName (e.g. ${ComputeServerConfigDefaults.prefix})")
     } action {
       case (p, c) => c.copy(prefix = CCNName.fromString(p).get)
-    } text s"prefix of this node, all content and services are published with this name (example: ${ComputeServerConfigDefaults.prefix}"
+    } text s"prefix of this node, all content and services are published with this name (example: ${ComputeServerConfigDefaults.prefix})"
   }
 
   def main(args: Array[String]) = {

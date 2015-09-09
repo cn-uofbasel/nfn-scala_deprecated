@@ -16,25 +16,26 @@ import scopt.OptionParser
  * Created by blacksheeep on 08/09/15.
  */
 
-object secureServiceConfigDefaults {
+object SecureServiceConfigDefaults {
   val mgmtSocket = "/tmp/ccn-lite-mgmt.sock"
   val ccnLiteAddr = "127.0.0.1"
   val ccnlPort = 10000
   val computeServerPort = 10001
   val isCCNLiteAlreadyRunning = false
   val logLevel = "warning"
-  val prefix = CCNName("nfn", "node")
+  val prefix = CCNName("serviceprovider")
+  val secureServiceType = "DSU"
 }
 
-case class secureServiceConfig(prefix: CCNName = ComputeServerConfigDefaults.prefix,
+case class secureServiceConfig(prefix: CCNName = SecureServiceConfigDefaults.prefix,
                                mgmtSocket: Option[String] = None,
-                               ccnLiteAddr: String = ComputeServerConfigDefaults.ccnLiteAddr,
-                               ccnlPort: Int = ComputeServerConfigDefaults.ccnlPort,
-                               computeServerPort: Int = ComputeServerConfigDefaults.computeServerPort,
-                               isCCNLiteAlreadyRunning: Boolean = ComputeServerConfigDefaults.isCCNLiteAlreadyRunning,
-                               logLevel: String = ComputeServerConfigDefaults.logLevel,
+                               ccnLiteAddr: String = SecureServiceConfigDefaults.ccnLiteAddr,
+                               ccnlPort: Int = SecureServiceConfigDefaults.ccnlPort,
+                               computeServerPort: Int = SecureServiceConfigDefaults.computeServerPort,
+                               isCCNLiteAlreadyRunning: Boolean = SecureServiceConfigDefaults.isCCNLiteAlreadyRunning,
+                               logLevel: String = SecureServiceConfigDefaults.logLevel,
                                suite: String = "",
-                               secureServiceType: String = "DSU")
+                               secureServiceType: String = SecureServiceConfigDefaults.secureServiceType)
 
 object SecureServiceStarter extends Logging{
   val argsParser =  new OptionParser[secureServiceConfig]("") {
@@ -43,13 +44,13 @@ object SecureServiceStarter extends Logging{
     head("nfn-scala: compute-server starter", "v0.2.0")
     opt[String]('m', "mgmtsocket") action { (ms, c) =>
       c.copy(mgmtSocket = Some(ms))
-    } text s"unix socket name for ccnl mgmt ops or of running ccnl, if not specified ccnl UDP socket is used (example: ${ComputeServerConfigDefaults.mgmtSocket})"
+    } text s"unix socket name for ccnl mgmt ops or of running ccnl, if not specified ccnl UDP socket is used (example: ${SecureServiceConfigDefaults.mgmtSocket})"
     opt[String]('a', "ccnl-addr") action { case (a, c) =>
       c.copy(ccnLiteAddr = a)
-    } text s"address ccnl should use or address of running ccnl (default: ${ComputeServerConfigDefaults.ccnLiteAddr})"
+    } text s"address ccnl should use or address of running ccnl (default: ${SecureServiceConfigDefaults.ccnLiteAddr})"
     opt[Int]('o', "ccnl-port") action { case (p, c) =>
       c.copy(ccnlPort = p)
-    } text s"unused port ccnl should use or port of running ccnl (default: ${ComputeServerConfigDefaults.ccnlPort})"
+    } text s"unused port ccnl should use or port of running ccnl (default: ${SecureServiceConfigDefaults.ccnlPort})"
     opt[String]('s', "suite") action { case (s, c) =>
       c.copy(suite = s)
     } text s"wireformat to be used (default: ndntlv)"
@@ -58,7 +59,7 @@ object SecureServiceStarter extends Logging{
     } text s"Secure Service to run: DSU (default), DPU, DCU)"
     opt[Int]('p', "cs-port") action { case (p, c) =>
       c.copy(computeServerPort = p)
-    } text s"port used by compute server, (default: ${ComputeServerConfigDefaults.computeServerPort})"
+    } text s"port used by compute server, (default: ${SecureServiceConfigDefaults.computeServerPort})"
     opt[Unit]('r', "ccnl-already-running") action { (_, c) =>
       c.copy(isCCNLiteAlreadyRunning = true)
     } text s"flag to indicate that ccnl is already running and should not be started internally by nfn-scala"
@@ -73,14 +74,13 @@ object SecureServiceStarter extends Logging{
       sys.exit
       c
     } text { "prints usage" }
-    arg[String]("<node-prefix>") validate {
-      p => if(CCNName.fromString(p).isDefined) success else failure(s"Argument <node-prefix> must be a valid CCNName (e.g. ${ComputeServerConfigDefaults.prefix})")
-    } action {
-      case (p, c) => c.copy(prefix = CCNName.fromString(p).get)
-    } text s"prefix of this node, all content and services are published with this name (example: ${ComputeServerConfigDefaults.prefix}"
+    opt[String]('n', "<node-prefix>") action { (p,c) =>
+        c.copy(prefix = CCNName.fromString(p).get)
+    } text s"prefix of this node, all content and services are published with this name (example: ${SecureServiceConfigDefaults.prefix})"
   }
 
   def main(args: Array[String]) = {
+
     argsParser.parse(args, secureServiceConfig()) match {
       case Some(config) =>
         StaticConfig.setDebugLevel(config.logLevel)
@@ -92,19 +92,36 @@ object SecureServiceStarter extends Logging{
 
         logger.debug(s"config: $config")
 
-        // Configuration of the router, sro far always ccn-lite
+        val prefix = if(config.prefix == "") SecureServiceConfigDefaults.prefix else config.prefix
+
+        val name = config.secureServiceType match {
+          case "DSU" => {
+            prefix.append("storage")
+          }
+          case "DPU" => {
+            CCNName("own", "domain")
+          }
+          case "DCU" => {
+            prefix.append("filtering")
+          }
+          case _ => {
+            println("NO SERVICE TYPE GIVEN!")
+            sys.exit(-1)
+          }
+        }
+
+      // Configuration of the router, sro far always ccn-lite
         // It requires the socket to the management interface, isCCNOnly = false indicates that it is a NFN node
         // and isAlreadyRunning tells the system that it should not have to start ccn-lite
-        val routerConfig = RouterConfig(config.ccnLiteAddr, config.ccnlPort, config.prefix, config.mgmtSocket.getOrElse("") ,isCCNOnly = false, isAlreadyRunning = config.isCCNLiteAlreadyRunning)
+        val routerConfig = RouterConfig(config.ccnLiteAddr, config.ccnlPort, name, config.mgmtSocket.getOrElse("") ,isCCNOnly = false, isAlreadyRunning = config.isCCNLiteAlreadyRunning)
 
 
         // This configuration sets up the compute server
         // withLocalAm = false tells the system that it should not start an abstract machine alongside the compute server
-        val computeNodeConfig = ComputeNodeConfig("127.0.0.1", config.computeServerPort, config.prefix, withLocalAM = false)
+        val computeNodeConfig = ComputeNodeConfig("127.0.0.1", config.computeServerPort, name, withLocalAM = false)
 
         // Abstraction of a node which runs both the router and the compute server on localhost (over UDP sockets)
         val node = LocalNode(routerConfig, Some(computeNodeConfig))
-
 
         // Publish services
         // This will internally get the Java bytecode for the compiled services, put them into jar files and
