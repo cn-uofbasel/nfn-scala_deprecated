@@ -1,6 +1,7 @@
 package filterAccess.service.content
 
 import akka.actor.ActorRef
+import filterAccess.tools.ConfigReader._
 import scala.concurrent.duration._
 
 import filterAccess.tools.Exceptions.noReturnException
@@ -21,10 +22,11 @@ import scala.language.postfixOps
 class ProxyContentChannel extends ContentChannel {
 
   /** Config: Prefix or storage service */
-  val storagePrefix = "/serviceprovider/health/storage"
+  val storagePrefix =  getValueOrDefault("dpu.prefix.content.storage", "/serviceprovider/health/storage").get
 
   /** Config: Prefix or processing service */
-  val filteringPrefix = "/serviceprovider/health/filtering"
+  val filteringPrefix =  getValueOrDefault("dpu.prefix.content.filtering", "/serviceprovider/health/filtering").get
+
 
   /**
    * This function is called by entry point of this service to handle the actual work.

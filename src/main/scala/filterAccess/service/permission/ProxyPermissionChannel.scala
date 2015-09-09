@@ -1,6 +1,7 @@
 package filterAccess.service.permission
 
 import akka.actor.ActorRef
+import filterAccess.tools.ConfigReader._
 import filterAccess.tools.InterestBuilder.buildDirectPermissionChannelInterest
 import scala.concurrent.duration._
 
@@ -19,7 +20,8 @@ import scala.language.postfixOps
 class ProxyPermissionChannel extends PermissionChannel {
 
   /** Config: Prefix or key channel service */
-  val permissionPrefix = "/serviceprovider/health/filtering"
+  val permissionPrefix = getValueOrDefault("dpu.prefix.permission", "/serviceprovider/health/storage").get
+
 
   /**
    *

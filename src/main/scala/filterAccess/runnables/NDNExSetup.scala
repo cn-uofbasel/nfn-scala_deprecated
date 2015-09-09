@@ -1250,7 +1250,7 @@ object NDNExSetup extends App {
 
   ///// STORAGE AND FILTERING /////
 
-  filtering1      // FETCH PERMISSIONS FROM DSU
+  // filtering1      // FETCH PERMISSIONS FROM DSU
   // filtering2      // FETCH KEY FROM DSU
   // filtering3      // FETCH PERMISSION AS WELL AS KEY FROM DSU AND PERFORM ENCRYPTION
   // filtering4      // FETCH AN UNFILTERED TRACK WITH CONTENT CHANNEL FROM DSU AND DECRYPT

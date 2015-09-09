@@ -1,6 +1,7 @@
 package filterAccess.service.key
 
 import akka.actor.ActorRef
+import filterAccess.tools.ConfigReader._
 import filterAccess.tools.InterestBuilder.buildDirectKeyChannelInterest
 import scala.concurrent.duration._
 
@@ -19,7 +20,7 @@ import scala.language.postfixOps
 class ProxyKeyChannel extends KeyChannel {
 
   /** Config: Prefix or key channel service */
-  val keyPrefix = "/serviceprovider/health/filtering"
+  val keyPrefix = getValueOrDefault("dpu.prefix.key", "/serviceprovider/health/storage").get
 
   /**
    *
