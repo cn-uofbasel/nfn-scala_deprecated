@@ -84,7 +84,7 @@ object Helpers {
   def symEncryptProcessing(data: Array[Byte], key: Array[Byte]): Array[Byte] = {
 
     // initialize encryption key
-    val encryptionKey = new SecretKeySpec(key.drop(16), "AES") //drop 16 because java supports only 128bit keys
+    val encryptionKey = new SecretKeySpec(key.drop(16), "AES") //FIXME: drop 16 because java supports only 128bit keys
 
     // initialize cypher
     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
@@ -108,7 +108,7 @@ object Helpers {
   def symDecryptProcessing(data: Array[Byte], key: Array[Byte]): Array[Byte] = {
 
     // initialize encryption key
-    val decryptionKey = new SecretKeySpec(key, "AES")
+    val decryptionKey = new SecretKeySpec(key.drop(16), "AES") //FIXME: drop 16 because java supports only 128bit keys
 
     // initialize cypher
     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
