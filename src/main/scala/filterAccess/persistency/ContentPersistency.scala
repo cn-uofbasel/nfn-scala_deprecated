@@ -30,12 +30,13 @@ object ContentPersistency {
     case None => true
   }
 
+
   /**
    * Filesystem path of the data repository. This path is just used if fromFilesystem is set true.
    * Use [[filterAccess.runnables.DataGenerator]] to populate the data repository.
    *
    */
-  val storageLocation = getValueOrDefault("dsu.repoPath", "/home/claudio/mt/repo").get
+  val storageLocation = getValueOrDefault("dsu.repoPath", "/tmp/repo").get
 
   /**
    * Get content channel data by name
