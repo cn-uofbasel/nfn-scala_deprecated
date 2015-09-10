@@ -1,6 +1,5 @@
 #! /bin/bash
 
-
 # $1 = DPU address
 if [ -z "$1" ]; then 
 	DPU_Address='127.0.0.1'
