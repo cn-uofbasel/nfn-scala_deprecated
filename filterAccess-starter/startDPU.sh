@@ -18,7 +18,7 @@ cd ..
 
 sbt 'runMain filterAccess.runnables.SecureServiceStarter -m /tmp/mgmtDPU -o 6131 -p 6231 -d -s ndn2013 -t DPU' & 
 
-sleep 10
+sleep 20
 
 FACEID_DSU=`ccn-lite-ctrl -x /tmp/mgmtDPU newUDPface any $DSU_Address 6130 | ccn-lite-ccnb2xml | grep FACEID | sed s/[^0-9]//g`
 FACEID_DCU=`ccn-lite-ctrl -x /tmp/mgmtDPU newUDPface any $DCU_Address 6132 | ccn-lite-ccnb2xml | grep FACEID | sed s/[^0-9]//g`
