@@ -1,7 +1,11 @@
 package filterAccess.crypto
 
 import java.security.MessageDigest
-import java.util.Base64 // note: this is new in java 8
+import java.util.Base64
+
+import filterAccess.tools.ConfigReader._
+
+// note: this is new in java 8
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.spec.IvParameterSpec
@@ -132,10 +136,18 @@ object Helpers {
    */
   def asymKeyGenerator(): (String, String) = {
 
-    // initialize RSA 1024 bit key pair generator
     val generator = KeyPairGenerator.getInstance("RSA")
-    //generator.initialize(1024)
-    generator.initialize(512) // TODO --- change to 1024 on production mode...
+
+    // determine key length (from config file or 512 as default)
+    val keyLength = getValueOrDefault("generator.rsa.lenngth", "512") match {
+        case "512" => 512
+        case "1024" => 1024
+        case _ => 512
+    }
+
+    // initialize RSA 1024 bit key pair generator
+    generator.initialize(keyLength)
+
 
     // generate key
     val keyPair = generator.generateKeyPair()
@@ -159,7 +171,7 @@ object Helpers {
    * @return        DES key of length 256 bit (base64 encoded)
    */
   def symKeyGenerator(s:String): String = {
-    // TODO - warning if "s" encodes less than 256 bit
+    // TODO - warning if "s" encodes less than 256 bit?
     computeHash(s)
   }
 
