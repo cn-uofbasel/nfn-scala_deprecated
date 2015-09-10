@@ -24,8 +24,10 @@ import filterAccess.tools.DataNaming._
  */
 class ContentChannelFiltering extends ContentChannel {
 
-  /** Config: Prefix of this service. (Needed to reach ChontentChannelProcessing to fetch unfiltered data) */
-  val ownPrefix = "/own/machine"
+  /** Config: Prefix of this service (respectively its proxy).
+   * (Needed to reach ChontentChannelProcessing to fetch unfiltered data)
+   */
+  val ownPrefix = getValueOrDefault("dcu.proxy.prefix", "/own/machine")
 
   /**
    * Filtering function for type:track on first filtering level (access level 2).
