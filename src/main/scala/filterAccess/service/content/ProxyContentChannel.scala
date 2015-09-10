@@ -53,7 +53,7 @@ class ProxyContentChannel extends ContentChannel {
         buildDirectContentChannelInterest(rdn, filteringPrefix, l)
       }
     }
-
+    
     // fetch and return
     fetchContent(interest, ccnApi, 5 seconds) match {
       case Some(content) => Some(new String(content.data))

@@ -1250,7 +1250,7 @@ object NDNExSetup extends App {
 
   ///// STORAGE AND FILTERING /////
 
-  filtering1      // FETCH PERMISSIONS FROM DSU
+  // filtering1      // FETCH PERMISSIONS FROM DSU
   // filtering2      // FETCH KEY FROM DSU
   // filtering3      // FETCH PERMISSION AS WELL AS KEY FROM DSU AND PERFORM ENCRYPTION
   // filtering4      // FETCH AN UNFILTERED TRACK WITH CONTENT CHANNEL FROM DSU AND DECRYPT
@@ -1273,5 +1273,32 @@ object NDNExSetup extends App {
   // processing6    // FETCH SYNTHESIZED KEY FOR PROCESSED DATA (MAX OF TWO TRACKS)
   // processing7    // FETCH PROCESSED CONTENT (MAX OF TWO TRACKS) WITH KEY AND DECRYPT
   // processing8    // FETCH PERMISSIONS TO PROCESSED CONTENT (MAX OF TWO TRACKS) WITH KEY AND DECRYPT
+
+
+
+  val interest1: Interest = proxyKeyChannelName call("/john/doe/track/paris-marathon", 2, "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJpoF3jlUz9OOFgvEtraFMuaOuA211Ck3UHuHToMys65tT7PqvY87VNdOflJN1oTqqIuy3b8Hn4r45duJFc9N+MCAwEAAQ==")
+  var contentData = "todo"
+
+  // send interest for permissions from dvu...
+  val startTime1 = System.currentTimeMillis
+  info("Send interest: " + interest1)
+  client ? interest1 onComplete {
+    // ... and receive content
+    case Success(resultContent) => {
+      contentData = new String(resultContent.data)
+      info("Result:        " + new String(resultContent.data))
+      info("Time:          " + (System.currentTimeMillis - startTime1) + "ms")
+    }
+    // ... but do not get content
+    case Failure(e) => {
+      info("No content received.")
+      // Monitor.monitor ! Monitor.Visualize()
+      // nodes foreach {
+      // _.shutdown()
+      //}
+    }
+  }
+
+
 
 }
