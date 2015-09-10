@@ -102,7 +102,7 @@ object SecureServiceStarter extends Logging{
             prefix.append("filtering")
           }
           case "DPU" => {
-            CCNName("own", "domain")
+            CCNName("own", "machine")
           }
           case _ => {
             println("NO SERVICE TYPE GIVEN!")
