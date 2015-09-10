@@ -98,11 +98,11 @@ object SecureServiceStarter extends Logging{
           case "DSU" => {
             prefix.append("storage")
           }
-          case "DPU" => {
-            CCNName("own", "domain")
-          }
           case "DCU" => {
             prefix.append("filtering")
+          }
+          case "DPU" => {
+            CCNName("own", "domain")
           }
           case _ => {
             println("NO SERVICE TYPE GIVEN!")
@@ -134,10 +134,10 @@ object SecureServiceStarter extends Logging{
             node.publishServiceLocalPrefix(new KeyChannelStorage)
             node.publishServiceLocalPrefix(new ContentChannelStorage)
           }
-          case "DPU" => {
+          case "DCU" => {
             node.publishServiceLocalPrefix(new ContentChannelFiltering)
           }
-          case "DCU" => {
+          case "DPU" => {
             node.publishServiceLocalPrefix(new ProxyPermissionChannel)
             node.publishServiceLocalPrefix(new ProxyKeyChannel)
             node.publishServiceLocalPrefix(new ProxyContentChannel)
