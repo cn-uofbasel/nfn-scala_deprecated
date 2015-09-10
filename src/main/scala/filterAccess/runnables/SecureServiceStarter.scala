@@ -104,7 +104,8 @@ object SecureServiceStarter extends Logging{
           }
           case "DPU" => {
             val storageLocation = getValueOrDefault("dcu.proxy.prefix", "/own/machine")
-            CCNName(storageLocation.substring(1))
+            
+            CCNName(storageLocation.substring(1).split('/').toList, None)
           }
           case _ => {
             println("NO SERVICE TYPE GIVEN!")
