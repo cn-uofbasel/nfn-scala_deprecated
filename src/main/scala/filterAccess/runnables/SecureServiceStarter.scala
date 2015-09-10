@@ -6,6 +6,7 @@ import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import filterAccess.service.content.{ContentChannelFiltering, ProxyContentChannel, ContentChannelStorage}
 import filterAccess.service.key.{ProxyKeyChannel, KeyChannelStorage}
 import filterAccess.service.permission.{ProxyPermissionChannel, PermissionChannelStorage}
+import filterAccess.tools.ConfigReader._
 import nfn.service._
 import node.LocalNode
 import runnables.production.ComputeServerConfigDefaults
@@ -102,7 +103,8 @@ object SecureServiceStarter extends Logging{
             prefix.append("filtering")
           }
           case "DPU" => {
-            CCNName("own", "machine")
+            val storageLocation = getValueOrDefault("dcu.proxy.prefix", "/own/machine")
+            CCNName(storageLocation.substring(1))
           }
           case _ => {
             println("NO SERVICE TYPE GIVEN!")
