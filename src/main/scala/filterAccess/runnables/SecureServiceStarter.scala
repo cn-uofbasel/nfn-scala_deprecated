@@ -6,6 +6,8 @@ import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import filterAccess.service.content.{ContentChannelFiltering, ProxyContentChannel, ContentChannelStorage}
 import filterAccess.service.key.{ProxyKeyChannel, KeyChannelStorage}
 import filterAccess.service.permission.{ProxyPermissionChannel, PermissionChannelStorage}
+import filterAccess.service.processing.track.distance.{KeyChannelDistance, PermissionChannelDistance, ContentChannelDistance, Distance}
+import filterAccess.service.processing.track.maximum.{KeyChannelMaximum, PermissionChannelMaximum, ContentChannelMaximum}
 import filterAccess.tools.ConfigReader._
 import nfn.service._
 import node.LocalNode
@@ -57,7 +59,7 @@ object SecureServiceStarter extends Logging{
     } text s"wireformat to be used (default: ndntlv)"
     opt[String]('t', "secureServiceType") action { case (s, c) =>
       c.copy(secureServiceType = s)
-    } text s"Secure Service to run: DSU (default), DPU, DCU)"
+    } text s"Secure Service to run: DSU (default), DPU, DCU, ECU)"
     opt[Int]('p', "cs-port") action { case (p, c) =>
       c.copy(computeServerPort = p)
     } text s"port used by compute server, (default: ${SecureServiceConfigDefaults.computeServerPort})"
@@ -104,8 +106,11 @@ object SecureServiceStarter extends Logging{
           }
           case "DPU" => {
             val storageLocation = getValueOrDefault("dcu.proxy.prefix", "/own/machine")
-            
+
             CCNName(storageLocation.substring(1).split('/').toList, None)
+          }
+          case "ECU" => {
+            prefix.append("external").append("compute")
           }
           case _ => {
             println("NO SERVICE TYPE GIVEN!")
@@ -144,6 +149,15 @@ object SecureServiceStarter extends Logging{
             node.publishServiceLocalPrefix(new ProxyPermissionChannel)
             node.publishServiceLocalPrefix(new ProxyKeyChannel)
             node.publishServiceLocalPrefix(new ProxyContentChannel)
+          }
+          case "ECU" => {
+            node.publishServiceLocalPrefix(new ContentChannelDistance())
+            node.publishServiceLocalPrefix(new PermissionChannelDistance())
+            node.publishServiceLocalPrefix(new KeyChannelDistance())
+
+            node.publishServiceLocalPrefix(new ContentChannelMaximum())
+            node.publishServiceLocalPrefix(new PermissionChannelMaximum())
+            node.publishServiceLocalPrefix(new KeyChannelMaximum())
           }
           case _ => {
             println("SecureServiceType must be either DSU, DPU or DCU")
