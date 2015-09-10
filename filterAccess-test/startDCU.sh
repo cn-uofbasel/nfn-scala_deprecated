@@ -14,7 +14,7 @@ else
 	DPU_Address=$2
 fi
 
-cd ../nfn-scala
+cd ..
 
 sbt 'runMain filterAccess.runnables.SecureServiceStarter -m /tmp/mgmtDCU -o 6132 -p 6232 -d -s ndn2013 -t DCU' & 
 
