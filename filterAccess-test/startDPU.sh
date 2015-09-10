@@ -16,7 +16,7 @@ fi
 
 cd ..
 
-sbt 'runMain filterAccess.runnables.SecureServiceStarter -m /tmp/mgmtDPU -o 6131 -p 6231 -d -s ndn2013 -t DPU -r' & 
+sbt 'runMain filterAccess.runnables.SecureServiceStarter -m /tmp/mgmtDPU -o 6131 -p 6231 -d -s ndn2013 -t DPU' & 
 
 sleep 10
 
