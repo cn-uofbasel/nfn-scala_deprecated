@@ -21,7 +21,6 @@ abstract class PermissionChannel extends Channel {
    * @param    ccnApi    Akka Actor
    * @return             JSON Object
    */
-
   def processPermissionChannel(rdn: String, ccnApi: ActorRef): Option[String]
 
 
