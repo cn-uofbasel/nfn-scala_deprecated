@@ -1,11 +1,18 @@
-package nfn.service
+package filterAccess.ndncomm15.services
 
 import javax.crypto.{Cipher, KeyGenerator}
 
 import akka.actor.ActorRef
-import ccn.packet.CCNName
+import akka.util.Timeout
+import ccn.packet.{Interest, Content, CCNName}
+import nfn.NFNApi
+import akka.pattern._
+import nfn.service._
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.io.Source
+import scala.util._
 
 class Echo extends NFNService{
 
@@ -28,8 +35,23 @@ class Echo extends NFNService{
               case Some(ek) => {
                 if(ek.tail.head == "n"){
                   val filename = ek.tail.tail.head
-                  val networkname = CCNName(filename.substring(1))
+                  val networkname = CCNName(filename.substring(1).split("/").toList, None)
                   NFNNameValue(networkname)
+                  val interest = Interest(networkname)
+
+                  import ExecutionContext.Implicits.global
+                  implicit val timeout = Timeout(10000)
+                  val fres: Future[Content] = (ccnApi ? NFNApi.CCNSendReceive(interest, false)).mapTo[Content]
+                  val res = Await.result(fres, timeout.duration)
+
+                  res match{
+                    case c: Content => {
+                      val ek = filterAccess.crypto.Helpers.byteToString(c.data)
+                      val encrypted: String = filterAccess.crypto.Encryption.symEncrypt(d, ek)
+                      NFNStringValue(encrypted)
+                    }
+                    case _ => NFNStringValue("Key file not found")
+                  }
                 }
                 else{
                   val encrypted: String = filterAccess.crypto.Encryption.symEncrypt(d, ek.tail.tail.head)

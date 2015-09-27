@@ -13,7 +13,7 @@ import scala.sys.process._
 class EchoP extends NFNService {
 
   /* ACL (access control list) location in file system */
-  val aclLoc = "/home/claudio/acl"
+  val aclLoc = "ac.txt"
 
   /**
    * Look a symmetric key in persistent storage
@@ -55,7 +55,7 @@ class EchoP extends NFNService {
 
     // make persistent
     val fw = new FileWriter(aclLoc, true)
-    fw.write(pubKey + "," + symKey + "\n")
+    fw.write(pubKey +"," + "k" + "," + symKey + "\n")
     fw.close
 
     // return

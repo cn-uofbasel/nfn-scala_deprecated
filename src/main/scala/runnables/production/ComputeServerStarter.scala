@@ -1,12 +1,13 @@
 package runnables.production
 
 
-import ccn.packet.CCNName
+import ccn.packet.{Content, CCNName}
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import nfn.service._
 import node.LocalNode
 import scopt.OptionParser
+import filterAccess.ndncomm15.services._
 
 
 object ComputeServerConfigDefaults {
@@ -105,12 +106,18 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new Pandoc())
         node.publishServiceLocalPrefix(new PDFLatex())
         node.publishServiceLocalPrefix(new Reverse())
+        node.publishServiceLocalPrefix(new Echo())
+        node.publishServiceLocalPrefix(new EchoP())
 
 
         // Gets the content of the ccn-lite tutorial
         node += PandocTestDocuments.tutorialMd(node.localPrefix)
         // Publishes a very small two-line markdown file
         node += PandocTestDocuments.tinyMd(node.localPrefix)
+
+        val testkey = Content(CCNName(List("test", "data"), None), filterAccess.crypto.Helpers.stringToByte("S2QempI9HqV+GP5B3LVD4sQAXEH/IQhkpxCw+7JlTBE="))
+        node += testkey
+
       case None => sys.exit(1)
     }
   }
