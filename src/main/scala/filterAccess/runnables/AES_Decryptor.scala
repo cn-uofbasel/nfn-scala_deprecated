@@ -12,7 +12,7 @@ import scala.sys.process._
 object AES_Decryptor{
 
   def getKey(pkey : String) : String = {
-    val command = "sh requestP.sh " + pkey
+    val command = "sh scripts/requestP.sh " + pkey
     command !! match {
       case symkey: String => {
         symkey
@@ -22,7 +22,7 @@ object AES_Decryptor{
   }
 
   def getEcho(text: String, pkey: String) : String = {
-    val command = "sh echo.sh " + text + " " + pkey
+    val command = "sh scripts/echo.sh " + text + " " + pkey
     command !! match {
       case echo: String => {
         echo
@@ -43,7 +43,7 @@ object AES_Decryptor{
 
     val echo = getEcho(data, pkey)
     println("Echo Reply: " + echo)
-    
+
     println("Decrpyted: " + symDecrypt(echo.substring(0, echo.length-1), symKey.substring(0, symKey.length-1)))
   }
 
