@@ -22,22 +22,15 @@ class EchoP extends NFNService {
    * @return          Symmetric key or none
    */
   def lookupKey(pubKey:String): Option[String] = {
-    try {
-      // run command to extract value from config file
-      Seq( "/bin/sh", "-c",
-        s"grep '^$pubKey,.*' $aclLoc |" +
-          "tail -1"
-      ) !! match {
-        // execution successful and result not empty
-        case value: String if value.length > 0 => Some(value.trim)
-        // execution successful but empty result
-        case _ => None
-      }
+    val lines = scala.io.Source.fromFile(aclLoc).getLines()
 
-    }
-    catch {
-      // execution failed. config file not found?
-      case _:Throwable => None
+    val split_lines = lines.map(x => x.split(","))
+
+    val keyline: Option[Array[String]] = split_lines.find(x=> x.head == pubKey)
+
+    keyline match {
+      case Some(key) => Some(key.tail.tail.head)
+      case _ => None
     }
   }
 
