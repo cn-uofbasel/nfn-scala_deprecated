@@ -118,7 +118,7 @@ object ComputeServerStarter extends Logging {
         node += PandocTestDocuments.tinyMd(node.localPrefix)
 
 
-        //Read GPS Trackpoints for NDN Fit Experiment
+        //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
         /*val files =  ("ls trackpoints/" !!)
         val filelist = files.split('\n')
 
