@@ -7,7 +7,9 @@ import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import nfn.service._
 import node.LocalNode
 import scopt.OptionParser
-import filterAccess.ndncomm15.services._
+import sys.process._
+
+import scala.io.Source
 
 
 object ComputeServerConfigDefaults {
@@ -96,7 +98,6 @@ object ComputeServerStarter extends Logging {
         // Abstraction of a node which runs both the router and the compute server on localhost (over UDP sockets)
         val node = LocalNode(routerConfig, Some(computeNodeConfig))
 
-
         // Publish services
         // This will internally get the Java bytecode for the compiled services, put them into jar files and
         // put the data of the jar into a content object.
@@ -106,8 +107,9 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new Pandoc())
         node.publishServiceLocalPrefix(new PDFLatex())
         node.publishServiceLocalPrefix(new Reverse())
-        node.publishServiceLocalPrefix(new Echo())
-        node.publishServiceLocalPrefix(new EchoP())
+        //node.publishServiceLocalPrefix(new Echo())
+        //node.publishServiceLocalPrefix(new EchoP())
+        node.publishServiceLocalPrefix(new GPXPointFilter())
 
 
         // Gets the content of the ccn-lite tutorial
@@ -115,8 +117,19 @@ object ComputeServerStarter extends Logging {
         // Publishes a very small two-line markdown file
         node += PandocTestDocuments.tinyMd(node.localPrefix)
 
-        val testkey = Content(CCNName(List("test", "data"), None), filterAccess.crypto.Helpers.stringToByte("S2QempI9HqV+GP5B3LVD4sQAXEH/IQhkpxCw+7JlTBE="))
-        node += testkey
+
+        //Read GPS Trackpoints for NDN Fit Experiment
+        /*val files =  ("ls trackpoints/" !!)
+        val filelist = files.split('\n')
+
+        filelist.foreach(f => {
+          val data = Source.fromFile(s"trackpoints/$f").mkString
+          val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
+          node += Content(CCNName(s"/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+        }
+        )*/
+
+
 
       case None => sys.exit(1)
     }
