@@ -109,7 +109,7 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new Reverse())
         //node.publishServiceLocalPrefix(new Echo())
         //node.publishServiceLocalPrefix(new EchoP())
-        node.publishServiceLocalPrefix(new GPXPointFilter())
+        node.publishServiceLocalPrefix(new GPXOriginFilter())
 
 
         // Gets the content of the ccn-lite tutorial
@@ -125,10 +125,9 @@ object ComputeServerStarter extends Logging {
         filelist.foreach(f => {
           val data = Source.fromFile(s"trackpoints/$f").mkString
           val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
-          node += Content(CCNName(s"/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+          node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
         }
         )*/
-
 
 
       case None => sys.exit(1)

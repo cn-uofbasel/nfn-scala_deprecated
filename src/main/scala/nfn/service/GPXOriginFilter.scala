@@ -11,7 +11,7 @@ import scala.concurrent.{Await, Future}
 /**
  * Created by blacksheeep on 22/10/15.
  */
-class GPXPointFilter extends NFNService {
+class GPXOriginFilter extends NFNService {
 
   type GPXPoint = (Double, Double, String)
 
@@ -55,13 +55,13 @@ class GPXPointFilter extends NFNService {
 
         //Request the input data
         val inputdata = requestdata(name, num.i, ccnApi)
-        val firstdata = requestdata(name, 1, ccnApi)
+        val refdata = requestdata(name, 1, ccnApi)
 
         //Parse Data
-        val pn = parsedata(inputdata)
-        val p1 = parsedata(firstdata)
+        val p_req = parsedata(inputdata)
+        val p_ref = parsedata(refdata)
 
-        val filtered = north_pole_filter(p1, pn)
+        val filtered = north_pole_filter(p_ref, p_req)
 
         NFNStringValue(createXMLResult(filtered))
       }
