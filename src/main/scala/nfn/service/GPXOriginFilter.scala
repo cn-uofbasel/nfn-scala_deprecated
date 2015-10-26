@@ -14,11 +14,13 @@ import scala.concurrent.{Await, Future}
 class GPXOriginFilter extends NFNService {
 
   type GPXPoint = (Double, Double, String)
+  val data_prefix = CCNName("/ndn/ch/unibas/NDNfit/hidden".substring(1).split("/").toList, None)
 
   def requestdata(name: NFNStringValue, num: Int, ccnApi: ActorRef): Content = {
 
     val nameInputdata = CCNName(name.str.substring(1).split("/").toList, None)
-    val interestInputdata = Interest(nameInputdata.append("p" + num.toString))
+    val nameInputdataExpanded = nameInputdata.prepend(data_prefix)
+    val interestInputdata = Interest(nameInputdataExpanded.append("p" + num.toString))
 
     implicit val timeout = Timeout(10000)
     val fres1: Future[Content] = (ccnApi ? NFNApi.CCNSendReceive(interestInputdata, false)).mapTo[Content]
