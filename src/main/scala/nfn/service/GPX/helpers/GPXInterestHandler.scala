@@ -10,6 +10,7 @@ import nfn.LambdaNFNImplicits._
 import filterAccess.tools.Networking.fetchContent
 
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -17,15 +18,14 @@ import scala.concurrent.duration._
  */
 object GPXInterestHandler {
 
-  def buildGPXPointInterest(name: String, n: Int): Interest = {
+  def buildRawGPXPointInterest(name: String, n: Int): Interest = {
     Interest(
-      data_prefix.append(CCNName(name.substring(1).split("/").toList, None)).append("p" + n.toString)
+      raw_prefix.append(CCNName(name.substring(1).split("/").toList, None)).append("p" + n.toString)
     )
   }
 
-
-  def fetchGPXPoint(name:String, n:Int, ccnApi:ActorRef):Option[Content] = {
-    val i = buildGPXPointInterest(name, n)
+  def fetchRawGPXPoint(name:String, n:Int, ccnApi:ActorRef):Option[Content] = {
+    val i = buildRawGPXPointInterest(name, n)
     fetchContent(i, ccnApi, 5 seconds)
   }
 

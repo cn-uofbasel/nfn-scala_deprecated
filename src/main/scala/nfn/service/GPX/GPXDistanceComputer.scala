@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
 import nfn.service.GPX.helpers.GPXPointHandler.parseGPXPoint
-import nfn.service.GPX.helpers.GPXInterestHandler.fetchGPXPoint
+import nfn.service.GPX.helpers.GPXInterestHandler.fetchRawGPXPoint
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -15,8 +15,8 @@ class GPXDistanceComputer extends NFNService {
   def computeDistance(name1:String, n1:Int, name2:String, n2: Int, ccnApi:ActorRef): Option[Double] = {
 
     // fetch points
-    val content1 =  fetchGPXPoint(name1, n1, ccnApi)
-    val content2 = fetchGPXPoint(name2, n2, ccnApi)
+    val content1 =  fetchRawGPXPoint(name1, n1, ccnApi)
+    val content2 = fetchRawGPXPoint(name2, n2, ccnApi)
 
     // parse data
     val (lat1, lon1, _) = parseGPXPoint(content1.get)

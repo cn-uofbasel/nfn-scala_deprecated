@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
 import nfn.service.GPX.helpers.GPXPointHandler._
-import nfn.service.GPX.helpers.GPXInterestHandler.fetchGPXPoint
+import nfn.service.GPX.helpers.GPXInterestHandler.fetchRawGPXPoint
 
 /**
  * Created by blacksheeep on 22/10/15.
@@ -20,8 +20,8 @@ class GPXOriginFilter extends NFNService {
       case (name: NFNStringValue, num: NFNIntValue) => {
 
         //Request the input data
-        val inputdata = fetchGPXPoint(name.str, num.i, ccnApi).get
-        val refdata = fetchGPXPoint(name.str, 1, ccnApi).get
+        val inputdata = fetchRawGPXPoint(name.str, num.i, ccnApi).get
+        val refdata = fetchRawGPXPoint(name.str, 1, ccnApi).get
 
         //Parse Data
         val p_req = parseGPXPoint(inputdata)
