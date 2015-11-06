@@ -4,6 +4,8 @@ package runnables.production
 import ccn.packet.{Content, CCNName}
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
+import nfn.service.GPX.GPXOriginFilter
+import nfn.service.GPX.GPXDistanceAggregator
 import nfn.service._
 import node.LocalNode
 import scopt.OptionParser
@@ -110,6 +112,8 @@ object ComputeServerStarter extends Logging {
         //node.publishServiceLocalPrefix(new Echo())
         //node.publishServiceLocalPrefix(new EchoP())
         node.publishServiceLocalPrefix(new GPXOriginFilter())
+        // node.publishServiceLocalPrefix(new GPXDistanceComputer())
+        node.publishServiceLocalPrefix(new GPXDistanceAggregator())
 
 
         // Gets the content of the ccn-lite tutorial
