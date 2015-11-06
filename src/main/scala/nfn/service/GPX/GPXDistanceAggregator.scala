@@ -1,15 +1,11 @@
 package nfn.service.GPX
 
 import akka.actor.ActorRef
-import akka.pattern._
-import akka.util.Timeout
 import ccn.packet.{CCNName, Content, Interest}
-import nfn.NFNApi
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
-import filterAccess.tools.Networking.fetchContent
+import nfn.service.GPX.helpers.GPXInterestHandler.fetchGPXDistanceComputer
 
-import scala.concurrent.{Await, Future}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -18,7 +14,14 @@ import scala.concurrent.{Await, Future}
 class GPXDistanceAggregator extends NFNService {
 
   def aggregateDistance(name:String, n:Int, ccnApi:ActorRef): Option[Double] = {
-    ???
+
+    var sum = 0.0
+
+    for (i<-2 to n)
+      sum += (new String(fetchGPXDistanceComputer(name, i-1, name, i, ccnApi).get.data)).toDouble
+
+    Some(sum)
+
   }
 
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
@@ -29,7 +32,6 @@ class GPXDistanceAggregator extends NFNService {
           case Some(d) => NFNStringValue(d.toString) // todo: return as double
           case None => ???
         }
-
 
       }
       case _ => ???
