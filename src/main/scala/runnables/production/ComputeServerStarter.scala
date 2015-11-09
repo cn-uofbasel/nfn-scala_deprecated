@@ -121,27 +121,18 @@ object ComputeServerStarter extends Logging {
         // Publishes a very small two-line markdown file
         node += PandocTestDocuments.tinyMd(node.localPrefix)
 
-
-        /*
-         * --------------
-         *  GPX SCENARIO
-         * --------------
-         *
-         * Arguments for this runnable: -m /tmp/mgmt.sock -o 9000 -p 9001 -d /nfn/node0
-         *
-         *
-         *
-         * Test Requests:
-         *
-         *  $ ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 3 /nfn/node0/nfn_service_GPX_GPXOriginFilter '/run1/gpx/data' 1" | ccn-lite-pktdump -f2
-         *  $ ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 5 /nfn/node0/nfn_service_GPX_GPXDistanceComputer '/run1/gpx/data' 1 '/run1/gpx/data' 2" | ccn-lite-pktdump -f2
-         *  $ ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 3 /nfn/node0/nfn_service_GPX_GPXDistanceAggregator '/run1/gpx/data' 5" | ccn-lite-pktdump -f2
-         *
-         *
-         */
-
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
 
+        /*val files =  ("ls trackpoints/" !!)
+        val filelist = files.split('\n')
+        filelist.foreach(f => {
+          val data = Source.fromFile(s"trackpoints/$f").mkString
+          val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
+          node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+        }
+        )*/
+
+        /*
         val files =  ("ls /home/claudio/trackpoints/" !!)
         val filelist = files.split('\n')
 
@@ -151,8 +142,31 @@ object ComputeServerStarter extends Logging {
           node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
         }
         )
+        */
 
-        // node += Content(CCNName("/test/name".substring(1).split("/").toList, None), "hello world".getBytes)
+
+
+
+
+      /*
+       * --------------
+       *  GPX SCENARIO
+       * --------------
+       *
+       * Uncomment code above to put raw data into the cache!
+       *
+       * Arguments for this runnable: -m /tmp/mgmt.sock -o 9000 -p 9001 -d /nfn/node0
+       *
+       *
+       * Test Requests:
+       *
+       *  ccn-lite-peek -w 10 -u 127.0.0.1/9000 /ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p1 | ccn-lite-pktdump -f2
+       *  ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 3 /nfn/node0/nfn_service_GPX_GPXOriginFilter '/run1/gpx/data' 1" | ccn-lite-pktdump -f2
+       *  ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 5 /nfn/node0/nfn_service_GPX_GPXDistanceComputer '/run1/gpx/data' 1 '/run1/gpx/data' 2" | ccn-lite-pktdump -f2
+       *  ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 3 /nfn/node0/nfn_service_GPX_GPXDistanceAggregator '/run1/gpx/data' 5" | ccn-lite-pktdump -f2
+       *
+       *
+       */
 
       case None => sys.exit(1)
     }
