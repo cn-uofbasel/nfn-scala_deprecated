@@ -26,7 +26,7 @@ object GPXInterestHandler {
 
   def fetchRawGPXPoint(name:String, n:Int, ccnApi:ActorRef):Option[Content] = {
     val i = buildRawGPXPointInterest(name, n)
-    fetchContent(i, ccnApi, 5 seconds)
+    fetchContent(i, ccnApi, 10 seconds)
   }
 
   def buildGPXDistanceComputerInterest(name1: String, n1: Int, name2: String, n2: Int): Interest =
@@ -34,7 +34,7 @@ object GPXInterestHandler {
 
   def fetchGPXDistanceComputer(name1: String, n1: Int, name2: String, n2: Int, ccnApi:ActorRef): Option[Content] = {
     val i = buildGPXDistanceComputerInterest(name1, n1, name2, n2)
-    fetchContent(i, ccnApi, 5 seconds)
+    fetchContent(i, ccnApi, 10 seconds)
   }
 
   def buildGPXDistanceAggregatorInterest(name: String, n: Int): Interest =
@@ -42,7 +42,7 @@ object GPXInterestHandler {
 
   def fetchGPXDistanceAggregator(name:String, n:Int, ccnApi:ActorRef): Option[Content] = {
     val i = buildGPXDistanceAggregatorInterest(name, n)
-    fetchContent(i, ccnApi, 5 seconds)
+    fetchContent(i, ccnApi, 10 seconds)
   }
 
 }

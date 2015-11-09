@@ -10,8 +10,8 @@ object GPXConfig {
 
   val raw_prefix = CCNName("/ndn/ch/unibas/NDNfit/hidden".substring(1).split("/").toList, None)
 
-  val GPXDistanceComputerName = CCNName("nfn_service_GPX_GPXDistanceComputer") // TODO: check!
-  val GPXDistanceAggregatorName = CCNName("nfn_service_GPX_GPXDistanceAggregator") // TODO: check!
-  val GPXOriginFilterName = CCNName("nfn_service_GPX_GPXOriginFilter") // TODO: check!
+  val GPXDistanceComputerName = CCNName("nfn/node0/nfn_service_GPX_GPXDistanceComputer") // todo: adjust prefix to setup!
+  val GPXDistanceAggregatorName = CCNName("nfn_service_GPX_GPXDistanceAggregator")
+  val GPXOriginFilterName = CCNName("nfn_service_GPX_GPXOriginFilter")
 
 }

@@ -116,24 +116,32 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new GPXDistanceComputer())
         node.publishServiceLocalPrefix(new GPXDistanceAggregator())
 
-
         // Gets the content of the ccn-lite tutorial
         node += PandocTestDocuments.tutorialMd(node.localPrefix)
         // Publishes a very small two-line markdown file
         node += PandocTestDocuments.tinyMd(node.localPrefix)
 
 
+        /*
+        *
+        *  $ ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 3 /nfn/node0/nfn_service_GPX_GPXOriginFilter '/run1/gpx/data' 1" | ccn-lite-pktdump -f2
+        *
+        *
+        * */
+
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
-        /*val files =  ("ls trackpoints/" !!)
+
+        val files =  ("ls /home/claudio/trackpoints/" !!)
         val filelist = files.split('\n')
 
         filelist.foreach(f => {
-          val data = Source.fromFile(s"trackpoints/$f").mkString
+          val data = Source.fromFile(s"/home/claudio/trackpoints/$f").mkString
           val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
           node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
         }
-        )*/
+        )
 
+        node += Content(CCNName("/test/name".substring(1).split("/").toList, None), "hello world".getBytes)
 
       case None => sys.exit(1)
     }
