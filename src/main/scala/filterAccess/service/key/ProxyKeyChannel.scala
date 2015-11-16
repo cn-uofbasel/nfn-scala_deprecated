@@ -3,9 +3,10 @@ package filterAccess.service.key
 import akka.actor.ActorRef
 import filterAccess.tools.ConfigReader._
 import filterAccess.tools.InterestBuilder.buildDirectKeyChannelInterest
+import filterAccess.tools.Networking
 import scala.concurrent.duration._
 
-import filterAccess.tools.Networking.fetchContent
+import nfn.tools.Networking.fetchContent
 
 // enable postfix operator seconds
 import scala.language.postfixOps

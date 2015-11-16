@@ -7,11 +7,12 @@ import filterAccess.crypto.Encryption._
 
 import filterAccess.json.ContentChannelParser
 import filterAccess.json.ContentChannelBuilder
+import filterAccess.tools.Networking
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import filterAccess.tools.Networking._
+import Networking._
 import filterAccess.tools.Exceptions._
 import filterAccess.tools.DataNaming._
 import filterAccess.tools.ConfigReader._
