@@ -11,7 +11,7 @@ import Networking._
 import filterAccess.json.ContentChannelParser.getTrack
 import filterAccess.json._
 import filterAccess.crypto.Encryption.symEncrypt
-import filterAccess.crypto.Helpers.{symKeyGenerator,computeHash,stringToByte,byteToString}
+import filterAccess.crypto.Helpers.{symKeyGenerator,computeHash}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>

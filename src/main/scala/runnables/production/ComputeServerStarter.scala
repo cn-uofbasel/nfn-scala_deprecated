@@ -7,6 +7,7 @@ import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import nfn.service.GPX.GPXOriginFilter
 import nfn.service.GPX.GPXDistanceAggregator
 import nfn.service.GPX.GPXDistanceComputer
+import nfn.service.Temperature.{ReadSensorData, StoreSensorData}
 import nfn.service._
 import node.LocalNode
 import scopt.OptionParser
@@ -116,10 +117,13 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new GPXDistanceComputer())
         node.publishServiceLocalPrefix(new GPXDistanceAggregator())
 
+        node.publishServiceLocalPrefix(new StoreSensorData())
+        node.publishServiceLocalPrefix(new ReadSensorData())
+
         // Gets the content of the ccn-lite tutorial
-        node += PandocTestDocuments.tutorialMd(node.localPrefix)
+        //node += PandocTestDocuments.tutorialMd(node.localPrefix)
         // Publishes a very small two-line markdown file
-        node += PandocTestDocuments.tinyMd(node.localPrefix)
+        //node += PandocTestDocuments.tinyMd(node.localPrefix)
 
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
 

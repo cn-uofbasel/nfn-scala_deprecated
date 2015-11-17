@@ -1,11 +1,12 @@
 package filterAccess.crypto
 
+
 import java.security.KeyFactory
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 
 import filterAccess.crypto.Helpers._
-
+import nfn.tools.Helpers._
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
  *
