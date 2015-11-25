@@ -36,6 +36,10 @@ case class ComputeServerConfig(prefix: CCNName = ComputeServerConfigDefaults.pre
 
 object ComputeServerStarter extends Logging {
 
+  sys addShutdownHook {
+    println("Shutdown!")
+  }
+
   val argsParser =  new OptionParser[ComputeServerConfig]("") {
     override def showUsageOnError = true
 
@@ -123,14 +127,18 @@ object ComputeServerStarter extends Logging {
 
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
 
-        /*val files =  ("ls trackpoints/" !!)
+
+
+        val files =  ("ls trackpoints/" !!)
         val filelist = files.split('\n')
         filelist.foreach(f => {
           val data = Source.fromFile(s"trackpoints/$f").mkString
           val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
           node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
         }
-        )*/
+        )
+
+
 
         /*
         val files =  ("ls /home/claudio/trackpoints/" !!)
@@ -143,6 +151,7 @@ object ComputeServerStarter extends Logging {
         }
         )
         */
+
 
 
 
