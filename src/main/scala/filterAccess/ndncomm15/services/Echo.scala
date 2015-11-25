@@ -13,6 +13,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.io.Source
 import scala.util._
+import nfn.tools.Helpers._
 
 class Echo extends NFNService{
 
@@ -46,7 +47,7 @@ class Echo extends NFNService{
 
                   res match{
                     case c: Content => {
-                      val ek = filterAccess.crypto.Helpers.byteToString(c.data)
+                      val ek = byteToString(c.data)
                       val encrypted: String = filterAccess.crypto.Encryption.symEncrypt(d, ek)
                       NFNStringValue(encrypted)
                     }

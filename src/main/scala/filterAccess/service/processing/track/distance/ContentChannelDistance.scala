@@ -1,17 +1,17 @@
 package filterAccess.service.processing.track.distance
 
 import akka.actor.ActorRef
-import filterAccess.tools.DataNaming
+import filterAccess.tools.{Networking, DataNaming}
 import nfn.service._
 
 import scala.concurrent.duration._
 
 import filterAccess.tools.Exceptions.noReturnException
-import filterAccess.tools.Networking._
+import Networking._
 import filterAccess.json.ContentChannelParser.getTrack
 import filterAccess.json._
 import filterAccess.crypto.Encryption.symEncrypt
-import filterAccess.crypto.Helpers.{symKeyGenerator,computeHash,stringToByte,byteToString}
+import filterAccess.crypto.Helpers.{symKeyGenerator,computeHash}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>

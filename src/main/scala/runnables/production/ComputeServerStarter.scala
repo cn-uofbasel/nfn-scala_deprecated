@@ -7,6 +7,7 @@ import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import nfn.service.GPX.GPXOriginFilter
 import nfn.service.GPX.GPXDistanceAggregator
 import nfn.service.GPX.GPXDistanceComputer
+import nfn.service.Temperature.{ReadSensorData, StoreSensorData}
 import nfn.service._
 import node.LocalNode
 import scopt.OptionParser
@@ -36,10 +37,6 @@ case class ComputeServerConfig(prefix: CCNName = ComputeServerConfigDefaults.pre
 
 object ComputeServerStarter extends Logging {
 
-  sys addShutdownHook {
-    println("Shutdown!")
-  }
-
   val argsParser =  new OptionParser[ComputeServerConfig]("") {
     override def showUsageOnError = true
 
@@ -48,10 +45,10 @@ object ComputeServerStarter extends Logging {
       c.copy(mgmtSocket = Some(ms))
     } text s"unix socket name for ccnl mgmt ops or of running ccnl, if not specified ccnl UDP socket is used (example: ${ComputeServerConfigDefaults.mgmtSocket})"
     opt[String]('a', "ccnl-addr") action { case (a, c) =>
-        c.copy(ccnLiteAddr = a)
+      c.copy(ccnLiteAddr = a)
     } text s"address ccnl should use or address of running ccnl (default: ${ComputeServerConfigDefaults.ccnLiteAddr})"
     opt[Int]('o', "ccnl-port") action { case (p, c) =>
-        c.copy(ccnlPort = p)
+      c.copy(ccnlPort = p)
     } text s"unused port ccnl should use or port of running ccnl (default: ${ComputeServerConfigDefaults.ccnlPort})"
     opt[String]('s', "suite") action { case (s, c) =>
       c.copy(suite = s)
@@ -120,38 +117,35 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new GPXDistanceComputer())
         node.publishServiceLocalPrefix(new GPXDistanceAggregator())
 
+        //node.publishServiceLocalPrefix(new StoreSensorData())
+        //node.publishServiceLocalPrefix(new ReadSensorData())
+
         // Gets the content of the ccn-lite tutorial
         node += PandocTestDocuments.tutorialMd(node.localPrefix)
         // Publishes a very small two-line markdown file
         node += PandocTestDocuments.tinyMd(node.localPrefix)
 
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
-
-
-
         val files =  ("ls trackpoints/" !!)
         val filelist = files.split('\n')
-        filelist.foreach(f => {
-          val data = Source.fromFile(s"trackpoints/$f").mkString
-          val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
-          node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
-        }
-        )
+      /*filelist.foreach(f => {
+        val data = Source.fromFile(s"trackpoints/$f").mkString
+        val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
+        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+      }
+      )*/
 
+      /*
+      val files =  ("ls /home/claudio/trackpoints/" !!)
+      val filelist = files.split('\n')
 
-
-        /*
-        val files =  ("ls /home/claudio/trackpoints/" !!)
-        val filelist = files.split('\n')
-
-        filelist.foreach(f => {
-          val data = Source.fromFile(s"/home/claudio/trackpoints/$f").mkString
-          val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
-          node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
-        }
-        )
-        */
-
+      filelist.foreach(f => {
+        val data = Source.fromFile(s"/home/claudio/trackpoints/$f").mkString
+        val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
+        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+      }
+      )
+      */
 
 
 

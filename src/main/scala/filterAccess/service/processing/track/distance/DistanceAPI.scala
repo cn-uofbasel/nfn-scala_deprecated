@@ -4,8 +4,8 @@ import akka.actor.ActorRef
 import ccn.packet.{CCNName, Content, Interest}
 import filterAccess.crypto.Decryption._
 
-import filterAccess.tools.DataNaming
-import filterAccess.tools.Networking.fetchContent
+import filterAccess.tools.{Networking, DataNaming}
+import nfn.tools.Networking.fetchContent
 
 import scala.concurrent.duration._
 import scala.language.postfixOps

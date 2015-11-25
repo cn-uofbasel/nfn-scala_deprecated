@@ -47,6 +47,14 @@ case class NFNIntValue(i: Int) extends NFNValue {
   override def toDataRepresentation: Array[Byte] = i.toString.getBytes
 }
 
+case class NFNFloatValue(f: Double) extends NFNValue {
+  def apply = f
+
+  override def toCCNName: CCNName = CCNName("Float")
+
+  override def toDataRepresentation: Array[Byte] = f.toString.getBytes
+}
+
 case class NFNStringValue(str: String) extends NFNValue {
   def apply = str
 

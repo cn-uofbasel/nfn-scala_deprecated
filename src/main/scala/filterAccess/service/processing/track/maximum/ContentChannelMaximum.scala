@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 
 import filterAccess.tools.Exceptions.noReturnException
 import filterAccess.crypto.Encryption._
-import filterAccess.crypto.Helpers.{symKeyGenerator, computeHash, stringToByte, byteToString}
+import filterAccess.crypto.Helpers.{symKeyGenerator, computeHash}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>

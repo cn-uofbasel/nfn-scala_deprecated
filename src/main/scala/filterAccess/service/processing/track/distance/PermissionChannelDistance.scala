@@ -2,12 +2,12 @@ package filterAccess.service.processing.track.distance
 
 import akka.actor.ActorRef
 import filterAccess.json.UserLevel
-import filterAccess.tools.DataNaming
+import filterAccess.tools.{Networking, DataNaming}
 import nfn.service._
 
 import filterAccess.crypto.Encryption._
 import filterAccess.tools.Exceptions.noReturnException
-import filterAccess.tools.Networking._
+import Networking._
 import filterAccess.json.PermissionChannelBuilder.{manipulateLevel,minimizePermissions}
 
 /**

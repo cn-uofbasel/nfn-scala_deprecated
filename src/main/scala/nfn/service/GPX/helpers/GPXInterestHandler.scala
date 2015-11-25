@@ -1,13 +1,14 @@
 package nfn.service.GPX.helpers
 
 import akka.actor.ActorRef
+import filterAccess.tools.Networking
 import nfn.service.GPX.helpers.GPXConfig._
 
 import ccn.packet.{Interest, Content, CCNName}
 import lambdacalculus.parser.ast.LambdaDSL._
 import nfn.LambdaNFNImplicits._
 
-import filterAccess.tools.Networking.fetchContent
+import nfn.tools.Networking.fetchContent
 
 import scala.concurrent.duration._
 import scala.language.postfixOps

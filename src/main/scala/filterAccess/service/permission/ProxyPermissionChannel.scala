@@ -3,9 +3,10 @@ package filterAccess.service.permission
 import akka.actor.ActorRef
 import filterAccess.tools.ConfigReader._
 import filterAccess.tools.InterestBuilder.buildDirectPermissionChannelInterest
+import filterAccess.tools.Networking
 import scala.concurrent.duration._
 
-import filterAccess.tools.Networking.fetchContent
+import nfn.tools.Networking.fetchContent
 
 // enable postfix operator seconds
 import scala.language.postfixOps
