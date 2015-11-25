@@ -22,7 +22,7 @@ class AccessSensorData  extends NFNService    {
       case Some(s) => {
         s.tail.tail.tail.head
       }
-      case _ => ???
+      case _ => s"Error, $sensorname, $sensortyp, $datapoint"
     }
   }
 

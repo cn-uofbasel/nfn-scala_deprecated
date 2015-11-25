@@ -2,6 +2,7 @@ package nfn.service.Temperature
 
 import akka.actor.ActorRef
 import nfn.service.{NFNStringValue, NFNIntValue, NFNValue, NFNService}
+import scala.concurrent.duration._
 
 /**
  * Created by blacksheeep on 13/11/15.
@@ -22,7 +23,7 @@ class ReadSensorData() extends NFNService  {
               consttemp + (if (datapoint.i % 2 == 0) datapoint.i else (-datapoint.i))
             )
           }
-          case "pressure" => {
+          case "Pressure" => {
             NFNIntValue(
               constpreasure + (if (datapoint.i % 2 == 0) datapoint.i else (-datapoint.i))
             )
