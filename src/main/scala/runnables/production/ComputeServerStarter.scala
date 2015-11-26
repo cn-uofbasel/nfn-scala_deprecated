@@ -131,7 +131,7 @@ object ComputeServerStarter extends Logging {
       filelist.foreach(f => {
         val data = Source.fromFile(s"trackpoints/$f").mkString
         val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
-        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/Joe/running/training/2015/02/04/gpx/p$num".substring(1).split("/").toList, None), data.getBytes)
+        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/Joe/internal/running/training/2015/02/04/gpx/p$num".substring(1).split("/").toList, None), data.getBytes)
       }
       )
 
