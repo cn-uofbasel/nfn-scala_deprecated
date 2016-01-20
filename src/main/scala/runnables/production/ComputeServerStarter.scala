@@ -128,12 +128,12 @@ object ComputeServerStarter extends Logging {
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
         val files =  ("ls trackpoints/" !!)
         val filelist = files.split('\n')
-      /*filelist.foreach(f => {
+      filelist.foreach(f => {
         val data = Source.fromFile(s"trackpoints/$f").mkString
         val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
-        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/Joe/internal/running/training/2015/02/04/gpx/p$num".substring(1).split("/").toList, None), data.getBytes)
       }
-      )*/
+      )
 
       /*
       val files =  ("ls /home/claudio/trackpoints/" !!)

@@ -9,7 +9,7 @@ import ccn.packet.CCNName
 object GPXConfig {
 
   // prefix of raw data
-  val raw_prefix = CCNName("/ndn/ch/unibas/NDNfit/hidden".substring(1).split("/").toList, None)
+  val raw_prefix = CCNName("/ndn/ch/unibas/NDNfit/Joe/internal".substring(1).split("/").toList, None)
 
   // names of services
   val service_node_prefix = "/ndn/ch/unibas/NDNfit".substring(1)
