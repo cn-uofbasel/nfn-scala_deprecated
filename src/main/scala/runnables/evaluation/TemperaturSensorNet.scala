@@ -126,7 +126,7 @@ object TemperaturSensorNet extends App {
       case Success(content) => {
         val totalTime = System.currentTimeMillis - startTime
         println(s"RESULT($totalTime): $content")
-        println(new String(content.data))
+        exit
 
       }
       case Failure(error) =>
@@ -160,6 +160,12 @@ object TemperaturSensorNet extends App {
 
     computeeNextValue
     //addname call (computeeNextValue, getT1)
+  }
+
+  def exit = {
+    println("exit")
+    Monitor.monitor ! Monitor.Visualize()
+   // nodes foreach { _.shutdown() }
   }
 
 
