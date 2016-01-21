@@ -5,6 +5,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import lambdacalculus.parser.ast.{Constant, Expr, Str}
 import monitor.Monitor
 import nfn.LambdaNFNImplicits._
+import nfn.service.GPX.GPSNearByDetector
 import nfn.service.Temperature._
 import nfn.service._
 import scala.io.Source
@@ -19,7 +20,7 @@ object GPSEventNet extends App {
   implicit val conf: Config = ConfigFactory.load()
   implicit val useThunks: Boolean = false
 
-  println("Starting network...")
+  println("+++++++Initializion+++++++")
   //=== setup nodes, node 4 and 5 are sensor nodes
   val node1 = LocalNodeFactory.forId(1)
   val node2 = LocalNodeFactory.forId(2)
@@ -43,7 +44,7 @@ object GPSEventNet extends App {
   node1.registerPrefix(node4.localPrefix, node2)
   node1.registerPrefix(node5.localPrefix, node3)
 
-  val sensorService = new ReadSensorData
+  val sensorService = new ReadSensorDataSimu
 
   node1.publishServiceLocalPrefix(new AddService)
   node1.publishServiceLocalPrefix(new DifferenceService)
@@ -54,6 +55,8 @@ object GPSEventNet extends App {
   node1.publishServiceLocalPrefix(new GPSNearByDetector)
 
   println("+++++++Initializion finished+++++++")
+
+  println("+++++++Building Interest Message+++++++")
 
 
   //TODO build interest
@@ -82,12 +85,13 @@ object GPSEventNet extends App {
   }
 
   def loadTrack(name: String, node: LocalNode) :Unit = {
-    val files =  ("ls /Users/blacksheeep/Desktop/GPX/" + name !!)
+    val path = "/Users/blacksheeep/Desktop/GPX/"
+    val files =  ("ls " + path + name !!)
     var filelist = files.split('\n')
 
     filelist.foreach(f => {
-      println(f)
-      //val data = Source.fromFile(s"trackpoints/$f").mkString
+      //println(f)
+      val data = Source.fromFile(s"$path$name/"+f).mkString
       val num = f.substring(f.indexOf("_") + 1, f.indexOf("."))
       node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/$name/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
     })

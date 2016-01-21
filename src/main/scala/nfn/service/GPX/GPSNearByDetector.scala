@@ -1,9 +1,10 @@
-package nfn.service
+package nfn.service.GPX
 
 import akka.actor.ActorRef
-import ccn.packet.{NFNInterest, CCNName}
-import lambdacalculus.parser.ast.{Constant, Str}
+import ccn.packet.{CCNName, NFNInterest}
+import nfn.service._
 import nfn.tools.Networking._
+
 import scala.concurrent.duration._
 
 /**

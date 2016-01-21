@@ -1,11 +1,11 @@
 package nfn.service.Temperature
 
 import akka.actor.ActorRef
-import nfn.service.{NFNStringValue, NFNIntValue, NFNValue, NFNService}
-import scala.concurrent.duration._
+import nfn.service._
+import sys.process._
 
 /**
- * Created by blacksheeep on 13/11/15.
+ * Created by blacksheeep on 21/01/16.
  */
 class ReadSensorData() extends NFNService  {
 
@@ -14,21 +14,11 @@ class ReadSensorData() extends NFNService  {
 
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
-    (args.head, args.tail.head) match { // sensorname, datapoint
-      case (sensorname: NFNStringValue, datapoint: NFNIntValue) => {
+    (args.head) match { // sensorname, datapoint
+      case (dataPoint: NFNIntValue) => {
+          var data = ("cat /sys/bus/w1/devices/28-00043c6106ff/w1_slave" !!)
 
-        sensorname.str match {
-          case "Temperature" => {
-            NFNIntValue(
-              consttemp + (if (datapoint.i % 2 == 0) datapoint.i else (-datapoint.i))
-            )
-          }
-          case "Pressure" => {
-            NFNIntValue(
-              constpreasure + (if (datapoint.i % 2 == 0) datapoint.i else (-datapoint.i))
-            )
-          }
-        }
+          NFNDataValue(data.getBytes())
       }
       case _ => ???
     }

@@ -7,7 +7,7 @@ import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
 import nfn.service.GPX.GPXOriginFilter
 import nfn.service.GPX.GPXDistanceAggregator
 import nfn.service.GPX.GPXDistanceComputer
-import nfn.service.Temperature.{ReadSensorData, StoreSensorData}
+import nfn.service.Temperature.{ReadSensorData, ReadSensorDataSimu, StoreSensorData}
 import nfn.service._
 import node.LocalNode
 import scopt.OptionParser
@@ -116,6 +116,7 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new GPXOriginFilter())
         node.publishServiceLocalPrefix(new GPXDistanceComputer())
         node.publishServiceLocalPrefix(new GPXDistanceAggregator())
+        node.publishServiceLocalPrefix(new ReadSensorData())
 
         //node.publishServiceLocalPrefix(new StoreSensorData())
         //node.publishServiceLocalPrefix(new ReadSensorData())
@@ -126,14 +127,14 @@ object ComputeServerStarter extends Logging {
         node += PandocTestDocuments.tinyMd(node.localPrefix)
 
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
-        val files =  ("ls trackpoints/" !!)
-        val filelist = files.split('\n')
-      filelist.foreach(f => {
+       val files =  ("ls trackpoints/" !!)
+       val filelist = files.split('\n')
+       /*filelist.foreach(f => {
         val data = Source.fromFile(s"trackpoints/$f").mkString
         val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
         node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/Joe/internal/running/training/2015/02/04/gpx/p$num".substring(1).split("/").toList, None), data.getBytes)
       }
-      )
+      )*/
 
       /*
       val files =  ("ls /home/claudio/trackpoints/" !!)

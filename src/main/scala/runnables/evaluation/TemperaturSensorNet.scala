@@ -47,7 +47,7 @@ object TemperaturSensorNet extends App {
   node1.registerPrefix(node4.localPrefix, node2)
   node1.registerPrefix(node5.localPrefix, node3)
 
-  val sensorService = new ReadSensorData
+  val sensorService = new ReadSensorDataSimu
 
   node1.publishServiceLocalPrefix(new AddService)
   node1.publishServiceLocalPrefix(new DifferenceService)
@@ -63,8 +63,8 @@ object TemperaturSensorNet extends App {
   node3.publishServiceLocalPrefix(new StoreSensorData)
   node3.publishServiceLocalPrefix(new AccessSensorData)
 
-  node4.publishServiceLocalPrefix(new ReadSensorData)
-  node5.publishServiceLocalPrefix(new ReadSensorData)
+  node4.publishServiceLocalPrefix(new ReadSensorDataSimu)
+  node5.publishServiceLocalPrefix(new ReadSensorDataSimu)
 
   Thread.sleep(20000)
 
@@ -80,8 +80,8 @@ object TemperaturSensorNet extends App {
   val storesensorservicename2 = node3.localPrefix.append((new StoreSensorData).name.substring(1))
   val accesssensordata2 = node3.localPrefix.append((new AccessSensorData).name.substring(1))
 
-  val sensorserviename1 = node4.localPrefix.append((new ReadSensorData).name.substring(1))
-  val sensorserviename2 = node5.localPrefix.append((new ReadSensorData).name.substring(1))
+  val sensorserviename1 = node4.localPrefix.append((new ReadSensorDataSimu).name.substring(1))
+  val sensorserviename2 = node5.localPrefix.append((new ReadSensorDataSimu).name.substring(1))
 
 
   val query01 = sensorserviename1 call (Str("Temperature"), Constant(0))
