@@ -57,7 +57,17 @@ object GPSEventNet extends App {
   println("+++++++Initializion finished+++++++")
 
   println("+++++++Building Interest Message+++++++")
+  val decName = node1.localPrefix.append(new GPSNearByDetector().ccnName)
 
+
+  val dataname1 = node4.localPrefix.toString.substring(1) + "/NDNfit/chris/gpx/data/"
+
+  val dataname2 = node5.localPrefix.toString.substring(1) + "/NDNfit/urs/gpx/data/"
+  println(dataname1)
+  val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(1))
+
+  println("+++++++Running Test+++++++")
+  doExp(funcCall)
 
   //TODO build interest
 
@@ -93,7 +103,10 @@ object GPSEventNet extends App {
       //println(f)
       val data = Source.fromFile(s"$path$name/"+f).mkString
       val num = f.substring(f.indexOf("_") + 1, f.indexOf("."))
-      node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/$name/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+      //node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/$name/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
+      val prefix = node.localPrefix
+      //println(s"$prefix/NDNfit/$name/gpx/data/p$num".substring(1))
+      node += Content(CCNName(s"$prefix/NDNfit/$name/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
     })
   }
 }
