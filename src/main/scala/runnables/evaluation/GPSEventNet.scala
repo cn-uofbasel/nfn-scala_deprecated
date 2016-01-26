@@ -64,7 +64,7 @@ object GPSEventNet extends App {
 
   val dataname2 = node5.localPrefix.toString.substring(1) + "/NDNfit/urs/gpx/data/"
   println(dataname1)
-  val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(1))
+  val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(2))
 
   println("+++++++Running Test+++++++")
   doExp(funcCall)
