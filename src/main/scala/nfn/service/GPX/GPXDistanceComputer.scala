@@ -5,6 +5,7 @@ import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
 import nfn.service.GPX.helpers.GPXPointHandler.parseGPXPoint
 import nfn.service.GPX.helpers.GPXInterestHandler.fetchRawGPXPoint
+import helpers.GPXPointHandler
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -25,9 +26,11 @@ class GPXDistanceComputer extends NFNService {
     // compute distance
     // Theory: http://www.kompf.de/gps/distcalc.html
     // TODO: implement improved method
-    val dx = 71.5 * (lon1 - lon2)
+    /*val dx = 71.5 * (lon1 - lon2)
     val dy = 111.3 * (lat1 - lat2)
-    Some(Math.sqrt(dx*dx + dy*dy))
+    Some(Math.sqrt(dx*dx + dy*dy))*/
+
+    GPXPointHandler.computeDistance(lat1, lon1, lat2, lon2)
 
   }
 

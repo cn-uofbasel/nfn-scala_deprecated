@@ -64,10 +64,17 @@ object GPSEventNet extends App {
 
   val dataname2 = node5.localPrefix.toString.substring(1) + "/NDNfit/urs/gpx/data/"
   println(dataname1)
-  val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(2))
+
 
   println("+++++++Running Test+++++++")
-  doExp(funcCall)
+  var it = 0
+  for(it <- 35 to 45){
+    val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(it))
+    doExp(funcCall)
+
+    //wait(5000)
+
+  }
 
   //TODO build interest
 
@@ -79,12 +86,11 @@ object GPSEventNet extends App {
       case Success(content) => {
         val totalTime = System.currentTimeMillis - startTime
         println(s"RESULT($totalTime): $content")
-        exit
+        //exit
 
       }
       case Failure(error) =>
-        throw error
-
+        //throw error
     }
   }
 

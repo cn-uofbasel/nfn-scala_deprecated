@@ -1,7 +1,7 @@
 package nfn.service.GPX
 
 import akka.actor.ActorRef
-import ccn.packet.{Interest, CCNName, NFNInterest}
+import ccn.packet.{Content, Interest, CCNName, NFNInterest}
 import nfn.service._
 import nfn.tools.Networking._
 
@@ -17,26 +17,37 @@ class GPSNearByDetector extends  NFNService {
     args match {
       case Seq(s1: NFNStringValue, s2: NFNStringValue, ix : NFNIntValue) => {
         val s1name = s1.str.split('/').toList
+        val s2name = s2.str.split('/').toList
         val ixi = ix.i
 
         val pos: List[String] = List(s"p$ixi")
         val s1namePos: List[String] = s1name ++ pos
 
         val i1 = Interest(CCNName(s1namePos, None))
-
         val c1 = fetchContent(i1, ccnApi, 30 seconds).get
         val r1 = new String(c1.data.map(_.toChar))
 
-        //return NFNStringValue(r1.trim)
+        val (lat1, lon1, time1) = GPXPointHandler.parseGPXPoint(c1)
+        val ts = parseTS(time1)
+        val closestOther = findClosestDP(ccnApi, s2, ts, ixi)
 
-        val point1 = GPXPointHandler.parseGPXPoint(c1)
-        val ts = parseTS(point1._3)
 
-        //return NFNLongValue(ts)
-        val closestOther = findClosestDP(ccnApi, s2, ts, 1)
+        val pos2ndPoint: List[String] = List(s"p$closestOther")
+        val s2namePos: List[String] = s2name ++ pos2ndPoint
+        val i2 = Interest(CCNName(s2namePos, None))
 
-        //val dist = computeDist()
-        NFNIntValue(closestOther)
+        val c2 = fetchContent(i2, ccnApi, 30 seconds).get
+        val r2 = new String(c2.data.map(_.toChar))
+        val (lat2, lon2, time2) = GPXPointHandler.parseGPXPoint(c2)
+
+
+        val dist = GPXPointHandler.computeDistance(lat1, lon1, lat2, lon2).get
+        //NFNFloatValue(dist)
+
+        if (dist < 0.015) NFNIntValue(1) else NFNIntValue(0)
+
+
+
 
       }
       case _ =>
@@ -63,40 +74,47 @@ class GPSNearByDetector extends  NFNService {
     return Math.abs(data1-data2)
   }
 
-  def findClosestDP(ccnApi: ActorRef, stream: NFNStringValue, timestamp: Long, startpos : Int = 0): Int = {
+  def findClosestDP(ccnApi: ActorRef, stream: NFNStringValue, timestamp: Long, startpos : Int): Int = {
     val prefix: List[String] = stream.str.split('/').toList
 
-    var sp = startpos
+    var ret = List[Int]()
+    var sp = if(startpos - 25 > 2) startpos else 2
     var found = true
     var distance = Int.MaxValue
     var smallest = sp
-    while (found) {
-      val pos: List[String] = List(s"p$sp")
-      val name: List[String] = prefix ++ pos
-      val i = Interest(CCNName(name, None))
-      val cOp = fetchContent(i, ccnApi, 30 seconds)
-      cOp match {
-        case Some(c) => {
-          val s = new String(c.data.map(_.toChar))
-          //val point = GPXPointHandler.parseGPXPoint(c)  //TODO parsing error!!!!
-          val point = "2016-01-20T12:33:07Z"
-          val ts = parseTS(point)
-          val d = timeStampDistance(ts, timestamp)
-          if (d < distance) {
-            var smallest = sp
-            var distance = d
-            if(sp > 2)return smallest
+    try {
+      while (found) {
+        val pos: List[String] = List(s"p$sp")
+        val name: List[String] = prefix ++ pos
+        val i = Interest(CCNName(name, None))
+        val cOp = fetchContent(i, ccnApi, 10 seconds)
+
+        cOp match {
+          case Some(c) => {
+            val s = new String(c.data.map(_.toChar))
+            val point = GPXPointHandler.parseGPXPoint(c) //TODO parsing error!!!!
+            val ts = parseTS(point._3)
+            val d = timeStampDistance(ts, timestamp)
+            if (d < distance) {
+              smallest = sp
+              distance = d.toInt
+            }
+            if (sp > (startpos + 25)) return smallest
+            sp = sp + 1
           }
-          sp = sp + 1
+          case _ => {
+            found = false
+            return smallest
+          }
+          //compare Timestamp and compute distance
         }
-        case _ => {
-          found = false
-          return sp
-        }
-        //compare Timestamp and compute distance
       }
     }
-    return sp
+    catch {
+      case _ => return smallest
+    }
+    return smallest
   }
+
 }
 
