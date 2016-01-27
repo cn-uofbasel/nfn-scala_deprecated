@@ -15,10 +15,10 @@ class GPSNearByDetector extends  NFNService {
 
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
-      case Seq(s1: NFNStringValue, s2: NFNStringValue, ix : NFNIntValue) => {
+      case Seq(s1: NFNStringValue, s2: NFNStringValue, refpoint : NFNIntValue, dist: NFNIntValue, maxval : NFNIntValue, firstStreamTimeOffset: NFNIntValue ,secondStreamTimeOffset: NFNIntValue) => {
         val s1name = s1.str.split('/').toList
         val s2name = s2.str.split('/').toList
-        val ixi = ix.i
+        val ixi = refpoint.i
 
         val pos: List[String] = List(s"p$ixi")
         val s1namePos: List[String] = s1name ++ pos
@@ -29,7 +29,7 @@ class GPSNearByDetector extends  NFNService {
 
         val (lat1, lon1, time1) = GPXPointHandler.parseGPXPoint(c1)
         val ts = parseTS(time1)
-        val closestOther = findClosestDP(ccnApi, s2, ts, ixi)
+        val closestOther = findClosestDP(ccnApi, s2, ts, ixi, maxval.i, firstStreamTimeOffset.i, secondStreamTimeOffset.i)
 
 
         val pos2ndPoint: List[String] = List(s"p$closestOther")
@@ -41,10 +41,11 @@ class GPSNearByDetector extends  NFNService {
         val (lat2, lon2, time2) = GPXPointHandler.parseGPXPoint(c2)
 
 
-        val dist = GPXPointHandler.computeDistance(lat1, lon1, lat2, lon2).get
+        val pointdist = GPXPointHandler.computeDistance(lat1, lon1, lat2, lon2).get
         //NFNFloatValue(dist)
 
-        if (dist < 0.015) NFNIntValue(1) else NFNIntValue(0)
+        val distMeter = (pointdist*1000).toInt
+        if (distMeter < dist.i) NFNStringValue(s"Point $ixi - close to: $closestOther - dist: $distMeter") else NFNStringValue(s"Point $ixi - Not Close enough to: $closestOther - dist: $distMeter")
 
 
 
@@ -74,11 +75,14 @@ class GPSNearByDetector extends  NFNService {
     return Math.abs(data1-data2)
   }
 
-  def findClosestDP(ccnApi: ActorRef, stream: NFNStringValue, timestamp: Long, startpos : Int): Int = {
+  def findClosestDP(ccnApi: ActorRef, stream: NFNStringValue, timestamp: Long, startpos : Int, maxval : Int, firstStreamTimeOffset : Int, secondStreamTimeOffset : Int): (Int) = {
+
+
+    val offset = 10
     val prefix: List[String] = stream.str.split('/').toList
 
     var ret = List[Int]()
-    var sp = if(startpos - 25 > 2) startpos else 2
+    var sp = if(startpos - offset > 1) startpos - offset else 1
     var found = true
     var distance = Int.MaxValue
     var smallest = sp
@@ -92,14 +96,14 @@ class GPSNearByDetector extends  NFNService {
         cOp match {
           case Some(c) => {
             val s = new String(c.data.map(_.toChar))
-            val point = GPXPointHandler.parseGPXPoint(c) //TODO parsing error!!!!
+            val point = GPXPointHandler.parseGPXPoint(c)
             val ts = parseTS(point._3)
-            val d = timeStampDistance(ts, timestamp)
+            val d = timeStampDistance(ts+secondStreamTimeOffset, timestamp+firstStreamTimeOffset)
             if (d < distance) {
               smallest = sp
               distance = d.toInt
             }
-            if (sp > (startpos + 25)) return smallest
+            if ((sp > (startpos + offset)) || (sp > maxval)) return smallest
             sp = sp + 1
           }
           case _ => {

@@ -28,8 +28,10 @@ object GPSEventNet extends App {
   val node4 = LocalNodeFactory.forId(4, isCCNOnly = true) //contains GPS data
   val node5 = LocalNodeFactory.forId(5, isCCNOnly = true) //contains GPS data
 
-  loadTrack("chris", node4)
-  loadTrack("urs", node5)
+
+  val track = 3
+  loadTrack(s"chris$track", node4)
+  loadTrack(s"urs$track", node5)
 
 
   //== setup connections
@@ -46,11 +48,11 @@ object GPSEventNet extends App {
 
   val sensorService = new ReadSensorDataSimu
 
-  node1.publishServiceLocalPrefix(new AddService)
+  /*node1.publishServiceLocalPrefix(new AddService)
   node1.publishServiceLocalPrefix(new DifferenceService)
   node1.publishServiceLocalPrefix(new MinusService)
   node1.publishServiceLocalPrefix(new MultService)
-  node1.publishServiceLocalPrefix(new PredictionService)
+  node1.publishServiceLocalPrefix(new PredictionService)*/
 
   node1.publishServiceLocalPrefix(new GPSNearByDetector)
 
@@ -60,16 +62,16 @@ object GPSEventNet extends App {
   val decName = node1.localPrefix.append(new GPSNearByDetector().ccnName)
 
 
-  val dataname1 = node4.localPrefix.toString.substring(1) + "/NDNfit/chris/gpx/data/"
+  val dataname1 = node4.localPrefix.toString.substring(1) + s"/NDNfit/chris$track/gpx/data/"
 
-  val dataname2 = node5.localPrefix.toString.substring(1) + "/NDNfit/urs/gpx/data/"
+  val dataname2 = node5.localPrefix.toString.substring(1) + s"/NDNfit/urs$track/gpx/data/"
   println(dataname1)
 
 
   println("+++++++Running Test+++++++")
   var it = 0
-  for(it <- 35 to 45){
-    val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(it))
+  for(it <- 1 to 20){
+    val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(it), Constant(6), Constant(17), Constant(0), Constant(5))
     doExp(funcCall)
 
     //wait(5000)
