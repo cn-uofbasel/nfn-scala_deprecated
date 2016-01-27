@@ -29,7 +29,7 @@ object GPSEventNet extends App {
   val node5 = LocalNodeFactory.forId(5, isCCNOnly = true) //contains GPS data
 
 
-  val track = 3
+  val track = 4
   loadTrack(s"chris$track", node4)
   loadTrack(s"urs$track", node5)
 
@@ -69,13 +69,33 @@ object GPSEventNet extends App {
 
 
   println("+++++++Running Test+++++++")
-  var it = 0
-  for(it <- 1 to 20){
-    val funcCall = decName call (Str(dataname1), Str(dataname2), Constant(it), Constant(6), Constant(17), Constant(0), Constant(5))
-    doExp(funcCall)
+  if (track == 2) {
+    var it = 0
+    for (it <- 1 to 17) {
+      val funcCall = decName call(Str(dataname1), Str(dataname2), Constant(it), Constant(4), Constant(17), Constant(0), Constant(0))
+      doExp(funcCall)
+      //wait(5000)
+    }
+  }
+  if (track == 3) {
+    var it = 0
+    for (it <- 1 to 20) {
+      val funcCall = decName call(Str(dataname1), Str(dataname2), Constant(it), Constant(6), Constant(17), Constant(0), Constant(5))
+      doExp(funcCall)
 
-    //wait(5000)
+      //wait(5000)
 
+    }
+  }
+  if (track == 4) {
+    var it = 0
+    for (it <- 1 to 20) {
+      val funcCall = decName call(Str(dataname1), Str(dataname2), Constant(it), Constant(6), Constant(20), Constant(0), Constant(0))
+      doExp(funcCall)
+
+      //wait(5000)
+
+    }
   }
 
   //TODO build interest
@@ -103,7 +123,7 @@ object GPSEventNet extends App {
   }
 
   def loadTrack(name: String, node: LocalNode) :Unit = {
-    val path = "/Users/blacksheeep/Desktop/GPX/"
+    val path = "experimentalData/gps_event_detection/GPX/"
     val files =  ("ls " + path + name !!)
     var filelist = files.split('\n')
 

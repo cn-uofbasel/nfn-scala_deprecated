@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Endomondo.com" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata>
+    <author>
+      <name>Chris Scherb</name>
+      <email id="blacksheeep.cl" domain="gmail.com"/>
+    </author>
+    <link href="http://www.endomondo.com">
+      <text>Endomondo</text>
+    </link>
+    <time>2016-01-27T15:49:56Z</time>
+  </metadata>
+  <trk>
+    <src>http://www.endomondo.com/</src>
+    <link href="https://www.endomondo.com/workouts/663163403/9272444">
+      <text>endomondo</text>
+    </link>
+    <type>WALKING</type>
+    <trkseg>
+      <trkpt lat="47.560676" lon="7.590616">
+        <ele>251.0</ele>
+        <time>2016-01-27T15:42:58Z</time>
+      </trkpt>
+      <trkpt lat="47.560597" lon="7.590462">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:43:06Z</time>
+      </trkpt>
+      <trkpt lat="47.56052" lon="7.59033">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:43:12Z</time>
+      </trkpt>
+      <trkpt lat="47.56046" lon="7.59021">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:43:18Z</time>
+      </trkpt>
+      <trkpt lat="47.560412" lon="7.590081">
+        <ele>251.0</ele>
+        <time>2016-01-27T15:43:24Z</time>
+      </trkpt>
+      <trkpt lat="47.560349" lon="7.589962">
+        <ele>251.0</ele>
+        <time>2016-01-27T15:43:30Z</time>
+      </trkpt>
+      <trkpt lat="47.560286" lon="7.589842">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:43:36Z</time>
+      </trkpt>
+      <trkpt lat="47.56021" lon="7.589717">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:43:44Z</time>
+      </trkpt>
+      <trkpt lat="47.560161" lon="7.589603">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:43:50Z</time>
+      </trkpt>
+      <trkpt lat="47.560109" lon="7.589492">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:43:56Z</time>
+      </trkpt>
+      <trkpt lat="47.560042" lon="7.589361">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:44:04Z</time>
+      </trkpt>
+      <trkpt lat="47.55997" lon="7.58921">
+        <ele>250.0</ele>
+        <time>2016-01-27T15:44:12Z</time>
+      </trkpt>
+      <trkpt lat="47.559916" lon="7.589093">
+        <ele>251.0</ele>
+        <time>2016-01-27T15:44:18Z</time>
+      </trkpt>
+      <trkpt lat="47.559868" lon="7.588977">
+        <ele>251.0</ele>
+        <time>2016-01-27T15:44:24Z</time>
+      </trkpt>
+      <trkpt lat="47.559814" lon="7.588863">
+        <ele>251.0</ele>
+        <time>2016-01-27T15:44:30Z</time>
+      </trkpt>
+      <trkpt lat="47.55976" lon="7.588755">
+        <ele>251.0</ele>
+        <time>2016-01-27T15:44:36Z</time>
+      </trkpt>
+      <trkpt lat="47.559701" lon="7.588603">
+        <ele>252.0</ele>
+        <time>2016-01-27T15:44:44Z</time>
+      </trkpt>
+      <trkpt lat="47.559638" lon="7.588474">
+        <ele>253.0</ele>
+        <time>2016-01-27T15:44:50Z</time>
+      </trkpt>
+      <trkpt lat="47.559563" lon="7.588375">
+        <ele>252.0</ele>
+        <time>2016-01-27T15:44:57Z</time>
+      </trkpt>
+      <trkpt lat="47.559537" lon="7.588194">
+        <ele>247.0</ele>
+        <time>2016-01-27T15:45:05Z</time>
+      </trkpt>
+      <trkpt lat="47.559471" lon="7.588062">
+        <ele>249.0</ele>
+        <time>2016-01-27T15:45:15Z</time>
+      </trkpt>
+      <trkpt lat="47.5594" lon="7.587993">
+        <ele>249.0</ele>
+        <time>2016-01-27T15:45:19Z</time>
+      </trkpt>
+    </trkseg>
+    <trkseg>
+      <trkpt lat="47.5594" lon="7.587993">
+        <ele>249.0</ele>
+        <time>2016-01-27T15:45:20Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

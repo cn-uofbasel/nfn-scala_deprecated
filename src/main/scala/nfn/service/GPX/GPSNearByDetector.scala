@@ -29,7 +29,7 @@ class GPSNearByDetector extends  NFNService {
 
         val (lat1, lon1, time1) = GPXPointHandler.parseGPXPoint(c1)
         val ts = parseTS(time1)
-        val closestOther = findClosestDP(ccnApi, s2, ts, ixi, maxval.i, firstStreamTimeOffset.i, secondStreamTimeOffset.i)
+        val (closestOther, timedist )= findClosestDP(ccnApi, s2, ts, ixi, maxval.i, firstStreamTimeOffset.i, secondStreamTimeOffset.i)
 
 
         val pos2ndPoint: List[String] = List(s"p$closestOther")
@@ -41,11 +41,11 @@ class GPSNearByDetector extends  NFNService {
         val (lat2, lon2, time2) = GPXPointHandler.parseGPXPoint(c2)
 
 
-        val pointdist = GPXPointHandler.computeDistance(lat1, lon1, lat2, lon2).get
+        val pointdist= GPXPointHandler.computeDistance(lat1, lon1, lat2, lon2).get
         //NFNFloatValue(dist)
 
         val distMeter = (pointdist*1000).toInt
-        if (distMeter < dist.i) NFNStringValue(s"Point $ixi - close to: $closestOther - dist: $distMeter") else NFNStringValue(s"Point $ixi - Not Close enough to: $closestOther - dist: $distMeter")
+        if (distMeter < dist.i) NFNStringValue(s"Point $ixi - close to: $closestOther - dist: $distMeter") else NFNStringValue(s"Point $ixi - Not Close enough to: $closestOther - dist: $distMeter - timedist: $timedist")
 
 
 
@@ -75,7 +75,7 @@ class GPSNearByDetector extends  NFNService {
     return Math.abs(data1-data2)
   }
 
-  def findClosestDP(ccnApi: ActorRef, stream: NFNStringValue, timestamp: Long, startpos : Int, maxval : Int, firstStreamTimeOffset : Int, secondStreamTimeOffset : Int): (Int) = {
+  def findClosestDP(ccnApi: ActorRef, stream: NFNStringValue, timestamp: Long, startpos : Int, maxval : Int, firstStreamTimeOffset : Int, secondStreamTimeOffset : Int): (Int, Int) = {
 
 
     val offset = 10
@@ -103,21 +103,21 @@ class GPSNearByDetector extends  NFNService {
               smallest = sp
               distance = d.toInt
             }
-            if ((sp > (startpos + offset)) || (sp > maxval)) return smallest
+            if ((sp > (startpos + offset)) || (sp > maxval)) return (smallest, distance)
             sp = sp + 1
           }
           case _ => {
             found = false
-            return smallest
+            return (smallest, distance)
           }
           //compare Timestamp and compute distance
         }
       }
     }
     catch {
-      case _ => return smallest
+      case _ => return (smallest, distance)
     }
-    return smallest
+    return (smallest, distance)
   }
 
 }
