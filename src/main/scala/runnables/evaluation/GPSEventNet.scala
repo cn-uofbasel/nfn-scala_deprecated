@@ -98,9 +98,6 @@ object GPSEventNet extends App {
     }
   }
 
-  //TODO build interest
-
-
   def doExp(exprToDo: Expr) = {
     println(s"Running test: $exprToDo")
     val startTime = System.currentTimeMillis()
