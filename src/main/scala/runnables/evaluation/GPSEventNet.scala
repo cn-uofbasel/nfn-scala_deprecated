@@ -5,7 +5,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import lambdacalculus.parser.ast.{Constant, Expr, Str}
 import monitor.Monitor
 import nfn.LambdaNFNImplicits._
-import nfn.service.GPX.GPSNearByDetector
+import nfn.service.GPS.GPX.GPSNearByDetector
 import nfn.service.Temperature._
 import nfn.service._
 import scala.io.Source

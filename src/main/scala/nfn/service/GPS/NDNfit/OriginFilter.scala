@@ -1,4 +1,4 @@
-package nfn.service.NDNfit
+package nfn.service.GPS.NDNfit
 
 import akka.actor.ActorRef
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}

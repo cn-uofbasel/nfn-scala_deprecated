@@ -1,4 +1,4 @@
-package nfn.service.NDNfit.helpers
+package nfn.service.GPS.NDNfit.helpers
 
 import net.liftweb.json._
 

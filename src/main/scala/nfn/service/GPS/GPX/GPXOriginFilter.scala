@@ -1,10 +1,10 @@
-package nfn.service.GPX
+package nfn.service.GPS.GPX
 
 import akka.actor.ActorRef
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
-import nfn.service.GPX.helpers.GPXPointHandler._
-import nfn.service.GPX.helpers.GPXInterestHandler.fetchRawGPXPoint
+import nfn.service.GPS.GPX.helpers.GPXPointHandler._
+import nfn.service.GPS.GPX.helpers.GPXInterestHandler.fetchRawGPXPoint
 
 /**
  * Created by blacksheeep on 22/10/15.

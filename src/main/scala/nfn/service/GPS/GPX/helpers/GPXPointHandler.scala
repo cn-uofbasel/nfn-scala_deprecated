@@ -1,4 +1,4 @@
-package nfn.service.GPX.helpers
+package nfn.service.GPS.GPX.helpers
 
 import ccn.packet.{Interest, Content, CCNName}
 

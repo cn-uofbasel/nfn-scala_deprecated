@@ -1,4 +1,4 @@
-package nfn.service.GPX
+package nfn.service.GPS.GPX
 
 import akka.actor.ActorRef
 import ccn.packet.{Content, Interest, CCNName, NFNInterest}
@@ -6,7 +6,7 @@ import nfn.service._
 import nfn.tools.Networking._
 
 import scala.concurrent.duration._
-import nfn.service.GPX.helpers._
+import nfn.service.GPS.GPX.helpers._
 /**
  * Created by blacksheeep on 20/01/16.
  */

@@ -1,8 +1,8 @@
-package nfn.service.GPX.helpers
+package nfn.service.GPS.GPX.helpers
 
 import akka.actor.ActorRef
 import filterAccess.tools.Networking
-import nfn.service.GPX.helpers.GPXConfig._
+import nfn.service.GPS.GPX.helpers.GPXConfig._
 
 import ccn.packet.{Interest, Content, CCNName}
 import lambdacalculus.parser.ast.LambdaDSL._

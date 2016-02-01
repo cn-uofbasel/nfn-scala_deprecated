@@ -1,10 +1,10 @@
-package nfn.service.GPX
+package nfn.service.GPS.GPX
 
 import akka.actor.ActorRef
 import ccn.packet.{CCNName, Content, Interest}
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
-import nfn.service.GPX.helpers.GPXInterestHandler.fetchGPXDistanceComputer
+import nfn.service.GPS.GPX.helpers.GPXInterestHandler.fetchGPXDistanceComputer
 
 
 /**
