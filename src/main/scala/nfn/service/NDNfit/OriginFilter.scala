@@ -1,8 +1,6 @@
 package nfn.service.NDNfit
 
 import akka.actor.ActorRef
-import nfn.service.GPX.helpers.GPXInterestHandler.fetchRawGPXPoint
-import nfn.service.GPX.helpers.GPXPointHandler._
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
 
