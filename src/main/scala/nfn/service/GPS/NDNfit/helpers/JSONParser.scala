@@ -40,24 +40,27 @@ object JSONParser {
 
       // Invalid JSON
       case Failure(e) => None
-
     }
-
   }
 
-  def getLong(JSONObject: String): Option[String] = {
-    ???
-    // use extractElement
+  def extractor(jValue: JValue)(implicit field:String): List[String] = {
+    val lats = jValue \\ field
+    lats.children.map(x => x.children.head.values.toString)
   }
 
-  def getLat(JSONObject: String): Option[String] = {
-    ???
-    // use extractElement
+  def getLong(JSONObject: String): Option[List[String]] = {
+    implicit val field: String = "lng"
+    extractElement(JSONObject, extractor)
   }
 
-  def getTime(JSONObject: String): Option[String] = {
-    ???
-    // use extractElement
+  def getLat(JSONObject: String): Option[List[String]] = {
+    implicit val field: String = "lat"
+    extractElement(JSONObject, extractor)
+  }
+
+  def getTime(JSONObject: String): Option[List[String]] = {
+    implicit val field: String = "timeStamp"
+    extractElement(JSONObject, extractor)
   }
 
 }
