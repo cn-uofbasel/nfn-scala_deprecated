@@ -10,6 +10,7 @@ import nfn.service.GPS.GPX.GPXDistanceComputer
 import nfn.service.Temperature.{ReadSensorData, ReadSensorDataSimu, StoreSensorData}
 import nfn.service._
 import node.LocalNode
+import orgOpenmhealth.services.PointCount
 import scopt.OptionParser
 import sys.process._
 
@@ -107,28 +108,30 @@ object ComputeServerStarter extends Logging {
         // put the data of the jar into a content object.
         // The name of this service is infered from the package structure of the service as well as the prefix of the local node.
         // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
-        node.publishServiceLocalPrefix(new WordCount())
-        node.publishServiceLocalPrefix(new Pandoc())
-        node.publishServiceLocalPrefix(new PDFLatex())
-        node.publishServiceLocalPrefix(new Reverse())
+        //node.publishServiceLocalPrefix(new WordCount())
+        //node.publishServiceLocalPrefix(new Pandoc())
+        //node.publishServiceLocalPrefix(new PDFLatex())
+        //node.publishServiceLocalPrefix(new Reverse())
         //node.publishServiceLocalPrefix(new Echo())
         //node.publishServiceLocalPrefix(new EchoP())
-        node.publishServiceLocalPrefix(new GPXOriginFilter())
-        node.publishServiceLocalPrefix(new GPXDistanceComputer())
-        node.publishServiceLocalPrefix(new GPXDistanceAggregator())
-        node.publishServiceLocalPrefix(new ReadSensorData())
+        //node.publishServiceLocalPrefix(new GPXOriginFilter())
+        //node.publishServiceLocalPrefix(new GPXDistanceComputer())
+        //node.publishServiceLocalPrefix(new GPXDistanceAggregator())
+        //node.publishServiceLocalPrefix(new ReadSensorData())
+
+        node.publishServiceLocalPrefix(new PointCount())
 
         //node.publishServiceLocalPrefix(new StoreSensorData())
         //node.publishServiceLocalPrefix(new ReadSensorData())
 
         // Gets the content of the ccn-lite tutorial
-        node += PandocTestDocuments.tutorialMd(node.localPrefix)
+        //node += PandocTestDocuments.tutorialMd(node.localPrefix)
         // Publishes a very small two-line markdown file
-        node += PandocTestDocuments.tinyMd(node.localPrefix)
+        //node += PandocTestDocuments.tinyMd(node.localPrefix)
 
         //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
-       val files =  ("ls trackpoints/" !!)
-       val filelist = files.split('\n')
+       //val files =  ("ls trackpoints/" !!)
+       //val filelist = files.split('\n')
        /*filelist.foreach(f => {
         val data = Source.fromFile(s"trackpoints/$f").mkString
         val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
