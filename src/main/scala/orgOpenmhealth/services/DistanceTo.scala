@@ -12,7 +12,7 @@ import orgOpenmhealth.helpers.Helpers._
 class DistanceTo extends NFNService {
 
 
-  def computeDistanceTo(user:String, point:String, time:String, ccnApi: ActorRef):NFNIntValue = {
+  def computeDistanceTo(user:String, point:String, time:String, ccnApi: ActorRef):Int = {
 
     // TODO
     ???
@@ -25,12 +25,12 @@ class DistanceTo extends NFNService {
 
       case Seq(NFNStringValue(user), NFNStringValue(point), NFNStringValue(time)) => {
         // compute result
-        val result =computeDistanceTo(user, point, time, ccnApi).toDataRepresentation
+        val result =computeDistanceTo(user, point, time, ccnApi)
         //encapsulate
         val innerName = s"/org/openmhealth/$user/Data/fitness/physical_activity/genericfunction/TODO/PREFIX/DistanceTo/$point/$time"
-        import ccn.ccnlite.CCNLiteInterfaceCli._
-        val innerContent = ???
-        NFNDataValue(innerContent)
+        val innerContentObject = contentObjectToByte(innerName, result)
+
+        NFNDataValue(innerContentObject)
       }
 
       case _ => ???
