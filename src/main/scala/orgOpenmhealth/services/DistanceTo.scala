@@ -14,7 +14,7 @@ class DistanceTo extends NFNService {
 
   def computeDistanceTo(user:String, point:String, time:String, ccnApi: ActorRef):NFNIntValue = {
 
-    // TODO
+    
     ???
 
   }
