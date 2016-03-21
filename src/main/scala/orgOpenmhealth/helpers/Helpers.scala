@@ -1,5 +1,8 @@
 package orgOpenmhealth.helpers
 
+import java.io.{File, PrintWriter}
+import java.nio.file.{Paths, Files}
+
 import ccn.packet._
 import akka.actor.ActorRef
 import config.CCNLiteSystemPath
@@ -84,22 +87,25 @@ object Helpers {
     } yield data).toList
   }
 
-  def contentObjectToByte(name:String, data:Any):Array[Byte] = {
+  def contentObjectToByte(name:String, data:String):Array[Byte] = {
 
     // TODO: better solution..
 
     // data to file
-    val writeCmd = "echo '" + data + "'" #> "/tmp/result"
-    writeCmd !
+    val pw = new PrintWriter(new File("/tmp/result"))
+    pw.write(data)
+    pw.flush()
+    pw.close()
 
     // produce content object
     val ccnLiteEnv = CCNLiteSystemPath.ccnLiteHome
-    val mkCmd = List("$./ccnLiteEnv/bin/ccn-lite-mkC ${c.name.toString} -s ndn2013 -i /tmp/result") #> "/tmp/content-object"
+    val mkCmd = s"${ccnLiteEnv}/bin/ccn-lite-mkC -s ndn2013 -i /tmp/result -o /tmp/content-object ${name}"
     mkCmd !
 
     // return
-    scala.io.Source.fromFile("/tmp/content-object").map(_.toByte).toArray
-
+    //scala.io.Source.fromFile("/tmp/content-object").mkString
+    val byteArray = Files.readAllBytes(Paths.get("/tmp/content-object"))
+    byteArray
   }
 
 

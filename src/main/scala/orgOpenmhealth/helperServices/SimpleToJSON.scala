@@ -14,7 +14,7 @@ class SimpleToJSON extends NFNService {
     // TODO: this function ignores time stamps
     val lat = simple.split(',')(0)
     val lng = simple.split(',')(1)
-    s"{\"lat\":${lat},\"lng\":${lng}"
+    s"""{"lat":${lat},"lng":${lng}"""
   }
 
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {

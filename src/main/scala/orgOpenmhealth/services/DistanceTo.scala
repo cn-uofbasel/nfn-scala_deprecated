@@ -36,7 +36,7 @@ class DistanceTo extends NFNService {
         val result =computeDistanceTo(user, point, time, ccnApi)
         //encapsulate
         val innerName = s"/org/openmhealth/$user/Data/fitness/physical_activity/genericfunction/TODO/PREFIX/DistanceTo/$point/$time"
-        val innerContentObject = contentObjectToByte(innerName, result)
+        val innerContentObject = contentObjectToByte(innerName, result.toString)
 
         NFNDataValue(innerContentObject)
       }
