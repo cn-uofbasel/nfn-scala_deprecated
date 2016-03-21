@@ -57,6 +57,17 @@ object Helpers {
   }
 
 
+  def requestCatalogTimeStamps(ccnApi: ActorRef, user:String, timestamp:String, prefix:String="org/openmhealth", version:Int = 1):List[String] = {
+
+    val catalogName = buildCatalogName(user, timestamp)
+    val catalogData = new String(fetchContent(Interest(catalogName), ccnApi, 30 seconds).get.data)
+
+    val catalogDataTrim = catalogData.replace(" ", "")
+
+    catalogDataTrim.substring(1, catalogDataTrim.length-2).split(',').toList
+
+  }
+
   /**
     *
     * @param ccnApi
@@ -67,12 +78,7 @@ object Helpers {
     * @return
     */
   def resolveCatalog(ccnApi: ActorRef, user:String, timestamp:String, prefix:String="org/openmhealth", version:Int = 1):List[String] = {
-
-    val catalogName = buildCatalogName(user, timestamp)
-    val catalogData = new String(fetchContent(Interest(catalogName), ccnApi, 30 seconds).get.data)
-
-    val dataPointTimeStamps = catalogData.substring(1,catalogData.length-1).replace(" ", "").split(',')
-
+    val dataPointTimeStamps = requestCatalogTimeStamps(ccnApi, user, timestamp, prefix, version)
     (for  { t <- dataPointTimeStamps
       data = resolveDataPointPacket(ccnApi, user, t)
     } yield data).toList
@@ -94,6 +100,15 @@ object Helpers {
     // return
     scala.io.Source.fromFile("/tmp/content-object").map(_.toByte).toArray
 
+  }
+
+
+  def timeStampToCatalogTimeStamp(timestamp: String) : String = {
+    val fixdate = timestamp.substring(0, 11)
+    val min = timestamp.substring(11, 12) + "0"
+    val sec = timestamp.substring(13,15)
+
+    fixdate + min + "00"
   }
 
 

@@ -10,7 +10,7 @@ import nfn.service.GPS.GPX.GPXDistanceComputer
 import nfn.service.Temperature.{ReadSensorData, ReadSensorDataSimu, StoreSensorData}
 import nfn.service._
 import node.LocalNode
-import orgOpenmhealth.services.PointCount
+import orgOpenmhealth.services.{DistanceTo, PointCount}
 import scopt.OptionParser
 import sys.process._
 
@@ -120,6 +120,7 @@ object ComputeServerStarter extends Logging {
         //node.publishServiceLocalPrefix(new ReadSensorData())
 
         node.publishServiceLocalPrefix(new PointCount())
+        node.publishServiceLocalPrefix(new DistanceTo())
 
         //node.publishServiceLocalPrefix(new StoreSensorData())
         //node.publishServiceLocalPrefix(new ReadSensorData())
