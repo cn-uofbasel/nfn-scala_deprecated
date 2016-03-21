@@ -254,8 +254,12 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
     }
 
     def handleNonThunkContent: Unit = {
-      //      implicit val timeout = Timeout(defaultTimeoutDuration)
-      pit.get(content.name) match {
+      //FIXME: Version hack for Openmhealth
+      val cname = if(content.name.cmps.head == "org" && content.name.cmps.tail.head == "openmhealth" && content.name.cmps.contains("catalog"))
+        CCNName(content.name.cmps.reverse.tail.reverse, None) else  content.name
+        pit.get(cname) match {
+      //FIXME: End of the hack for Openmhealth
+      //pit.get(content.name) match { //FIXME: if hack for Openmhealth is removed, uncomment this!
         case Some(pendingFaces) => {
           if (cacheContent) {
             cs.add(content)

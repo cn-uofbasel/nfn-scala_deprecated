@@ -32,5 +32,4 @@ class PointCount extends NFNService {
     }
 
   }
-
 }
