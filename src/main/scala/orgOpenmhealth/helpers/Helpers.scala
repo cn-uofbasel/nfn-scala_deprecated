@@ -23,7 +23,7 @@ object Helpers {
     * @return
     */
   def buildCatalogName(user:String, timestamp:String, prefix:String="org/openmhealth", version:Int = 1):CCNName =
-    CCNName(prefix.split('/').toList, None).append(user).append("data/fitness/physical_activity/time_location/catalog").append(timestamp)
+    CCNName(prefix.split('/').toList, None).append(user).append(CCNName(List("data", "fitness", "physical_activity", "time_location","catalog"), None)).append(timestamp)
 
 
   /**
@@ -35,7 +35,7 @@ object Helpers {
     * @return
     */
   def buildDataPointPacketName(user:String, timestamp:String, prefix:String="org/openmhealth", version:Int = 1):CCNName =
-    CCNName(prefix.split('/').toList, None).append(user).append("data/fitness/physical_activity/time_location").append(timestamp)
+    CCNName(prefix.split('/').toList, None).append(user).append(CCNName(List("data", "fitness", "physical_activity", "time_location"), None)).append(timestamp)
 
 
   /**
