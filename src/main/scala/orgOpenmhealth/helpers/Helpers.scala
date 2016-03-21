@@ -2,10 +2,12 @@ package orgOpenmhealth.helpers
 
 import ccn.packet._
 import akka.actor.ActorRef
+import config.CCNLiteSystemPath
+import myutil.systemcomandexecutor.{ExecutionError, ExecutionSuccess, SystemCommandExecutor}
 import nfn.service.NFNValue
 import nfn.tools.Networking.fetchContent
 import scala.concurrent.duration._
-
+import sys.process._
 
 
 /**
@@ -74,6 +76,24 @@ object Helpers {
     (for  { t <- dataPointTimeStamps
       data = resolveDataPointPacket(ccnApi, user, t)
     } yield data).toList
+  }
+
+  def contentObjectToByte(name:String, data:Any):Array[Byte] = {
+
+    // TODO: better solution..
+
+    // data to file
+    val writeCmd = "echo '" + data + "'" #> "/tmp/result"
+    writeCmd !
+
+    // produce content object
+    val ccnLiteEnv = CCNLiteSystemPath.ccnLiteHome
+    val mkCmd = List("$./ccnLiteEnv/bin/ccn-lite-mkC ${c.name.toString} -s ndn2013 -i /tmp/result") #> "/tmp/content-object"
+    mkCmd !
+
+    // return
+    scala.io.Source.fromFile("/tmp/content-object").map(_.toByte).toArray
+
   }
 
 
