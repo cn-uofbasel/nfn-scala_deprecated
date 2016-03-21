@@ -2,6 +2,7 @@ package orgOpenmhealth.helpers
 
 import ccn.packet._
 import akka.actor.ActorRef
+import nfn.service.NFNValue
 import nfn.tools.Networking.fetchContent
 import scala.concurrent.duration._
 
@@ -12,12 +13,37 @@ import scala.concurrent.duration._
   */
 object Helpers {
 
+  /**
+    *
+    * @param user
+    * @param timestamp
+    * @param prefix
+    * @param version
+    * @return
+    */
   def buildCatalogName(user:String, timestamp:String, prefix:String="org/openhealth", version:Int = 1):CCNName =
     CCNName(prefix).append(user).append("data/fitness/physical_activity/time_location/catalog").append(timestamp)
 
+  /**
+    *
+    * @param user
+    * @param timestamp
+    * @param prefix
+    * @param version
+    * @return
+    */
   def buildDataPointPacketName(user:String, timestamp:String, prefix:String="org/openhealth", version:Int = 1):CCNName =
     CCNName(prefix).append(user).append("data/fitness/physical_activity/time_location").append(timestamp)
 
+  /**
+    *
+    * @param ccnApi
+    * @param user
+    * @param timestamp
+    * @param prefix
+    * @param version
+    * @return
+    */
   def resolveDataPointPacket(ccnApi: ActorRef, user:String, timestamp:String, prefix:String="org/openhealth", version:Int = 1): String = {
 
     val name = buildDataPointPacketName(user, timestamp)
@@ -25,6 +51,15 @@ object Helpers {
 
   }
 
+  /**
+    *
+    * @param ccnApi
+    * @param user
+    * @param timestamp
+    * @param prefix
+    * @param version
+    * @return
+    */
   def resolveCatalog(ccnApi: ActorRef, user:String, timestamp:String, prefix:String="org/openhealth", version:Int = 1):List[String] = {
 
     val catalogName = buildCatalogName(user, timestamp)
@@ -38,7 +73,6 @@ object Helpers {
 
 
   }
-
 
 
 }
