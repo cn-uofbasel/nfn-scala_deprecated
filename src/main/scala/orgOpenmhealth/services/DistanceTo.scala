@@ -1,8 +1,9 @@
 package orgOpenmhealth.services
 
 import akka.actor.ActorRef
-import ccn.packet.{CCNName, Content}
+import ccn.packet.{CCNName, Content, Interest}
 import config.CCNLiteSystemPath
+import nfn.tools.Networking._
 //import net.named_data.jndn.util.Blob
 //import net.named_data.jndn.{Name, Face}
 //import net.named_data.jndn.encrypt.{ConsumerDb, Consumer}
@@ -10,7 +11,7 @@ import config.CCNLiteSystemPath
 import nfn.service
 import nfn.service._
 import orgOpenmhealth.helpers.Helpers._
-
+import scala.concurrent.duration._
 
 
 
@@ -23,18 +24,34 @@ class DistanceTo extends NFNService {
   def computeDistanceTo(user:String, point:String, time:String, ccnApi: ActorRef):Int = {
 
     
-    //fetch corresponding catalog //FIXME Reenable catalog files, but not available on server
+    //fetch corresponding catalog
     val points = requestCatalogTimeStamps(ccnApi, user, timeStampToCatalogTimeStamp(time))
     if(points.contains(time)){ //not exact matching required!
        val coordinates = resolveDataPointPacket(ccnApi, user, time)
-      return 1
+
+       val lat = coordinates.split(""""lat":""").tail.head.split(""",""").head.toInt
+       val lng = coordinates.split(""""lng":""").tail.head.split("""}""").head.toInt
+
+       val refname = new CCNName(point.split("/").toList, None)
+       val catalogData = new String(fetchContent(Interest(refname), ccnApi, 30 seconds).get.data)
+
+       val reflat = catalogData.split("""lat="""").tail.head.split(""""""").head.toInt
+       val reflng = catalogData.split("""lon="""").tail.head.split(""""""").head.toInt
+
+       val dx = 71.5 * (lng - reflng)
+       val dy = 111.3 * (lat - reflat)
+
+      return Math.sqrt(dx*dx + dy*dy).toInt
+
     }
-    val coordinates = resolveDataPointPacket(ccnApi, user, time)
+
+
+
 
     //search for point near by given timestamp
     //replie result
     //TODO compute the actual distance
-    return 1
+    return -1
   }
 
   override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {

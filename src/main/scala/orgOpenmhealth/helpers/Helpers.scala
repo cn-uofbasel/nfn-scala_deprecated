@@ -55,7 +55,7 @@ object Helpers {
   def resolveDataPointPacket(ccnApi: ActorRef, user:String, timestamp:String, prefix:String="org/openmhealth", version:Int = 1): String = {
 
     val name = buildDataPointPacketName(user, timestamp)
-   new String(fetchContent(Interest(name), ccnApi, 30 seconds).get.data)
+    new String(fetchContent(Interest(name), ccnApi, 30 seconds).get.data)
 
   }
 
