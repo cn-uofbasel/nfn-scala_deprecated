@@ -24,11 +24,11 @@ class DistanceTo extends NFNService {
 
     
     //fetch corresponding catalog //FIXME Reenable catalog files, but not available on server
-    /*val points = requestCatalogTimeStamps(ccnApi, user, timeStampToCatalogTimeStamp(time))
+    val points = requestCatalogTimeStamps(ccnApi, user, timeStampToCatalogTimeStamp(time))
     if(points.contains(time)){ //not exact matching required!
        val coordinates = resolveDataPointPacket(ccnApi, user, time)
       return 1
-    }*/
+    }
     val coordinates = resolveDataPointPacket(ccnApi, user, time)
 
     //search for point near by given timestamp
