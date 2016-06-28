@@ -19,13 +19,16 @@ case class PIT(context: ActorContext) extends Logging {
 
   private case class Timeout(name: CCNName, face: ActorRef)
 
-  private val pit = mutable.Map[CCNName, Set[ActorRef]]()
+  val pit = mutable.Map[CCNName, Set[ActorRef]]()
 
   def add(name: CCNName, face: ActorRef, timeout: FiniteDuration) = {
     pit += name -> (pit.getOrElse(name, Set()) + face)
   }
 
   def get(name: CCNName): Option[Set[ActorRef]] = pit.get(name)
+
+
+
 
   def remove(name: CCNName): Option[Set[ActorRef]] =  pit.remove(name)
 

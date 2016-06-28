@@ -21,7 +21,7 @@ import scala.concurrent.duration._
 class DistanceTo extends NFNService {
 
 
-  def computeDistanceTo(user:String, point:String, time:String, ccnApi: ActorRef):Int = {
+  def computeDistanceTo(user:String, point:String, time:String, ccnApi: ActorRef):Double = {
 
     
     //fetch corresponding catalog
@@ -41,7 +41,7 @@ class DistanceTo extends NFNService {
        val dx = 71.5 * (lng - reflng)
        val dy = 111.3 * (lat - reflat)
 
-      return Math.sqrt(dx*dx + dy*dy).toInt
+      return Math.sqrt(dx*dx + dy*dy)
 
     }
 
@@ -61,7 +61,8 @@ class DistanceTo extends NFNService {
       case Seq(NFNStringValue(user), NFNStringValue(point), NFNStringValue(time)) => {
         // compute result
         val result = computeDistanceTo(user, point, time, ccnApi)
-        NFNDataValue(result.toString.getBytes())
+        //NFNDataValue(result.toString.getBytes())
+        NFNFloatValue(result)
         //encapsulate
         //val innerName = s"/org/openmhealth/$user/data/fitness/physical_activity/genericfunction/DistanceTo/$point/$time"
         //val innerContentObject = contentObjectToByte(innerName, result.toString)

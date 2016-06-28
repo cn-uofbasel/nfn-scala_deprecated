@@ -232,6 +232,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
         }
       }
 
+
       pit.get(content.name) match {
         case Some(pendingFaces) => {
           val (contentNameWithoutThunk, isThunk) = content.name.withoutThunkAndIsThunk
@@ -255,11 +256,11 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 
     def handleNonThunkContent: Unit = {
       //FIXME: Version hack for Openmhealth
-      val cname = if(content.name.cmps.head == "org" && content.name.cmps.tail.head == "openmhealth" && content.name.cmps.contains("catalog"))
-        CCNName(content.name.cmps.reverse.tail.reverse, None) else  content.name //remove catalog version for openmhealth
+      //val cname = if(content.name.cmps.head == "org" && content.name.cmps.tail.head == "openmhealth" && content.name.cmps.contains("catalog"))
+      //  CCNName(content.name.cmps.reverse.tail.reverse, None) else  content.name //remove catalog version for openmhealth
 
 
-        pit.get(cname) match {
+        pit.get(content.name) match {
       //FIXME: End of the hack for Openmhealth
       //pit.get(content.name) match { //FIXME: if hack for Openmhealth is removed, uncomment this!
         case Some(pendingFaces) => {
