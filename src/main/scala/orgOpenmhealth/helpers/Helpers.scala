@@ -65,9 +65,9 @@ object Helpers {
     val catalogName = buildCatalogName(user, timestamp)
     val catalogData = new String(fetchContent(Interest(catalogName), ccnApi, 30 seconds).get.data)
 
-    val catalogDataTrim = catalogData.replace(" ", "")
+    val catalogDataTrim = catalogData.replace(" ", "").replace("[", "").replace("]", "")
 
-    catalogDataTrim.substring(1, catalogDataTrim.length-2).split(',').toList
+    catalogDataTrim.split(",").toList
 
   }
 

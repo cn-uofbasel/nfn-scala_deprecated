@@ -23,20 +23,19 @@ class DistanceTo extends NFNService {
 
   def computeDistanceTo(user:String, point:String, time:String, ccnApi: ActorRef):Double = {
 
-    
     //fetch corresponding catalog
     val points = requestCatalogTimeStamps(ccnApi, user, timeStampToCatalogTimeStamp(time))
     if(points.contains(time)){ //not exact matching required!
        val coordinates = resolveDataPointPacket(ccnApi, user, time)
 
-       val lat = coordinates.split(""""lat":""").tail.head.split(""",""").head.toInt
-       val lng = coordinates.split(""""lng":""").tail.head.split("""}""").head.toInt
+       val lat = coordinates.split(""""lat":""").tail.head.split(""",""").head.toDouble
+       val lng = coordinates.split(""""lng":""").tail.head.split("""}""").head.toDouble
 
        val refname = new CCNName(point.split("/").toList, None)
        val catalogData = new String(fetchContent(Interest(refname), ccnApi, 30 seconds).get.data)
 
-       val reflat = catalogData.split("""lat="""").tail.head.split(""""""").head.toInt
-       val reflng = catalogData.split("""lon="""").tail.head.split(""""""").head.toInt
+       val reflat = catalogData.split("""lat="""").tail.head.split(""""""").head.toDouble
+       val reflng = catalogData.split("""lon="""").tail.head.split(""""""").head.toDouble
 
        val dx = 71.5 * (lng - reflng)
        val dy = 111.3 * (lat - reflat)
