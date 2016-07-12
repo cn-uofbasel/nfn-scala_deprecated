@@ -6,6 +6,7 @@ object CCNName {
   val thunkInterestKeyword = "THUNK"
   val thunkKeyword = "THUNK"
   val nfnKeyword = "NFN"
+  val keepaliveKeyword = "ALIVE"
   val computeKeyword = "COMPUTE"
   def withAddedNFNComponent(ccnName: CCNName) = CCNName(ccnName.cmps ++ Seq(nfnKeyword) :_*)
   def withAddedNFNComponent(cmps: Seq[String]) = CCNName(cmps ++ Seq(nfnKeyword) :_*)
@@ -24,7 +25,7 @@ object CCNName {
 
 case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
-  import CCNName.{thunkKeyword, nfnKeyword, computeKeyword}
+  import CCNName.{thunkKeyword, nfnKeyword, keepaliveKeyword, computeKeyword}
 
 //  def to = toString.replaceAll("/", "_").replaceAll("[^a-zA-Z0-9]", "-")
   override def toString = {
@@ -36,6 +37,8 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
   def isThunk: Boolean = isThunkWithKeyword(thunkKeyword)
 
   def isNFN: Boolean = cmps.size >= 1 && cmps.last == nfnKeyword
+
+  def isKeepalive: Boolean = cmps.size >= 2 && cmps(cmps.size - 2) == keepaliveKeyword
 
   def isCompute: Boolean = cmps.size >= 1 && cmps.head == computeKeyword
 
@@ -105,6 +108,9 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
   def prepend(cmpsToPrepend:String*):CCNName = CCNName(cmpsToPrepend ++ cmps:_*)
   def append(nameToAppend:CCNName):CCNName = append(nameToAppend.cmps:_*)
   def prepend(nameToPrepend:CCNName):CCNName = prepend(nameToPrepend.cmps:_*)
+
+  def makeKeepaliveName:CCNName = CCNName(cmps.dropRight(1) ++ Seq(keepaliveKeyword, nfnKeyword): _*)
+
 
   // Helper to improve java interop
   def cmpsList = cmps.toList

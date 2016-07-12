@@ -114,7 +114,7 @@ object NFNService extends Logging {
                   }
 
                   foundContent.onFailure {
-                    case error => logger.error(s"Could not find content for arg $arg", error)
+                    case error => logger.error(s"Could not find content for arg $arg", error) // send keepalive interest
                   }
 
                   foundContent

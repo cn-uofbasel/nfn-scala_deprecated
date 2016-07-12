@@ -261,7 +261,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
       //FIXME: End of the hack for Openmhealth
       //pit.get(content.name) match { //FIXME: if hack for Openmhealth is removed, uncomment this!
         case Some(pendingFaces) => {
-          if (cacheContent) {
+          if (cacheContent && !content.name.isKeepalive) {
             cs.add(content)
           }
 
@@ -302,53 +302,69 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
 
     //    implicit val timeout = Timeout(defaultTimeoutDuration)
-    cs.get(i.name) match {
-      case Some(contentFromLocalCS) =>
-        logger.debug(s"Served $contentFromLocalCS from local CS")
-        senderCopy ! contentFromLocalCS
-      case None => {
-        val senderFace = senderCopy
-        pit.get(i.name) match {
-          case Some(pendingFaces) => pit.add(i.name, senderFace, defaultTimeoutDuration)
-          case None => {
-            pit.add(i.name, senderFace, defaultTimeoutDuration)
 
-            // If the interest has a chunknum, make sure that the original interest (still) exists in the pit
-            i.name.chunkNum foreach { _ =>
-              pit.add(CCNName(i.name.cmps, None), senderFace, defaultTimeoutDuration)
-            }
+    // check if keepalive interest -> search in PIT (pit.get(nfn interest) -> senderCopy ! keepalive
 
-            // /.../.../NFN
-            // nfn interests are either:
-            // - send to the compute server if they start with compute
-            // - send to a local AM if one exists
-            // - forwarded to nfn gateway
-            // not nfn interests are always forwarded to the nfn gateway
-            if (i.name.isNFN) {
-              // /COMPUTE/call .../.../NFN
-              // A compute flag at the beginning means that the interest is a binary computation
-              // to be executed on the compute server
-              if (i.name.isCompute) {
-                if(i.name.isThunk) {
-                  computeServer ! ComputeServer.Thunk(i.name)
-                } else {
-                  computeServer ! ComputeServer.Compute(i.name)
-                }
-                // /.../.../NFN
-                // An NFN interest without compute flag means that it must be reduced by an abstract machine
-                // If no local machine is available, forward it to the nfn network
-              } else {
-                maybeLocalAbstractMachine match {
-                  case Some(localAbstractMachine) => {
-                    localAbstractMachine ! i
-                  }
-                  case None => {
-                    nfnGateway ! i
-                  }
-                }
+    //    senderCopy ! Content(i.name, "lkl".getBytes());
+    if (i.name.isKeepalive) {
+//    if (false) {
+      logger.debug(s"Receive keepalive interest: " + i.name)
+      val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 2, Nil, 1)
+      val nfnName = i.name.copy(cmps = nfnCmps)
+      pit.get(nfnName) match {
+        case Some(pendingInterest) => logger.debug(s"Found in PIT.")
+          senderCopy ! Content(i.name, "200".getBytes)
+        case None => logger.debug(s"Did not find in PIT.")
+      }
+    } else {
+      cs.get(i.name) match {
+        case Some(contentFromLocalCS) =>
+          logger.debug(s"Served $contentFromLocalCS from local CS")
+          senderCopy ! contentFromLocalCS
+        case None => {
+          val senderFace = senderCopy
+          pit.get(i.name) match {
+            case Some(pendingFaces) => pit.add(i.name, senderFace, defaultTimeoutDuration)
+            case None => {
+              pit.add(i.name, senderFace, defaultTimeoutDuration)
+
+              // If the interest has a chunknum, make sure that the original interest (still) exists in the pit
+              i.name.chunkNum foreach { _ =>
+                pit.add(CCNName(i.name.cmps, None), senderFace, defaultTimeoutDuration)
               }
-            } else {
-              nfnGateway ! i
+
+              // /.../.../NFN
+              // nfn interests are either:
+              // - send to the compute server if they start with compute
+              // - send to a local AM if one exists
+              // - forwarded to nfn gateway
+              // not nfn interests are always forwarded to the nfn gateway
+              if (i.name.isNFN) {
+                // /COMPUTE/call .../.../NFN
+                // A compute flag at the beginning means that the interest is a binary computation
+                // to be executed on the compute server
+                if (i.name.isCompute) {
+                  if (i.name.isThunk) {
+                    computeServer ! ComputeServer.Thunk(i.name)
+                  } else {
+                    computeServer ! ComputeServer.Compute(i.name)
+                  }
+                  // /.../.../NFN
+                  // An NFN interest without compute flag means that it must be reduced by an abstract machine
+                  // If no local machine is available, forward it to the nfn network
+                } else {
+                  maybeLocalAbstractMachine match {
+                    case Some(localAbstractMachine) => {
+                      localAbstractMachine ! i
+                    }
+                    case None => {
+                      nfnGateway ! i
+                    }
+                  }
+                }
+              } else {
+                nfnGateway ! i
+              }
             }
           }
         }

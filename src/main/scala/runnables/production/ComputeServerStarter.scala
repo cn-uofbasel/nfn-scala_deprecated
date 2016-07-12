@@ -109,7 +109,9 @@ object ComputeServerStarter extends Logging {
         // put the data of the jar into a content object.
         // The name of this service is infered from the package structure of the service as well as the prefix of the local node.
         // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
-        //node.publishServiceLocalPrefix(new WordCount())
+        node.publishServiceLocalPrefix(new WordCount())
+        node.publishServiceLocalPrefix(new DelayedWordCount())
+        node.publishServiceLocalPrefix(new FetchContentTest())
         //node.publishServiceLocalPrefix(new Pandoc())
         //node.publishServiceLocalPrefix(new PDFLatex())
         //node.publishServiceLocalPrefix(new Reverse())
