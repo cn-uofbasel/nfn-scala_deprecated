@@ -11,6 +11,7 @@ import akka.actor.Status._
 import akka.util.Timeout
 import ccn.packet.{CCNName, Content, Interest}
 import nfn.NFNApi
+import nfn.service._
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
@@ -39,6 +40,28 @@ object Networking {
       case c: Content => Some(c)
       case _ => None  // send keepalive interest
     }
+  }
+
+  def fetchContentRepeatedly(interest: Interest, ccnApi: ActorRef, time: Duration): Option[Content] = {
+    def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
+      implicit val timeout = Timeout(time.toMillis)
+      (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
+    }
+
+    while (true) {
+      val futContent = loadFromCacheOrNetwork(interest)
+      try {
+        val result = Await.result(futContent, time) match {
+          case c: Content => Some(c)
+          case _ => None
+        }
+        if (result.isDefined)
+          return result
+      } catch {
+        case e: TimeoutException => println("timeout, retry")
+      }
+    }
+    None
   }
 
   def fetchContentAndKeepAlive(interest: Interest, ccnApi: ActorRef, time: Duration): Option[Content] = {
