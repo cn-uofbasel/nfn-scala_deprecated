@@ -41,6 +41,7 @@ object NFNApi {
 
   case class AddToLocalCache(content: Content, prependLocalPrefix: Boolean = false)
 
+  case class AddIntermediateResult(content: Content)
 }
 
 
@@ -198,6 +199,11 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 
 
   private def handleContentChunk(contentChunk: Content, senderCopy: ActorRef) = {
+    logger.debug("enter handleContentChunk")
+
+    val face: Set[ActorRef] = pit.get(contentChunk.name) match {case Some(f) => f}
+
+
     cs.add(contentChunk)
     cs.getContentCompleteOrIncompletedChunks(contentChunk.name) match {
       case Left(content) =>
@@ -210,6 +216,12 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
             self ! NFNApi.CCNSendReceive(chunkInterest, contentChunk.name.isThunk)
           case _ => logger.warning(s"chunk store was already removed or never existed in contentstore for contentname ${contentChunk.name}")
         }
+      }
+    }
+    pit.get(contentChunk.name) match {
+//      case Some(name) => {pit.add}
+      case _ => face foreach {
+        pit.add(contentChunk.name, _, 10 seconds)
       }
     }
   }
@@ -257,6 +269,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
       //FIXME: Version hack for Openmhealth
       val cname = if(content.name.cmps.head == "org" && content.name.cmps.tail.head == "openmhealth" && content.name.cmps.contains("catalog"))
         CCNName(content.name.cmps.reverse.tail.reverse, None) else  content.name
+        println(pit.toString())
         pit.get(cname) match {
       //FIXME: End of the hack for Openmhealth
       //pit.get(content.name) match { //FIXME: if hack for Openmhealth is removed, uncomment this!
@@ -313,7 +326,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
       val nfnName = i.name.copy(cmps = nfnCmps)
       pit.get(nfnName) match {
         case Some(pendingInterest) => logger.debug(s"Found in PIT.")
-          senderCopy ! Content(i.name, "200".getBytes)
+          senderCopy ! Content(i.name, "".getBytes)
         case None => logger.debug(s"Did not find in PIT.")
       }
     } else {
@@ -454,6 +467,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
       ccnIf.addToCache(content, routerConfig.mgmntSocket) onComplete {
         case Success(n) =>
           logger.debug(s"Send $n AddToCache requests for content $content to router ")
+//          logger.debug(s"Name: ${content.name}")
           senderCopy ! NFNApi.AddToCCNCacheAck(content.name)
         case Failure(ex) => logger.error(ex, s"Could not add to CCN cache for $content")
       }
@@ -468,6 +482,18 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
       cs.add(contentToAdd)
     }
 
+    case NFNApi.AddIntermediateResult(intermediateContent) => {
+      logger.info(s"Adding intermediate result for ${intermediateContent.name} to CCN cache.")
+      val futIntermediateData = intermediateDataOrRedirect(self, intermediateContent.name, intermediateContent.data)
+      futIntermediateData map {
+        resultData => Content(intermediateContent.name, resultData, MetaInfo.empty)
+      } onComplete {
+        case Success(content) => {
+          self ! NFNApi.AddToCCNCache(content)
+        }
+        case Failure(ex) => logger.error(ex, s"Could not add intermediate content to CCN cache for $intermediateContent")
+      }
+    }
 
     case Exit() => {
       exit()
@@ -478,5 +504,29 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
   def exit(): Unit = {
     computeServer ! PoisonPill
     nfnGateway ! PoisonPill
+  }
+
+
+  def intermediateDataOrRedirect(ccnApi: ActorRef, name: CCNName, data: Array[Byte]): Future[Array[Byte]] = {
+    if(data.size > CCNLiteInterfaceCli.maxChunkSize) {
+      name.expression match {
+        case Some(expr) =>
+          val cmps = computeNodeConfig.prefix.cmps ++ List(expr)
+          val redirectName = CCNName(cmps, None).withIntermediate(name.intermediateIndex).withNFN
+          val redirectCmps = redirectName.cmps
+//          val redirectCmps
+//      val redirectCmps = name.cmps
+          val content = Content(redirectName, data)
+          implicit val timeout = StaticConfig.defaultTimeout
+          ccnApi ? NFNApi.AddToCCNCache(content) map {
+            case NFNApi.AddToCCNCacheAck(_) =>
+              val escapedComponents = CCNLiteInterfaceCli.escapeCmps(redirectCmps)
+              val redirectResult: String = "redirect:" + escapedComponents.mkString("/", "/", "")
+              redirectResult.getBytes
+            case answer @ _ => throw new Exception(s"Asked for addToCache for $content and expected addToCacheAck but received $answer")
+          }
+        case None => throw new Exception(s"Name $name could not be transformed to an expression")
+      }
+    } else Future(data)
   }
 }

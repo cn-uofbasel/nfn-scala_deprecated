@@ -7,6 +7,7 @@ object CCNName {
   val thunkKeyword = "THUNK"
   val nfnKeyword = "NFN"
   val keepaliveKeyword = "ALIVE"
+  val intermediateKeyword = "INTERMEDIATE"
   val computeKeyword = "COMPUTE"
   def withAddedNFNComponent(ccnName: CCNName) = CCNName(ccnName.cmps ++ Seq(nfnKeyword) :_*)
   def withAddedNFNComponent(cmps: Seq[String]) = CCNName(cmps ++ Seq(nfnKeyword) :_*)
@@ -25,7 +26,7 @@ object CCNName {
 
 case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
-  import CCNName.{thunkKeyword, nfnKeyword, keepaliveKeyword, computeKeyword}
+  import CCNName.{thunkKeyword, nfnKeyword, keepaliveKeyword, computeKeyword, intermediateKeyword}
 
 //  def to = toString.replaceAll("/", "_").replaceAll("[^a-zA-Z0-9]", "-")
   override def toString = {
@@ -42,6 +43,10 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   def isCompute: Boolean = cmps.size >= 1 && cmps.head == computeKeyword
 
+  def isIntermediate: Boolean =
+    (cmps.size >= 3 && cmps(cmps.size - 3) == intermediateKeyword) ||
+    (cmps.size >= 2 && cmps(cmps.size - 2) == intermediateKeyword)
+
   def withoutCompute: CCNName = {
     if(cmps.size > 0) {
       if(cmps.head == computeKeyword) CCNName(cmps.tail:_*)
@@ -56,9 +61,34 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
     } else this
   }
 
+  def withoutIntermediate: CCNName = {
+    if (cmps.size > 1) {
+      if (cmps.takeRight(2).head == intermediateKeyword) CCNName(cmps.dropRight(2):_*)
+      else this
+    } else this
+  }
+
+  def withCompute: CCNName = {
+    CCNName(computeKeyword :: cmps:_*)
+  }
+
+  def withNFN: CCNName = {
+    CCNName(cmps ++ Seq(nfnKeyword):_*)
+  }
+
+  def withIntermediate(index: Int) = {
+    CCNName(cmps ++ Seq(intermediateKeyword, index.toString):_*)
+  }
+
+  def intermediateIndex: Int = {
+    if (cmps.size >= 2 && cmps.takeRight(2).head == intermediateKeyword) cmps.last.toInt
+    else if (cmps.size >= 3 && cmps.takeRight(3).head == intermediateKeyword) cmps(cmps.size - 2).toInt
+    else -1
+  }
+
   def expression: Option[String] = {
     if(cmps.size > 0) {
-      val expr = this.withoutCompute.withoutNFN
+      val expr = this.withoutCompute.withoutNFN.withoutIntermediate
       expr.cmps match {
         case h :: Nil => Some(h)
         case _ =>

@@ -1,7 +1,8 @@
 package testservice
 
 import akka.actor.ActorRef
-import nfn.service.{NFNServiceArgumentException, NFNIntValue, NFNValue, NFNService}
+import ccn.packet.CCNName
+import nfn.service.{NFNIntValue, NFNService, NFNServiceArgumentException, NFNValue}
 
 
 class OtherClass() {
@@ -12,7 +13,7 @@ class OtherClass() {
 
 class ChfToDollar() extends NFNService {
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     println("External service successfully loaded!")
     new OtherClass().foo(3)
     if(args.size == 1 && args.head.isInstanceOf[NFNIntValue]) {

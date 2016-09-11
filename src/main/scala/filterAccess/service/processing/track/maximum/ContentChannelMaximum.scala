@@ -1,14 +1,14 @@
 package filterAccess.service.processing.track.maximum
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import filterAccess.service.processing.track.distance.DistanceAPI.fetchAndDecrypt
 import nfn.service._
 
 import scala.concurrent.duration._
-
 import filterAccess.tools.Exceptions.noReturnException
 import filterAccess.crypto.Encryption._
-import filterAccess.crypto.Helpers.{symKeyGenerator, computeHash}
+import filterAccess.crypto.Helpers.{computeHash, symKeyGenerator}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -74,7 +74,7 @@ class ContentChannelMaximum extends Maximum {
    * @param    ccnApi   Akka Actor
    * @return            Functions result
    */
-  def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(extRDN1), NFNStringValue(extRDN2)) => {

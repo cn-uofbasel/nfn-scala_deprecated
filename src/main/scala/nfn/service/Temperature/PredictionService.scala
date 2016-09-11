@@ -18,7 +18,7 @@ class PredictionService  extends NFNService    {
   import nfn.LambdaNFNImplicits._
   implicit val useThunks: Boolean = false
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     (args.head, args.tail.head, args.tail.tail.head, args.tail.tail.tail.head, args.tail.tail.tail.tail.head) match {
       case (tempSensorDB: NFNStringValue, preasureSensorDB: NFNStringValue, tempSensor: NFNStringValue, preasureSensor: NFNStringValue, predictionNum: NFNIntValue) => {
 

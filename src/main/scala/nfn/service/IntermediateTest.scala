@@ -7,12 +7,14 @@ import nfn.tools.Networking._
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class FetchContentTest() extends NFNService {
+class IntermediateTest() extends NFNService {
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
-//    def splitString(s: String) = s.split(" ").size
 
-    val r = new String(fetchContentAndKeepAlive(NFNInterest("call 2 /node/nodeF/nfn_service_DelayedWordCount 'foo bar'"), ccnApi, 3 seconds).get.data).toInt
-    NFNIntValue(r)
+    for ( i <- 0 to 10) {
+      intermediateResult(ccnApi, interestName, i, NFNStringValue("intermediate test " + i))
+      Thread.sleep(1 * 1000)
+    }
+    NFNStringValue("this is the final result")
   }
 }
 

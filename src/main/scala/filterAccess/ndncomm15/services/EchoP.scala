@@ -7,6 +7,9 @@ import nfn.service._
 
 import scala.util.Random
 import java.io.FileWriter
+
+import ccn.packet.CCNName
+
 import scala.sys.process._
 
 
@@ -97,7 +100,7 @@ class EchoP extends NFNService {
    * @param    ccnApi   Akka Actor
    * @return            Functions result
    */
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(pubKey)) => processEcho(pubKey) match {

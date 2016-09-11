@@ -149,7 +149,7 @@ object NFNService extends Logging {
                 for {
                   args <- futArgs
                   serv <- futServ
-                  callable <- serv.instantiateCallable(serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
+                  callable <- serv.instantiateCallable(CCNName(name), serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
                 } yield callable
 
               futCallableServ onSuccess {
@@ -170,11 +170,11 @@ trait NFNService {
 
   def executionTimeEstimate: Option[Int] = None
 
-  def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue
+  def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue
 
-  def instantiateCallable(name: CCNName, values: Seq[NFNValue], ccnServer: ActorRef, executionTimeEstimate: Option[Int]): Try[CallableNFNService] = {
+  def instantiateCallable(interestName: CCNName, name: CCNName, values: Seq[NFNValue], ccnServer: ActorRef, executionTimeEstimate: Option[Int]): Try[CallableNFNService] = {
     assert(name == ccnName, s"Service $ccnName is created with wrong name $name")
-    Try(CallableNFNService(name, values, ccnServer, function, executionTimeEstimate))
+    Try(CallableNFNService(interestName, name, values, ccnServer, (interestName, args, ccnApi) => function(interestName, args, ccnApi), executionTimeEstimate = executionTimeEstimate))
   }
 //  def instantiateCallable(name: NFNName, futValues: Seq[Future[NFNServiceValue]], ccnWorker: ActorRef): Future[CallableNFNService]
 
@@ -191,8 +191,8 @@ class ServiceException(msg: String) extends Exception(msg)
 case class NFNServiceExecutionException(msg: String) extends ServiceException(msg)
 case class NFNServiceArgumentException(msg: String) extends ServiceException(msg)
 
-case class CallableNFNService(name: CCNName, values: Seq[NFNValue], nfnMaster: ActorRef, function: (Seq[NFNValue], ActorRef) => NFNValue, executionTimeEstimate: Option[Int]) extends Logging {
-  def exec:NFNValue = function(values, nfnMaster)
+case class CallableNFNService(interestName: CCNName, name: CCNName, values: Seq[NFNValue], nfnMaster: ActorRef, function: (CCNName, Seq[NFNValue], ActorRef) => NFNValue, executionTimeEstimate: Option[Int]) extends Logging {
+  def exec:NFNValue = function(interestName, values, nfnMaster)
 }
 
 abstract class NFNDynamicService() extends NFNService {

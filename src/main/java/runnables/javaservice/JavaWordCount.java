@@ -3,10 +3,7 @@ package runnables.javaservice;
 import akka.actor.ActorRef;
 import ccn.packet.CCNName;
 import nfn.service.*;
-import scala.Function2;
-import scala.Option;
 import scala.collection.Seq;
-import scala.util.Try;
 import scala.collection.JavaConverters;
 
 /**
@@ -14,7 +11,7 @@ import scala.collection.JavaConverters;
 */
 public class JavaWordCount extends JavaNFNService {
     @Override
-    public NFNValue function(Seq<NFNValue> args, ActorRef nfnApi) {
+    public NFNValue function(CCNName interestName, Seq<NFNValue> args, ActorRef nfnApi) {
 
         int numberOfWords = 0;
         for(NFNValue arg : JavaConverters.asJavaIterableConverter(args).asJava()) {

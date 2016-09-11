@@ -1,8 +1,8 @@
 package nfn.service.GPS.GPX
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
-
 import nfn.service.GPS.GPX.helpers.GPXPointHandler.parseGPXPoint
 import nfn.service.GPS.GPX.helpers.GPXInterestHandler.fetchRawGPXPoint
 import helpers.GPXPointHandler
@@ -34,7 +34,7 @@ class GPXDistanceComputer extends NFNService {
 
   }
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match{
       case Seq(NFNStringValue(name1), NFNIntValue(n1), NFNStringValue(name2), NFNIntValue(n2)) => {
 

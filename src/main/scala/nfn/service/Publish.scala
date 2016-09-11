@@ -5,7 +5,7 @@ import ccn.packet.{CCNName, Content, MetaInfo}
 import nfn.NFNApi
 
 class Publish() extends NFNService {
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(NFNContentObjectValue(contentName, contentData), NFNContentObjectValue(_, publishPrefixNameData), _) => {
         val nameOfContentWithoutPrefixToAdd = CCNName(new String(publishPrefixNameData).split("/").tail:_*)

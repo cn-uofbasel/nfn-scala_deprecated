@@ -2,11 +2,11 @@ package filterAccess.service.processing.track.distance
 
 import akka.actor.ActorRef
 import filterAccess.json.KeyChannelParser._
-import filterAccess.tools.{Networking, DataNaming}
+import filterAccess.tools.{DataNaming, Networking}
 import nfn.service._
-
 import filterAccess.tools.Exceptions.noReturnException
 import Networking._
+import ccn.packet.CCNName
 import filterAccess.crypto.Encryption.pubEncrypt
 
 /**
@@ -62,7 +62,7 @@ class KeyChannelDistance extends Distance {
    * @param    ccnApi   Akka Actor
    * @return            Functions result
    */
-  def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(extRDN), NFNIntValue(level), NFNStringValue(pubKey)) => {

@@ -1,11 +1,12 @@
 package nfn.service
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 
 
 class MinusService() extends  NFNService {
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(l: NFNIntValue, r: NFNIntValue) => {
         val res = NFNIntValue(l.i - r.i)

@@ -102,11 +102,12 @@ class LegacyKeyChannel extends NFNService {
 
   /**
    * Entry point of this service.
+ *
    * @param args
    * @param ccnApi
    * @return
    */
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(track), NFNStringValue(node), NFNIntValue(level)) => {

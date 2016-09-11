@@ -1,7 +1,9 @@
 package nfn.service.Temperature
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import nfn.service._
+
 import sys.process._
 
 /**
@@ -12,7 +14,7 @@ class ReadSensorData() extends NFNService  {
   val consttemp = 20
   val constpreasure = 1000
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     (args.head) match { // sensorname, datapoint
       case (dataPoint: NFNIntValue) => {

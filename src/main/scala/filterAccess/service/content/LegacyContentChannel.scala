@@ -1,6 +1,7 @@
 package filterAccess.service.content
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import filterAccess.json._
 import filterAccess.tools.Exceptions._
 import nfn.service._
@@ -63,11 +64,12 @@ class LegacyContentChannel extends NFNService {
 
   /**
    * Hook up function of this service.
+ *
    * @param args Function arguments
    * @param ccnApi Akka Actor
    * @return Execution result
    */
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(track), NFNIntValue(level)) => {

@@ -17,8 +17,8 @@ abstract class JavaNFNService implements NFNService {
     }
 
     @Override
-    public Try<CallableNFNService> instantiateCallable(CCNName name, Seq<NFNValue> values, ActorRef ccnServer, Option<Object> executionTimeEstimate) {
-        return NFNService$class.instantiateCallable(this, name, values, ccnServer, executionTimeEstimate);
+    public Try<CallableNFNService> instantiateCallable(CCNName interestName, CCNName name, Seq<NFNValue> values, ActorRef ccnServer, Option<Object> executionTimeEstimate) {
+        return NFNService$class.instantiateCallable(this, interestName, name, values, ccnServer, executionTimeEstimate);
     }
 
     @Override

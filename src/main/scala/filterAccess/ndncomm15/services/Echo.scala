@@ -19,7 +19,7 @@ class Echo extends NFNService{
 
   val access_control_file = "ac.txt"
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     val data = args.head
     val id = args.tail.head
 

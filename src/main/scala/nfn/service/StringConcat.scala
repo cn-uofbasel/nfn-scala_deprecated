@@ -1,9 +1,10 @@
 package nfn.service
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 
 class StringConcat extends NFNService {
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     NFNStringValue(args.map({
       case NFNContentObjectValue(name, data) => new String(data)
       case NFNStringValue(s) => s

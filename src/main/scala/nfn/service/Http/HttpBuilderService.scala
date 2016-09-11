@@ -3,7 +3,8 @@ package nfn.service.Http
 import java.net.URLEncoder
 
 import akka.actor.ActorRef
-import nfn.service.{NFNServiceArgumentException, NFNStringValue, NFNValue, NFNService}
+import ccn.packet.CCNName
+import nfn.service.{NFNService, NFNServiceArgumentException, NFNStringValue, NFNValue}
 
 /** Abstract NFNService class that implements a method to concatenate a sequence of arguments (NFNValue type) into a HTTP query string.
   *
@@ -28,7 +29,7 @@ abstract class HttpQueryStringBuilderService extends NFNService {
   * Version: 1.0
   */
 class HttpGetQueryStringBuilderService extends HttpQueryStringBuilderService {
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match{
       case Seq(NFNStringValue(baseUrl)) => NFNStringValue(baseUrl)
       case Seq(NFNStringValue(baseUrl), parameters @ _*) => {
@@ -58,6 +59,6 @@ class HttpPostQueryStringBuilderService extends HttpQueryStringBuilderService {
    * @param ccnApi
    * @return
    */
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = NFNStringValue(build(args))
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = NFNStringValue(build(args))
 }
 
