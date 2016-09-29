@@ -12,6 +12,9 @@ import scala.util.Random
 object Simulation {
   val G = 6.674E-11f
   def main(args: Array[String]): Unit = {
+    println(s"The simulation is not intended to be run directly. " +
+      s"This is only for testing purposes. " +
+      s"Use the SimulationService on a compute server instead.")
     val stepCount: Int = 10000
     val bodyCount: Int = 1000
     val deltaTime: Float = 60
@@ -19,16 +22,16 @@ object Simulation {
     val renderArea = Rect(-systemSize / 2, systemSize)
     val resolution = Vector(1000, 1000)
 
-    //    val config = Config.random(renderArea, bodyCount)
-    //    config.writeToFile("/Users/Bazsi/Desktop/config.csv")
-    val config = Config.fromFile("/Users/Bazsi/Desktop/config.csv")
+    val config = Config.random(renderArea, bodyCount)
+    //config.writeToFile("~/Desktop/config.csv")
+    //val config = Config.fromFile("~/Desktop/config.csv")
     val simulation = new Simulation(config, deltaTime)
 
-    simulation.render(renderArea, resolution, new java.io.File(s"/Users/Bazsi/Desktop/sim/sim00000.png"))
+    //simulation.render(renderArea, resolution, new java.io.File(s"~/Desktop/sim/sim00000.png"))
     simulation.run(stepCount, step => {
       println(s"Iteration $step")
-      simulation.config.writeToFile(f"/Users/Bazsi/Desktop/sim/csv$step%05d.csv")
-      simulation.render(renderArea, resolution, new java.io.File(f"/Users/Bazsi/Desktop/sim/sim$step%05d.png"))
+      //simulation.config.writeToFile(f"~/Desktop/sim/csv$step%05d.csv")
+      //simulation.render(renderArea, resolution, new java.io.File(f"~/Desktop/sim/sim$step%05d.png"))
     })
   }
 }

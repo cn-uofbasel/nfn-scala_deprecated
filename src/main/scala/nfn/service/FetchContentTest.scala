@@ -9,10 +9,15 @@ import scala.language.postfixOps
 
 class FetchContentTest() extends NFNService {
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
-//    def splitString(s: String) = s.split(" ").size
 
-    val r = new String(fetchContentAndKeepAlive(NFNInterest("call 2 /node/nodeF/nfn_service_DelayedWordCount 'foo bar'"), ccnApi, 3 seconds).get.data).toInt
-    NFNIntValue(r)
+    //val r = new String(fetchContentAndKeepAlive(NFNInterest("call 2 /node/nodeF/nfn_service_DelayedWordCount 'foo bar'"), ccnApi, 3 seconds).get.data).toInt
+    //NFNIntValue(r)
+
+    args.head match {
+      case NFNStringValue(s) => NFNDataValue(fetchContentAndKeepAlive(NFNInterest(s"(call 2 /node/nodeF/nfn_service_DelayedWordCount '${s}')"), ccnApi, 3 seconds).get.data)
+      case NFNIntValue(s) => NFNDataValue(fetchContentAndKeepAlive(NFNInterest(s"(call 2 /node/nodeF/nfn_service_DelayedWordCount ${s})"), ccnApi, 3 seconds).get.data)
+      case _ => NFNIntValue(0)
+    }
   }
 }
 

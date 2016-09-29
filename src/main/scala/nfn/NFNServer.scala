@@ -314,19 +314,13 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
 
-    //    implicit val timeout = Timeout(defaultTimeoutDuration)
-
-    // check if keepalive interest -> search in PIT (pit.get(nfn interest) -> senderCopy ! keepalive
-
-    //    senderCopy ! Content(i.name, "lkl".getBytes());
     if (i.name.isKeepalive) {
-//    if (false) {
       logger.debug(s"Receive keepalive interest: " + i.name)
       val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 2, Nil, 1)
       val nfnName = i.name.copy(cmps = nfnCmps)
       pit.get(nfnName) match {
         case Some(pendingInterest) => logger.debug(s"Found in PIT.")
-          senderCopy ! Content(i.name, "".getBytes)
+          senderCopy ! Content(i.name, " ".getBytes)
         case None => logger.debug(s"Did not find in PIT.")
       }
     } else {

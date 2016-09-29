@@ -27,13 +27,6 @@ class RenderService extends NFNService {
 
     val dataString = new String(configuration)
 
-//    println(s"xres: ${options('xres)}, yres: ${options('yres)}")
-//    println("CONFIGURATION START")
-//    println(configuration.toString)
-//    println("MAYBE THIS ONE?")
-//    println(dataString)
-//    println("CONFIGURATION END")
-
     val deltaTime = 60
     val systemSize = Vector(Body.earth.radius * 500, Body.earth.radius * 500)
     val renderArea = Rect(-systemSize / 2, systemSize)
@@ -51,22 +44,6 @@ class RenderService extends NFNService {
     val byteArray = baos.toByteArray
 
     NFNDataValue(byteArray)
-
-//    var lastTime = System.currentTimeMillis()
-//    val intermediateInterval = 500
-//    var intermediateIndex = 0
-
-//    simulation.run(stepCount, step => {
-//      val currentTime = System.currentTimeMillis()
-//      val elapsed = currentTime - lastTime
-//      if (elapsed > intermediateInterval) {
-//        intermediateResult(ccnApi, interestName, intermediateIndex, NFNStringValue(simulation.config.toString))
-//        intermediateIndex += 1
-//        lastTime = currentTime
-//      }
-//    })
-//    NFNStringValue(simulation.config.toString)
-
 
   }
 }
