@@ -3,6 +3,7 @@ package filterAccess.service.permission
 import filterAccess.service.Channel
 import nfn.service._
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import filterAccess.tools.Exceptions._
 
 /**
@@ -34,7 +35,7 @@ abstract class PermissionChannel extends Channel {
    * @param    ccnApi   Akka Actor
    * @return            Functions result
    */
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(rdn)) =>

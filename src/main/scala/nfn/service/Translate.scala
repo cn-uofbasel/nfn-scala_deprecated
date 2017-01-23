@@ -1,10 +1,11 @@
 package nfn.service
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 
 class Translate() extends NFNService {
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(NFNContentObjectValue(name, data)) =>
         // translating should happen here

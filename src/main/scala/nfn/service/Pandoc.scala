@@ -32,7 +32,7 @@ object PandocTestDocuments {
 }
 
 class Pandoc extends NFNService {
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(NFNContentObjectValue(_, doc), NFNStringValue(from), NFNStringValue(to)) =>
         val cmds = List("pandoc", "-s", "-f", from, "-t", to)

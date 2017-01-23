@@ -15,7 +15,7 @@ import scala.util._
 
 class ESIInclude() extends NFNService {
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(xmlDoc: NFNContentObjectValue, tagToReplace: NFNContentObjectValue, contentToReplaceTagWith: NFNContentObjectValue) => {
         val doc = new String(xmlDoc.data)
@@ -32,7 +32,7 @@ class ESIInclude() extends NFNService {
 
 class RandomAd() extends NFNService {
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq() => {
         val randomAd = s"""<div class="ad">randomly chosen ad at: ${System.currentTimeMillis}</div>"""

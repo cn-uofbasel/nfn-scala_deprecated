@@ -13,12 +13,12 @@ import scala.util.{Failure, Success, Try}
  * The result of service invocation is a [[NFNListValue]].
  */
 class MapService() extends NFNService {
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNStringValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNStringValue = {
     args match {
       case Seq(function, arguments @ _*) => {
         val service = MapReduceService.serviceFromValue(function).get
         val values = arguments.map({ arg =>
-          service.instantiateCallable(service.ccnName, Seq(arg), ccnApi, None).get.exec
+          service.instantiateCallable(interestName, service.ccnName, Seq(arg), ccnApi, None).get.exec
         })
         NFNStringValue(MapReduceService.seqToString(values))
       }
@@ -34,7 +34,7 @@ class MapService() extends NFNService {
  * The result of service invocation is a [[NFNValue]].
  */
 class ReduceService() extends NFNService {
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(function, stringValue) => {
         val service = MapReduceService.serviceFromValue(function).get
@@ -45,7 +45,7 @@ class ReduceService() extends NFNService {
             throw new NFNServiceArgumentException(s"Second argument to ReduceService must be NFNStringValue or NFNContentObjectValue, but was: $stringValue")
         })
 
-        service.instantiateCallable(service.ccnName, arguments, ccnApi, None).get.exec
+        service.instantiateCallable(interestName, service.ccnName, arguments, ccnApi, None).get.exec
       }
       case _ =>
         throw new NFNServiceArgumentException(s"A Reduce service must match Seq(service, value), but it was: $args")

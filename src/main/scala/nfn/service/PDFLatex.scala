@@ -1,15 +1,16 @@
 package nfn.service
 
-import java.io.{FilenameFilter, File}
+import java.io.{File, FilenameFilter}
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import myutil.IOHelper
 import myutil.systemcomandexecutor._
 
 import scala.concurrent.ExecutionContext
 
 class PDFLatex extends NFNService {
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(NFNContentObjectValue(_, doc)) =>
 

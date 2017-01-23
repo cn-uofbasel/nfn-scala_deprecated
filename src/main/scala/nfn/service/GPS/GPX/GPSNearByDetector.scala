@@ -13,7 +13,7 @@ import nfn.service.GPS.GPX.helpers._
 class GPSNearByDetector extends  NFNService {
 
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
       case Seq(s1: NFNStringValue, s2: NFNStringValue, refpoint : NFNIntValue, dist: NFNIntValue, maxval : NFNIntValue, firstStreamTimeOffset: NFNIntValue ,secondStreamTimeOffset: NFNIntValue) => {
         val s1name = s1.str.split('/').toList

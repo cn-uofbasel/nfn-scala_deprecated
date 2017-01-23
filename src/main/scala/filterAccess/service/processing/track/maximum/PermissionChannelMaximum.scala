@@ -1,10 +1,10 @@
 package filterAccess.service.processing.track.maximum
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import filterAccess.json.UserLevel
 import filterAccess.tools.DataNaming
 import nfn.service._
-
 import filterAccess.crypto.Encryption._
 import filterAccess.tools.Exceptions.noReturnException
 import filterAccess.service.processing.track.distance.DistanceAPI._
@@ -66,7 +66,7 @@ class PermissionChannelMaximum extends Maximum {
    * @param    ccnApi   Akka Actor
    * @return            Functions result
    */
-  def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(extRDN1), NFNStringValue(extRDN2)) => {

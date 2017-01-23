@@ -5,6 +5,7 @@ package nfn.service
 // receive content from (as well as access to the management interface and more)
 // This service will no make use of this
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 
 
 // NFNService is a trait, which is very similar to a Java interface
@@ -15,7 +16,7 @@ class Reverse extends NFNService{
   // This method does not have any parameters, you can imagine 'function()'.
   // The return type is a function, which has two parameters, one is a sequence (or list) of NFNValue's and the second
   // is the reference to the actor providing the CCN interface. This function returns a value of type NFNValue.
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     // Match the arguments to the expected or supported types
     // In this case the function is only implemented for a single parameter of type string ('foo bar')

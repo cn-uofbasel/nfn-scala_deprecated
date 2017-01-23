@@ -1,6 +1,7 @@
 package orgOpenmhealth.helperServices
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import nfn.service._
 import orgOpenmhealth.helpers.Helpers._
 
@@ -17,7 +18,7 @@ class SimpleToJSON extends NFNService {
     s"""{"lat":${lat},"lng":${lng}"""
   }
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     /*
      *

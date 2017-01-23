@@ -1,6 +1,7 @@
 package nfn.service.Http
 
 import akka.actor.ActorRef
+import ccn.packet.CCNName
 import nfn.service._
 
 /**
@@ -24,7 +25,7 @@ class HttpService() extends NFNService {
    * @param ccnApi
    * @return NFNValue
    */
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match{
       case Seq (NFNStringValue(method), url : NFNValue) => executeRequest(method, new String(url.toDataRepresentation))
       case Seq (NFNStringValue(method), url : NFNValue, NFNStringValue("--header"), header @ _*) => executeRequest(method, new String(url.toDataRepresentation), extractHeader(header))

@@ -50,7 +50,7 @@ class StoreSensorData extends NFNService   {
     try pw.append(s) finally pw.close()
   }
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     (args.head, args.tail.head, args.tail.tail.head) match {
       case (sensorname: NFNStringValue, sensortyp: NFNStringValue, datapoint: NFNIntValue) => {

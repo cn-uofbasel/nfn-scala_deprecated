@@ -2,13 +2,13 @@ package filterAccess.service.processing.track.distance
 
 import akka.actor.ActorRef
 import filterAccess.json.UserLevel
-import filterAccess.tools.{Networking, DataNaming}
+import filterAccess.tools.{DataNaming, Networking}
 import nfn.service._
-
 import filterAccess.crypto.Encryption._
 import filterAccess.tools.Exceptions.noReturnException
 import Networking._
-import filterAccess.json.PermissionChannelBuilder.{manipulateLevel,minimizePermissions}
+import ccn.packet.CCNName
+import filterAccess.json.PermissionChannelBuilder.{manipulateLevel, minimizePermissions}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -55,7 +55,7 @@ class PermissionChannelDistance extends Distance {
    * @param    ccnApi   Akka Actor
    * @return            Functions result
    */
-  def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(extRDN)) => {

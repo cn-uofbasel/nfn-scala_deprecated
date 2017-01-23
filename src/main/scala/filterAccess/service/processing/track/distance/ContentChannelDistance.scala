@@ -1,17 +1,17 @@
 package filterAccess.service.processing.track.distance
 
 import akka.actor.ActorRef
-import filterAccess.tools.{Networking, DataNaming}
+import filterAccess.tools.{DataNaming, Networking}
 import nfn.service._
 
 import scala.concurrent.duration._
-
 import filterAccess.tools.Exceptions.noReturnException
 import Networking._
+import ccn.packet.CCNName
 import filterAccess.json.ContentChannelParser.getTrack
 import filterAccess.json._
 import filterAccess.crypto.Encryption.symEncrypt
-import filterAccess.crypto.Helpers.{symKeyGenerator,computeHash}
+import filterAccess.crypto.Helpers.{computeHash, symKeyGenerator}
 
 /**
  * Created by Claudio Marxer <marxer@claudio.li>
@@ -70,7 +70,7 @@ class ContentChannelDistance extends Distance {
    * @param    ccnApi   Akka Actor
    * @return            Functions result
    */
-  def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     args match {
       case Seq(NFNStringValue(extRDN), NFNIntValue(contentLevel)) => {

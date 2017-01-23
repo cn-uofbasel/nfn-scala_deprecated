@@ -125,7 +125,7 @@ class PaperExperimentSpec extends ExpressionTester with SequentialNestedSuiteExe
     }
 
     val dynServ = new NFNDynamicService {
-      override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+      override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
         println("yay")
         NFNIntValue(42)
       }

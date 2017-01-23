@@ -3,7 +3,8 @@ package nfn.service.Temperature
 import java.io.FileReader
 
 import akka.actor.ActorRef
-import nfn.service.{NFNIntValue, NFNStringValue, NFNValue, NFNService}
+import ccn.packet.CCNName
+import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
 
 /**
  * Created by blacksheeep on 17/11/15.
@@ -30,7 +31,7 @@ class AccessSensorData  extends NFNService    {
     scala.io.Source.fromFile(p).getLines().toList
   }
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     (args.head, args.tail.head, args.tail.tail.head) match {
       case (sensorname: NFNStringValue, sensortyp: NFNStringValue, datapoint: NFNIntValue) => {
         val datavalue = readData(sensorname.str, sensortyp.str, datapoint.i)

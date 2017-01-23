@@ -1,7 +1,9 @@
 package nfn.service.Temperature
 
 import akka.actor.ActorRef
-import nfn.service.{NFNStringValue, NFNIntValue, NFNValue, NFNService}
+import ccn.packet.CCNName
+import nfn.service.{NFNIntValue, NFNService, NFNStringValue, NFNValue}
+
 import scala.concurrent.duration._
 
 /**
@@ -12,7 +14,7 @@ class ReadSensorDataSimu() extends NFNService  {
   val consttemp = 20
   val constpreasure = 1000
 
-  override def function(args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
+  override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     (args.head, args.tail.head) match { // sensorname, datapoint
       case (sensorname: NFNStringValue, datapoint: NFNIntValue) => {
