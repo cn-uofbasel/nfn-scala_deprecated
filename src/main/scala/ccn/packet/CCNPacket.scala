@@ -8,6 +8,7 @@ object CCNName {
   val nfnKeyword = "NFN"
   val keepaliveKeyword = "ALIVE"
   val intermediateKeyword = "INTERMEDIATE"
+  val requestKeyword = "RTC"
   val computeKeyword = "COMPUTE"
   def withAddedNFNComponent(ccnName: CCNName) = CCNName(ccnName.cmps ++ Seq(nfnKeyword) :_*)
   def withAddedNFNComponent(cmps: Seq[String]) = CCNName(cmps ++ Seq(nfnKeyword) :_*)
@@ -26,7 +27,7 @@ object CCNName {
 
 case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
-  import CCNName.{thunkKeyword, nfnKeyword, keepaliveKeyword, computeKeyword, intermediateKeyword}
+  import CCNName.{thunkKeyword, nfnKeyword, keepaliveKeyword, computeKeyword, intermediateKeyword, requestKeyword}
 
 //  def to = toString.replaceAll("/", "_").replaceAll("[^a-zA-Z0-9]", "-")
   override def toString = {
@@ -46,6 +47,11 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
   def isIntermediate: Boolean =
     (cmps.size >= 3 && cmps(cmps.size - 3) == intermediateKeyword) ||
     (cmps.size >= 2 && cmps(cmps.size - 2) == intermediateKeyword)
+
+  def isRequest: Boolean = {
+    val name = withoutNFN
+    name.cmps.size >= 2 && name.cmps(name.cmps.size - 2) == requestKeyword
+  }
 
   def withoutCompute: CCNName = {
     if(cmps.size > 0) {
@@ -68,6 +74,13 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
     } else this
   }
 
+  def withoutRequest: CCNName = {
+    if (cmps.size > 1) {
+      if (cmps.takeRight(2).head == requestKeyword) CCNName(cmps.dropRight(2):_*)
+      else this
+    } else this
+  }
+
   def withCompute: CCNName = {
     CCNName(computeKeyword :: cmps:_*)
   }
@@ -84,6 +97,16 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
     if (cmps.size >= 2 && cmps.takeRight(2).head == intermediateKeyword) cmps.last.toInt
     else if (cmps.size >= 3 && cmps.takeRight(3).head == intermediateKeyword) cmps(cmps.size - 2).toInt
     else -1
+  }
+
+  def requestType: String = {
+    val name = withoutNFN
+    name.cmps.last // TODO: parse parameters
+  }
+
+  def requestParameters: List[String] = {
+    val name = withoutNFN
+    List[String]() // TODO: parse parameters
   }
 
   def expression: Option[String] = {

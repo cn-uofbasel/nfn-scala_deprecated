@@ -1,14 +1,18 @@
 package nfn
 
-import akka.actor.{PoisonPill, Props, ActorRef, Actor}
+import akka.actor.SupervisorStrategy.{Escalate, Restart, Resume, Stop}
+import akka.actor.{Actor, ActorRef, OneForOneStrategy, PoisonPill, Props}
 import akka.event.Logging
 import ccn.packet.CCNName
+import scala.concurrent.duration._
 
 object ComputeServer {
 
   case class Compute(name: CCNName)
 
   case class Thunk(name: CCNName)
+
+  case class RequestToComputation(name: CCNName)
 
   /**
    * Message to finish computation on compute server
@@ -27,6 +31,14 @@ case class ComputeServer(nodePrefix: CCNName) extends Actor {
 
   var computeWorkers = Map[CCNName, ActorRef]()
 
+  override val supervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 0, withinTimeRange = 1 minute) {
+      case _: ArithmeticException      => Stop
+      case _: NullPointerException     => Stop
+      case _: IllegalArgumentException => Stop
+      case _: Exception                => Stop
+    }
+
   override def receive: Actor.Receive = {
     /**
      * Check if computation is already running, if not start a new computation, otherwise do nothing
@@ -43,7 +55,7 @@ case class ComputeServer(nodePrefix: CCNName) extends Actor {
           logger.debug(s"Computation for $name is already running")
         }
       } else {
-        logger.error(s"Interest was not a compute interest, discaring it")
+        logger.error(s"Interest was not a compute interest, discarding it")
       }
     }
 
@@ -66,6 +78,28 @@ case class ComputeServer(nodePrefix: CCNName) extends Actor {
       }
       else {
         logger.error(s"Compute message must contain the name of the final interest and not a thunk interest: $name")
+      }
+    }
+
+    case rtc @ ComputeServer.RequestToComputation(name: CCNName) => {
+      if (name.isRequest) {
+        logger.debug(s"Received request (${name.requestType}) for $name.")
+        name.requestType match {
+          case "STOP" => {
+            logger.debug(s"Matched STOP")
+            val computeName = name.withoutNFN.withoutRequest.withNFN
+            computeWorkers.get(computeName) match {
+              case Some(computeWorker) => {
+                logger.debug(s"Found matching compute worker.")
+                computeWorker.tell(ComputeWorker.End(), sender)
+                computeWorkers -= computeName
+//                val workers = computeWorkers(computeName)
+//                logger.debug(s"Remaining workers for $computeName: $workers")
+              }
+              case None => logger.warning(s"Received STOP request for computation which does not exist: $name")
+            }
+          }
+        }
       }
     }
 

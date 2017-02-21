@@ -314,7 +314,6 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 
 
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
-
     if (i.name.isKeepalive) {
       logger.debug(s"Receive keepalive interest: " + i.name)
       val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 2, Nil, 1)
@@ -332,9 +331,15 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
         case None => {
           val senderFace = senderCopy
           pit.get(i.name) match {
-            case Some(pendingFaces) => pit.add(i.name, senderFace, defaultTimeoutDuration)
+            case Some(pendingFaces) => {
+              if (!i.name.isRequest) {
+                pit.add(i.name, senderFace, defaultTimeoutDuration)
+              }
+            }
             case None => {
-              pit.add(i.name, senderFace, defaultTimeoutDuration)
+              if (!i.name.isRequest) {
+                pit.add(i.name, senderFace, defaultTimeoutDuration)
+              }
 
               // If the interest has a chunknum, make sure that the original interest (still) exists in the pit
               i.name.chunkNum foreach { _ =>
@@ -355,7 +360,11 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
                   if (i.name.isThunk) {
                     computeServer ! ComputeServer.Thunk(i.name)
                   } else {
-                    computeServer ! ComputeServer.Compute(i.name)
+                    if (i.name.isRequest) {
+                      computeServer ! ComputeServer.RequestToComputation(i.name)
+                    } else {
+                      computeServer ! ComputeServer.Compute(i.name)
+                    }
                   }
                   // /.../.../NFN
                   // An NFN interest without compute flag means that it must be reduced by an abstract machine

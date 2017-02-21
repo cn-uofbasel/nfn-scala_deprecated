@@ -14,6 +14,7 @@ import config.{StaticConfig, AkkaConfig}
 import lambdacalculus.parser.ast._
 import myutil.IOHelper
 import nfn.NFNApi
+import nfn.KlangCancellableFuture
 
 import scala.concurrent._
 import scala.util.{Failure, Success, Try}
@@ -151,6 +152,7 @@ object NFNService extends Logging {
                   serv <- futServ
                   callable <- serv.instantiateCallable(CCNName(name), serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
                 } yield callable
+
 
               futCallableServ onSuccess {
                 case callableServ => logger.info(s"Instantiated callable serv: '$name' -> $callableServ")
