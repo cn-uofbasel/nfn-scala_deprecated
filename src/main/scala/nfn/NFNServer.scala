@@ -314,16 +314,16 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 
 
   private def handleInterest(i: Interest, senderCopy: ActorRef) = {
-    if (i.name.isKeepalive) {
-      logger.debug(s"Receive keepalive interest: " + i.name)
-      val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 2, Nil, 1)
-      val nfnName = i.name.copy(cmps = nfnCmps)
-      pit.get(nfnName) match {
-        case Some(pendingInterest) => logger.debug(s"Found in PIT.")
-          senderCopy ! Content(i.name, " ".getBytes)
-        case None => logger.debug(s"Did not find in PIT.")
-      }
-    } else {
+//    if (i.name.isKeepalive) {
+//      logger.debug(s"Receive keepalive interest: " + i.name)
+//      val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 2, Nil, 1)
+//      val nfnName = i.name.copy(cmps = nfnCmps)
+//      pit.get(nfnName) match {
+//        case Some(pendingInterest) => logger.debug(s"Found in PIT.")
+//          senderCopy ! Content(i.name, " ".getBytes)
+//        case None => logger.debug(s"Did not find in PIT.")
+//      }
+//    } else {
       cs.get(i.name) match {
         case Some(contentFromLocalCS) =>
           logger.debug(s"Served $contentFromLocalCS from local CS")
@@ -361,7 +361,19 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
                     computeServer ! ComputeServer.Thunk(i.name)
                   } else {
                     if (i.name.isRequest) {
-                      computeServer ! ComputeServer.RequestToComputation(i.name)
+                      i.name.requestType match {
+                        case "KA" => {
+                          logger.debug(s"Receive keepalive interest: " + i.name)
+                          val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 3, Nil, 2)
+                          val nfnName = i.name.copy(cmps = nfnCmps)
+                          pit.get(nfnName) match {
+                            case Some(pendingInterest) => logger.debug(s"Found in PIT.")
+                              senderCopy ! Content(i.name, " ".getBytes)
+                            case None => logger.debug(s"Did not find in PIT.")
+                          }
+                        }
+                        case _ => computeServer ! ComputeServer.RequestToComputation(i.name)
+                      }
                     } else {
                       computeServer ! ComputeServer.Compute(i.name)
                     }
@@ -384,7 +396,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
               }
             }
           }
-        }
+//        }
       }
     }
   }

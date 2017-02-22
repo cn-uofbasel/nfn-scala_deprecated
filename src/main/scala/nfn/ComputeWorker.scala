@@ -104,7 +104,7 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
           logger.error(ex, s"Error when executing the service $name. Cause: ${ex.getCause} Message: ${ex.getMessage}")
         }
       }
-      cancellable.cancel()
+//      cancellable.cancel()
     }
 
 //    futCallable flatMap { callable =>

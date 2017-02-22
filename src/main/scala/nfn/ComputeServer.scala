@@ -3,7 +3,8 @@ package nfn
 import akka.actor.SupervisorStrategy.{Escalate, Restart, Resume, Stop}
 import akka.actor.{Actor, ActorRef, OneForOneStrategy, PoisonPill, Props}
 import akka.event.Logging
-import ccn.packet.CCNName
+import ccn.packet.{CCNName, Content}
+
 import scala.concurrent.duration._
 
 object ComputeServer {
@@ -85,6 +86,9 @@ case class ComputeServer(nodePrefix: CCNName) extends Actor {
       if (name.isRequest) {
         logger.debug(s"Received request (${name.requestType}) for $name.")
         name.requestType match {
+          case "KA" => {
+            logger.debug(s"Matched KA")
+          }
           case "STOP" => {
             logger.debug(s"Matched STOP")
             val computeName = name.withoutNFN.withoutRequest.withNFN
