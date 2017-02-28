@@ -359,25 +359,24 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
                 if (i.name.isCompute) {
                   if (i.name.isThunk) {
                     computeServer ! ComputeServer.Thunk(i.name)
-                  } else {
-                    if (i.name.isRequest) {
-                      i.name.requestType match {
-                        case "KA" => {
-                          logger.debug(s"Receive keepalive interest: " + i.name)
-                          val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 3, Nil, 2)
-                          val nfnName = i.name.copy(cmps = nfnCmps)
-                          pit.get(nfnName) match {
-                            case Some(pendingInterest) => logger.debug(s"Found in PIT.")
-                              senderCopy ! Content(i.name, " ".getBytes)
-                            case None => logger.debug(s"Did not find in PIT.")
-                          }
+                  } else if (i.name.isRequest) {
+                    i.name.requestType match {
+                      case "KEEPALIVE" => {
+                        logger.debug(s"Receive keepalive interest: " + i.name)
+                        val nfnCmps = i.name.cmps.patch(i.name.cmps.size - 3, Nil, 2)
+                        val nfnName = i.name.copy(cmps = nfnCmps)
+                        pit.get(nfnName) match {
+                          case Some(pendingInterest) => logger.debug(s"Found in PIT.")
+                            senderCopy ! Content(i.name, " ".getBytes)
+                          case None => logger.debug(s"Did not find in PIT.")
                         }
-                        case _ => computeServer ! ComputeServer.RequestToComputation(i.name)
                       }
-                    } else {
-                      computeServer ! ComputeServer.Compute(i.name)
+                      case _ => computeServer ! ComputeServer.RequestToComputation(i.name)
                     }
+                  } else {
+                    computeServer ! ComputeServer.Compute(i.name)
                   }
+
                   // /.../.../NFN
                   // An NFN interest without compute flag means that it must be reduced by an abstract machine
                   // If no local machine is available, forward it to the nfn network

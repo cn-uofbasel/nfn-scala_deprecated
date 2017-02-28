@@ -86,7 +86,7 @@ case class ComputeServer(nodePrefix: CCNName) extends Actor {
       if (name.isRequest) {
         logger.debug(s"Received request (${name.requestType}) for $name.")
         name.requestType match {
-          case "KA" => {
+          case "KEEPALIVE" => {
             logger.debug(s"Matched KA")
           }
           case "STOP" => {
@@ -102,6 +102,9 @@ case class ComputeServer(nodePrefix: CCNName) extends Actor {
               }
               case None => logger.warning(s"Received STOP request for computation which does not exist: $name")
             }
+          }
+          case _ => {
+            logger.debug(s"Unknown request type ${name.requestType}.")
           }
         }
       }

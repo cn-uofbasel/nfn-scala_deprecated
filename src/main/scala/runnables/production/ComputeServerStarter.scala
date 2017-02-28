@@ -112,7 +112,7 @@ object ComputeServerStarter extends Logging {
         // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
         node.publishServiceLocalPrefix(new WordCount())
         node.publishServiceLocalPrefix(new DelayedWordCount())
-//        node.publishServiceLocalPrefix(new IntermediateTest())
+        node.publishServiceLocalPrefix(new IntermediateTest())
 //        node.publishServiceLocalPrefix(new FetchContentTest())
 //        node.publishServiceLocalPrefix(new NBody.SimulationService())
 //        node.publishServiceLocalPrefix(new NBody.RenderService())
