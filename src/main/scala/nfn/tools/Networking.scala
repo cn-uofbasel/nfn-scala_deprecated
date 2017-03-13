@@ -145,8 +145,9 @@ object Networking {
     var contentName = name
 //    println("Content Name: " + contentName.toString)
 
-    contentName = contentName.append("INTERMEDIATE")
-    contentName = contentName.append(count.toString)
+    contentName = contentName.append(CCNName.requestKeyword)
+    contentName = contentName.append(s"${CCNName.getIntermediateKeyword} ${count.toString}")
+//    contentName = contentName.append(count.toString)
 //    println("Content Name: " + contentName.toString)
 
     contentName = contentName.withCompute
