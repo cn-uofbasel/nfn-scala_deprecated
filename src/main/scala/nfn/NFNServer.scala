@@ -371,7 +371,9 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
                           case None => logger.debug(s"Did not find in PIT.")
                         }
                       }
-                      case _ => computeServer ! ComputeServer.RequestToComputation(i.name)
+                      case _ => {
+                        computeServer ! ComputeServer.RequestToComputation(i.name, senderCopy)
+                      }
                     }
                   } else {
                     computeServer ! ComputeServer.Compute(i.name)

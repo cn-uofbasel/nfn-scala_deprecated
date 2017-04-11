@@ -42,8 +42,14 @@ object IntermediateTestApp extends App {
   implicit val useThunks: Boolean = false
 
   val exprWc: Expr = wc call ()
+  val cancel = Interest(exprWc.name.withoutNFN.append("R2C", "CANCEL", "NFN"))
 
   sendAndPrintForName(exprWc)
+  Thread.sleep(1500)
+  sendAndPrintForName(cancel)
+
+//  Thread.sleep(2000)
+//  sendAndPrintForName(exprWc.copy())
 
   def sendAndPrintForName(interest: Interest) = {
     val startTime = System.currentTimeMillis

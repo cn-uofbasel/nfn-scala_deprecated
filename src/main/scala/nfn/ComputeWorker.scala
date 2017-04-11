@@ -1,5 +1,7 @@
 package nfn
 
+import java.util.concurrent.CancellationException
+
 import akka.actor.{Actor, ActorRef, Kill, PoisonPill}
 import akka.event.Logging
 import akka.pattern.ask
@@ -16,6 +18,7 @@ import scala.util.{Failure, Success}
 object ComputeWorker {
   case class Callable(callable: CallableNFNService)
   case class End()
+  case class Cancel(name: CCNName)
 }
 
 class e extends Throwable
@@ -26,6 +29,8 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
   val logger = Logging(context.system, this)
 
   var maybeFutCallable: Option[Future[CallableNFNService]] = None
+
+  var futures: Map[CCNName, KlangCancellableFuture[Any]] = Map()
 
   def receivedContent(content: Content) = {
     // Received content from request (sendrcv)
@@ -104,8 +109,20 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
           logger.error(ex, s"Error when executing the service $name. Cause: ${ex.getCause} Message: ${ex.getMessage}")
         }
       }
-//      cancellable.cancel()
+
+      futures += name -> cancellable
+      logger.error(s"Added to futures: $name")
     }
+//      try {
+//        logger.error("Cancelling future 1")
+//        cancellable.cancel()
+//        logger.error("Cancelling future 2")
+//      } catch {
+//        case e: Exception => logger.error("Future cancelled.")
+//      }
+//      logger.error("Cancelling future 3")
+//    }
+
 
 //    futCallable flatMap { callable =>
 //      val resultValue: NFNValue = callable.exec
@@ -144,6 +161,11 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
             case None => logger.warning(s"Could not prepare a callable for name $name")
           }
       }
+    }
+    case ComputeWorker.Cancel(name) => {
+      logger.error("ComputeWorker.Cancel received")
+      futures(name).cancel()
+      futures -= name
     }
     case ComputeWorker.End() => {
       logger.info("Received End message")

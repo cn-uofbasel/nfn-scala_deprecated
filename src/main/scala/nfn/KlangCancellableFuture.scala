@@ -185,16 +185,17 @@ object JavaFutureTestApp extends App {
   private val future = executor.submit(new Runnable() {
     override def run(): Unit = {
       for (i <- 1 to 20) {
-        for (a <- 1 to 100000) {
-          println(s"x i: $i, a: $a")
+        if (!Thread.currentThread().isInterrupted()) {
+          for (a <- 1 to 100000) {
+            println(s"x i: $i, a: $a")
+          }
         }
-        Thread.sleep(1000)
       }
     }
   })
   println("START")
-  Thread.sleep(2000)
-//  future.cancel(true)
+  Thread.sleep(1000)
+  future.cancel(true)
   println("DONE")
   executor.shutdown()
 }
