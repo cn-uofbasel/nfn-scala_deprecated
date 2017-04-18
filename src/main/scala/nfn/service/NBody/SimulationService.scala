@@ -31,7 +31,7 @@ class SimulationService extends NFNService {
 
     val systemSize = Vector(Body.earth.radius * 500, Body.earth.radius * 500)
     val renderArea = Rect(-systemSize / 2, systemSize)
-    val config = if (configuration.length <= 0) Config.random(renderArea, 100)
+    val config = if (configuration.length <= 0) Config.random(renderArea, 10)
       else Config.fromString(configuration.toString)
 
     val simulation = new Simulation(config, deltaTime)
