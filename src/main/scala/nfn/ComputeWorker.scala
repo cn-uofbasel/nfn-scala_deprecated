@@ -91,7 +91,7 @@ case class ComputeWorker(ccnServer: ActorRef, nodePrefix: CCNName) extends Actor
         try {
           val resultValue: NFNValue = callable.exec
           val futResultData = resultDataOrRedirect(resultValue.toDataRepresentation, name, ccnServer)
-          val resultData = Await.result(futResultData, 0 nanos)
+          val resultData = Await.result(futResultData, 1 seconds)
           Content(name.withoutThunkAndIsThunk._1, resultData, MetaInfo.empty)
         } catch {
           case e: Exception =>
