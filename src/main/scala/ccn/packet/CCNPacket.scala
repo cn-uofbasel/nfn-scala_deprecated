@@ -38,11 +38,11 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   def isThunk: Boolean = isThunkWithKeyword(thunkKeyword)
 
-  def isNFN: Boolean = cmps.size >= 1 && cmps.last == nfnKeyword
+  def isNFN: Boolean = cmps.nonEmpty && cmps.last == nfnKeyword
 
   def isKeepalive: Boolean = cmps.size >= 2 && cmps(cmps.size - 2) == keepaliveKeyword
 
-  def isCompute: Boolean = cmps.size >= 1 && cmps.head == computeKeyword
+  def isCompute: Boolean = cmps.nonEmpty && cmps.head == computeKeyword
 
 //  def isIntermediate: Boolean =
 //    (cmps.size >= 3 && cmps(cmps.size - 3) == intermediateKeyword) ||
@@ -54,17 +54,21 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
   }
 
   def withoutCompute: CCNName = {
-    if(cmps.size > 0) {
+    if(cmps.nonEmpty) {
       if(cmps.head == computeKeyword) CCNName(cmps.tail:_*)
       else this
     } else this
   }
 
   def withoutNFN: CCNName = {
-    if(cmps.size > 0) {
+    if(cmps.nonEmpty) {
       if(cmps.last == nfnKeyword) CCNName(cmps.init:_*)
       else this
     } else this
+  }
+
+  def withoutChunk: CCNName = {
+    CCNName(cmps, None)
   }
 
 //  def withoutIntermediate: CCNName = {
