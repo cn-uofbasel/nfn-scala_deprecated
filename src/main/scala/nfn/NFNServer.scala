@@ -198,11 +198,15 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
   }
 
 
-  private def handleContentChunk(contentChunk: Content, senderCopy: ActorRef) = {
+  private def handleContentChunk(contentChunk: Content, senderCopy: ActorRef): Unit = {
     logger.debug("enter handleContentChunk")
 
-    val face: Set[ActorRef] = pit.get(contentChunk.name) match {case Some(f) => f}
-
+    val maybeFace = pit.get(contentChunk.name)
+    if (maybeFace.isEmpty) {
+      logger.error(s"content ${contentChunk.name} not found in PIT")
+      return
+    }
+    val face: Set[ActorRef] = maybeFace match {case Some(f) => f}
 
     cs.add(contentChunk)
     cs.getContentCompleteOrIncompletedChunks(contentChunk.name) match {
