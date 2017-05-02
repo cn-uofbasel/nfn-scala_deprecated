@@ -279,7 +279,8 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
       //FIXME: End of the hack for Openmhealth
       //pit.get(content.name) match { //FIXME: if hack for Openmhealth is removed, uncomment this!
         case Some(pendingFaces) => {
-          if (cacheContent && !content.name.isKeepalive) {
+          val isCountIntermediates = content.name.isRequest && content.name.requestType == "CIM"
+          if (cacheContent && !content.name.isKeepalive && !isCountIntermediates) {
             cs.add(content)
           }
 
@@ -328,6 +329,8 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 //        case None => logger.debug(s"Did not find in PIT.")
 //      }
 //    } else {
+    logger.debug(s"Handle interest.")
+
       cs.get(i.name) match {
         case Some(contentFromLocalCS) =>
           logger.debug(s"Served $contentFromLocalCS from local CS")
@@ -341,7 +344,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
               }
             }
             case None => {
-              if (!i.name.isRequest) {
+              if (!i.name.isRequest || i.name.requestType == "CIM" || i.name.requestType == "GIM") {
                 pit.add(i.name, senderFace, defaultTimeoutDuration)
               }
 

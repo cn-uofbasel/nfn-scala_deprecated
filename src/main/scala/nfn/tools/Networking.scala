@@ -15,8 +15,12 @@ import nfn.NFNApi
 import nfn.service._
 
 import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.util.{Failure, Success}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+
 
 /**
  * Created by blacksheeep on 16/11/15.
@@ -66,37 +70,94 @@ object Networking {
     None
   }
 
-  def fetchContentAndKeepAlive(interest: Interest, ccnApi: ActorRef, time: Duration): Option[Content] = {
+  def fetchContentAndKeepalive(ccnApi: ActorRef,
+                               interest: Interest,
+                               timeoutDuration: FiniteDuration = 20 seconds,
+                               handleIntermediate: Option[(Int, Content) => Unit] = None): Option[Content] = {
+
     def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
-      implicit val timeout = Timeout(time.toMillis)
+      implicit val timeout = Timeout(timeoutDuration.toMillis)
       (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
     }
 
     def keepaliveInterest(interest: Interest): Interest = Interest(interest.name.makeKeepaliveName)
 
-//    println("fetchContentAndKeepalive")
+    def fetchIntermediate(index: Int) = {
+      println(s"Request intermediate #$interest")
 
-    val futServiceContent = loadFromCacheOrNetwork(interest)
-    try {
-      val result = Await.result(futServiceContent, time) match {
-        case c: Content => Some(c)
-        case _ => None  // send keepalive interest
+      val intermediateInterest = Interest(interest.name.withRequest(s"GIM $index")) // CRASH HERE?
+      val intermediateFuture = loadFromCacheOrNetwork(intermediateInterest)
+      intermediateFuture onComplete {
+        case Success(x) => x match {
+          case c: Content => {
+            println("Received intermediate content.")
+            val handler = handleIntermediate.get
+            handler(index, c)
+          }
+          case _ => println(s"Matched something else.")
+        }
+        case Failure(error) => println(s"Completed with error: $error")
       }
-      if (result.isDefined)
-        return result
-    } catch {
-      case e: TimeoutException => println ("timeout")
     }
 
-    var keepTrying = true
-    while (keepTrying) {
+    var isFirstTry = true
+    var shouldKeepTrying = true
+    val shouldGetIntermediates = handleIntermediate.isDefined
+    val intermediateInterval = 1000
+
+    if (shouldGetIntermediates) {
+      val f = Future {
+        var highestRequestedIndex = -1
+        val countIntermediatesInterest = Interest(interest.name.withRequest("CIM"))
+
+        Thread.sleep(2000)
+
+        while (shouldKeepTrying) {
+          val startTime = System.currentTimeMillis()
+          val loadFuture = loadFromCacheOrNetwork(countIntermediatesInterest)
+//          val timeoutFuture = Future {
+//            Thread.sleep(1 * 1000)
+//            throw new TimeoutException("Count intermediates timeout")
+//          }
+//          val future = Future.firstCompletedOf(Seq(loadFuture, timeoutFuture))
+//          println("request intermediates 3")
+
+          Await.result(loadFuture, 3 second) match {
+            case c: Content =>
+              if (c.data.length > 0) {
+                val highestAvailableIndex = new String(c.data).toInt
+                println(s"Highest available intermediate: $highestAvailableIndex")
+                var index = highestRequestedIndex + 1
+                val endIndex = highestAvailableIndex
+                while (index <= highestAvailableIndex) {
+                  fetchIntermediate(index)
+                  index += 1
+                }
+                highestRequestedIndex = highestAvailableIndex
+              } else {
+                println("No intermediate results available (yet?).")
+              }
+            case _ => println("Loading intermediate content timed out.")
+          }
+          val elapsed = System.currentTimeMillis() - startTime
+          if (elapsed < intermediateInterval) {
+            Thread.sleep(intermediateInterval - elapsed)
+          }
+        }
+      }
+    }
+
+    println("Fetch content and keepalive")
+
+    while (shouldKeepTrying) {
+      println("Try again.")
       val futContent = loadFromCacheOrNetwork(interest)
-      val futKeepalive = loadFromCacheOrNetwork(keepaliveInterest(interest))
+      val futKeepalive = if (isFirstTry) None else Some(loadFromCacheOrNetwork(keepaliveInterest(interest)))
 
       try {
-        val result = Await.result(futContent, time) match {
-          case c: Content => Some(c)
-          case _ => None
+        val result = Await.result(futContent, timeoutDuration) match {
+          case c: Content => println("content."); Some(c)
+          case _ => println("none."); None
         }
         if (result.isDefined)
           return result
@@ -104,10 +165,86 @@ object Networking {
         case e: TimeoutException => println("timeout")
       }
 
-      keepTrying = futKeepalive.value.isDefined
+      shouldKeepTrying = isFirstTry || futKeepalive.get.value.isDefined
     }
     None
   }
+
+
+  def requestContentAndKeepalive(ccnApi: ActorRef,
+                                 interest: Interest,
+                                 timeoutDuration: FiniteDuration = 20 seconds): Future[Option[Content]] = {
+
+    def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
+      implicit val timeout = Timeout(timeoutDuration.toMillis)
+      (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
+    }
+
+    def blockingRequest(): Option[Content] = {
+      var isFirstTry = true
+      var shouldKeepTrying = true
+      while (shouldKeepTrying) {
+        println("Try again.")
+        val futContent = loadFromCacheOrNetwork(interest)
+        val futKeepalive = if (isFirstTry) None else Some(loadFromCacheOrNetwork(Interest(interest.name.makeKeepaliveName)))
+
+        try {
+          val result = Await.result(futContent, timeoutDuration) match {
+            case c: Content => println("content."); Some(c)
+            case _ => println("none."); None
+          }
+          if (result.isDefined)
+            return result
+        } catch {
+          case e: TimeoutException => println("timeout")
+        }
+
+        shouldKeepTrying = isFirstTry || futKeepalive.get.value.isDefined
+      }
+      None
+    }
+
+    Future { blockingRequest() }
+  }
+
+  def requestIntermediates(ccnApi: ActorRef,
+                           interest: Interest,
+                           timeoutDuration: FiniteDuration = 20 seconds,
+                           handleIntermediates: (Content) => Unit): Unit = {
+
+    def loadFromCacheOrNetwork(interest: Interest): Future[Content] = {
+      implicit val timeout = Timeout(timeoutDuration.toMillis)
+      (ccnApi ? NFNApi.CCNSendReceive(interest, useThunks = false)).mapTo[Content]
+    }
+
+    val f = Future {
+      println("request intermediates 1")
+      Thread.sleep(2 * 1000)
+      println("request intermediates 2")
+      var highestRequestedIndex = -1
+      val countIntermediatesInterest = Interest(interest.name.withRequest("CIM"))
+      val loadFuture = loadFromCacheOrNetwork(countIntermediatesInterest)
+      val timeoutFuture = Future {
+        Thread.sleep(3 * 1000)
+        throw new TimeoutException("Future timeout")
+      }
+      val future = Future.firstCompletedOf(Seq(loadFuture, timeoutFuture))
+      println("request intermediates 3")
+
+      future onComplete {
+        case Success(x) => x match {
+          case c: Content => {
+            val highestAvailableIndex = new String(c.data).toInt
+            println(s"Highest available intermediate: $highestAvailableIndex")
+          }
+          case _ => println(s"Matched something else.")
+        }
+        case Failure(error) => println(s"Completed with error: $error")
+      }
+    }
+  }
+
+
 
   /**
    * Try to fetch content object by name.

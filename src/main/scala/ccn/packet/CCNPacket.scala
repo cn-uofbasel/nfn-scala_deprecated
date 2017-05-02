@@ -94,8 +94,12 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
     CCNName(cmps ++ Seq(nfnKeyword):_*)
   }
 
+  def withRequest(request: String): CCNName = {
+    CCNName(withoutNFN.cmps ++ Seq(requestKeyword, request):_*).withNFN
+  }
+
   def withIntermediate(index: Int): CCNName = {
-    CCNName(cmps ++ Seq(requestKeyword, s"$getIntermediateKeyword ${index.toString}"):_*)
+    withRequest(s"$getIntermediateKeyword ${index.toString}")
   }
 
   def intermediateIndex: Int = {
@@ -109,7 +113,7 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   def requestType: String = {
     val name = withoutNFN
-    name.cmps.last // TODO: parse parameters
+    name.cmps.last.split(' ')(0) // TODO: parse parameters
   }
 
   def requestParameters: List[String] = {
