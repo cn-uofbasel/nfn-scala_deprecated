@@ -11,7 +11,7 @@ class SimulationService extends NFNService {
   override def function(interestName: CCNName, argSeq: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     // /path/to/NBodySimulation [/path/to/config] ['-c' <configSize>] ['-d' <deltaTime>] ['-s' <stepCount>] ['-i' <intermediateInterval>]
 
-    var options = Map('configSize -> 10, 'deltaTime -> 60, 'stepCount -> 1000, 'intermediateInterval -> 0)
+    var options = Map('configSize -> 5000, 'deltaTime -> 60, 'stepCount -> 10000, 'intermediateInterval -> 1)
     var configuration = Array[Byte]()
 
     var args = argSeq.toList
@@ -33,7 +33,7 @@ class SimulationService extends NFNService {
 
     val systemSize = Vector(Body.earth.radius * 500, Body.earth.radius * 500)
     val renderArea = Rect(-systemSize / 2, systemSize)
-    val config = if (configuration.length <= 0) Config.random(renderArea, configSize)
+    val config = if (configuration.length <= 0) Config.random(renderArea, 1000)
       else Config.fromString(configuration.toString)
 
     val simulation = new Simulation(config, deltaTime)
@@ -45,6 +45,7 @@ class SimulationService extends NFNService {
 //    intermediateResult(ccnApi, interestName, 0, NFNStringValue(simulation.config.toString))
 
     simulation.run(stepCount, step => {
+      println(s"Step: $step")
       val currentTime = System.currentTimeMillis()
       val elapsed = currentTime - lastTime
       if (elapsed > intermediateInterval && intermediateInterval > 0) {
@@ -54,6 +55,8 @@ class SimulationService extends NFNService {
       }
     })
     NFNStringValue(simulation.config.toString)
+
+//    NFNIntValue(5)
 
   }
 }
