@@ -103,7 +103,7 @@ object Networking {
     var isFirstTry = true
     var shouldKeepTrying = true
     val shouldGetIntermediates = handleIntermediate.isDefined
-    val intermediateInterval = 1000
+    val intermediateInterval = 100
 
     if (shouldGetIntermediates) {
       val f = Future {
