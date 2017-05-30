@@ -11,7 +11,7 @@ class SimulationService extends NFNService {
   override def function(interestName: CCNName, argSeq: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     // /path/to/NBodySimulation [/path/to/config] ['-c' <configSize>] ['-d' <deltaTime>] ['-s' <stepCount>] ['-i' <intermediateInterval>]
 
-    var options = Map('configSize -> 10, 'deltaTime -> 1, 'stepCount -> 1000000, 'intermediateInterval -> 100)
+    var options = Map('configSize -> 100, 'deltaTime -> 10, 'stepCount -> 1000000, 'intermediateInterval -> 1000)
     var configuration = Array[Byte]()
 
     var args = argSeq.toList

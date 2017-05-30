@@ -94,6 +94,10 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
     CCNName(cmps ++ Seq(nfnKeyword):_*)
   }
 
+  def withRequest: CCNName = {
+    CCNName(withoutNFN.cmps ++ Seq(requestKeyword):_*).withNFN
+  }
+
   def withRequest(request: String): CCNName = {
     CCNName(withoutNFN.cmps ++ Seq(requestKeyword, request):_*).withNFN
   }
@@ -118,7 +122,7 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   def requestParameters: List[String] = {
     val name = withoutNFN
-    List[String]() // TODO: parse parameters
+    name.cmps.last.split(' ').toList.drop(1)
   }
 
   def expression: Option[String] = {

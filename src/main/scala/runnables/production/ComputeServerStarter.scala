@@ -119,6 +119,8 @@ object ComputeServerStarter extends Logging {
         node.publishServiceLocalPrefix(new NBody.SimulationRenderService())
         node.publishServiceLocalPrefix(new ChainIntermediates())
         node.publishServiceLocalPrefix(new PubSubBroker())
+        node.publishServiceLocalPrefix(new ControlRequestTest())
+
         //node.publishServiceLocalPrefix(new Pandoc())
         //node.publishServiceLocalPrefix(new PDFLatex())
         //node.publishServiceLocalPrefix(new Reverse())

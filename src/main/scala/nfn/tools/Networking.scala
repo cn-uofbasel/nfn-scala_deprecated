@@ -41,10 +41,14 @@ object Networking {
     }
 
     // try to fetch data and return if successful
-    val futServiceContent: Future[Content] = loadFromCacheOrNetwork(interest)
-    Await.result(futServiceContent, time) match {
-      case c: Content => Some(c)
-      case _ => None  // send keepalive interest
+    try {
+      val futServiceContent: Future[Content] = loadFromCacheOrNetwork(interest)
+      Await.result(futServiceContent, time) match {
+        case c: Content => Some(c)
+        case _ => None  // send keepalive interest
+      }
+    } catch {
+      case e: TimeoutException => println("fetchContent timed out."); None
     }
   }
 
@@ -68,6 +72,25 @@ object Networking {
       }
     }
     None
+  }
+
+  def fetchLocalContent(interest: Interest, ccnApi: ActorRef, time: Duration): Option[Content] = {
+    // try to fetch local data and return if successful
+    try {
+      implicit val timeout = Timeout(time.toMillis)
+      val futMaybeContent = (ccnApi ? NFNApi.GetFromLocalCache(interest)).mapTo[Option[Content]]
+      Await.result(futMaybeContent, time)
+    } catch {
+      case e: TimeoutException => println("fetchLocalContent timed out."); None
+    }
+  }
+
+  def fetchRequestsToComputation(interest: Interest, ccnApi: ActorRef): Option[CCNName] = {
+    val request = Interest(interest.name.withCompute.withRequest.withoutNFN)
+    fetchLocalContent(request, ccnApi, 1 second) match {
+      case Some(content) => Some(content.name)
+      case None => None
+    }
   }
 
   def fetchContentAndKeepalive(ccnApi: ActorRef,
@@ -170,7 +193,7 @@ object Networking {
     None
   }
 
-
+  // TODO: remove this unused method?
   def requestContentAndKeepalive(ccnApi: ActorRef,
                                  interest: Interest,
                                  timeoutDuration: FiniteDuration = 20 seconds): Future[Option[Content]] = {
