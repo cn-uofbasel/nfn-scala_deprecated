@@ -126,6 +126,7 @@ object ComputeServerStarter extends Logging {
         //node.publishServiceLocalPrefix(new Reverse())
         node.publishServiceLocalPrefix(new Echo())
         node.publishServiceLocalPrefix(new ChunkTest())
+        node.publishServiceLocalPrefix(new Waypoint())
 //        node.publishServiceLocalPrefix(new EchoP())
         //node.publishServiceLocalPrefix(new GPXOriginFilter())
         //node.publishServiceLocalPrefix(new GPXDistanceComputer())
