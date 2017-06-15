@@ -14,8 +14,8 @@ class FetchContentTest() extends NFNService {
     //NFNIntValue(r)
 
     args.head match {
-      case NFNStringValue(s) => NFNDataValue(fetchContentAndKeepAlive(NFNInterest(s"(call 2 /node/nodeF/nfn_service_DelayedWordCount '${s}')"), ccnApi, 3 seconds).get.data)
-      case NFNIntValue(s) => NFNDataValue(fetchContentAndKeepAlive(NFNInterest(s"(call 2 /node/nodeF/nfn_service_DelayedWordCount ${s})"), ccnApi, 3 seconds).get.data)
+      case NFNStringValue(s) => NFNDataValue(fetchContentAndKeepalive(ccnApi, NFNInterest(s"(call 2 /node/nodeF/nfn_service_DelayedWordCount '${s}')"), 3 seconds).get.data)
+      case NFNIntValue(s) => NFNDataValue(fetchContentAndKeepalive(ccnApi, NFNInterest(s"(call 2 /node/nodeF/nfn_service_DelayedWordCount ${s})"), 3 seconds).get.data)
       case _ => NFNIntValue(0)
     }
   }

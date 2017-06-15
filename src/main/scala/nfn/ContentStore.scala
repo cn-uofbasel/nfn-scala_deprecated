@@ -44,6 +44,11 @@ case class ContentStore() extends Logging {
     }
   }
 
+  def find(prefix: CCNName): Option[Content] = {
+    val filteredContent = contentStore filter { entry => entry._1.startsWith(prefix.cmps) && CCNName(entry._1, None).requestType != "GIM" }
+    filteredContent.values.toList.headOption
+  }
+
   def add(content: Content): Unit = {
     val name = content.name.cmpsList
 

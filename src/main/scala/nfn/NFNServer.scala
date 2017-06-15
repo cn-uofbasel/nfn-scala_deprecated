@@ -40,6 +40,7 @@ object NFNApi {
   case class AddToCCNCacheAck(name: CCNName)
 
   case class AddToLocalCache(content: Content, prependLocalPrefix: Boolean = false)
+  case class GetFromLocalCache(interest: Interest)
 
   case class AddIntermediateResult(content: Content)
 }
@@ -279,7 +280,8 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
       //FIXME: End of the hack for Openmhealth
       //pit.get(content.name) match { //FIXME: if hack for Openmhealth is removed, uncomment this!
         case Some(pendingFaces) => {
-          if (cacheContent && !content.name.isKeepalive) {
+          val isCountIntermediates = content.name.isRequest && content.name.requestType == "CIM"
+          if (cacheContent && !content.name.isKeepalive && !isCountIntermediates) {
             cs.add(content)
           }
 
@@ -328,6 +330,8 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 //        case None => logger.debug(s"Did not find in PIT.")
 //      }
 //    } else {
+      logger.debug(s"Handle interest.")
+//    logger.debug(s"Sender: $senderCopy")
       cs.get(i.name) match {
         case Some(contentFromLocalCS) =>
           logger.debug(s"Served $contentFromLocalCS from local CS")
@@ -338,10 +342,11 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
             case Some(pendingFaces) => {
               if (!i.name.isRequest) {
                 pit.add(i.name, senderFace, defaultTimeoutDuration)
+//                nfnGateway ! i
               }
             }
             case None => {
-              if (!i.name.isRequest) {
+              if (!i.name.isRequest || i.name.requestType == "CIM" || i.name.requestType == "GIM") {
                 pit.add(i.name, senderFace, defaultTimeoutDuration)
               }
 
@@ -374,6 +379,12 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
                             senderCopy ! Content(i.name, " ".getBytes)
                           case None => logger.debug(s"Did not find in PIT.")
                         }
+                      }
+                      case "CTRL" => {
+                        logger.debug(s"Receive control message: " + i.name + " Save to CS for later retrieval by computation.")
+                        val emptyContent = Content(i.name, Array[Byte]())
+                        cs.add(emptyContent)
+                        senderCopy ! Content(i.name, " ".getBytes)
                       }
                       case _ => {
                         computeServer ! ComputeServer.RequestToComputation(i.name, senderCopy)
@@ -501,6 +512,17 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
         } else content
       logger.info(s"Adding content for ${contentToAdd.name} to local cache")
       cs.add(contentToAdd)
+    }
+
+    case NFNApi.GetFromLocalCache(interest) => {
+      val senderCopy = sender
+      logger.info(s"Searching local cache for prefix ${interest.name}.")
+      val contents = cs.find(interest.name)
+      if (contents.isDefined) {
+        cs.remove(contents.get.name)
+      }
+      logger.info(s"Found entries: ${contents.isDefined}")
+      senderCopy ! contents
     }
 
     case NFNApi.AddIntermediateResult(intermediateContent) => {
