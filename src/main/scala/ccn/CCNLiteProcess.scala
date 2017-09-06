@@ -122,7 +122,7 @@ case class CCNLiteProcess(nodeConfig: RouterConfig) extends Logging {
   def start() = {
 
     if(!nodeConfig.isAlreadyRunning) {
-      val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/bin/ccn-lite-relay" else s"$ccnLiteEnv/bin/ccn-nfn-relay"
+      val ccnliteExecutableName = if(nodeConfig.isCCNOnly) s"$ccnLiteEnv/build/bin/ccn-lite-relay" else s"$ccnLiteEnv/build/bin/ccn-lite-relay"
       val ccnliteExecutable = ccnliteExecutableName + (if(StaticConfig.isNackEnabled) "-nack" else "")
 
 
