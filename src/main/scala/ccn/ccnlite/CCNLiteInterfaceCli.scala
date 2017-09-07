@@ -119,6 +119,8 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
   override def addToCache(content: Content, mgmtSock: String)(implicit ec: ExecutionContext): Future[Int] = {
     logger.debug(s"add to cache for $content")
+//    var futmkBinaryContent(content, CCNLiteInterfaceCli.maxChunkSize)
+
     mkBinaryContent(content, CCNLiteInterfaceCli.maxChunkSize) flatMap { (binaryContents: List[Array[Byte]]) =>
       binaryContents.foldLeft(Future(0)) {
         case(futN, binaryContent) =>
@@ -139,7 +141,7 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
 
             val ctrl = "ccn-lite-ctrl"
             val cmds = List(binFolderName + ctrl, "-x", mgmtSock, "addContentToCache", ccnbAbsoluteFilename)
-            SystemCommandExecutor(List(cmds)).futExecute() flatMap {
+            val future = SystemCommandExecutor(List(cmds)).futExecute() flatMap {
               case ExecutionSuccess(_, data) =>
                 file.delete()
                 futN map { _ + 1}
@@ -147,6 +149,10 @@ case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface w
                 file.delete()
                 throw new Exception(s"Error creating add to cache request: $execErr")
             }
+            val result = Await.result(future, 2 second)
+            Thread.sleep(10)
+            Future(result)
+
           } catch {
             case e: Exception => {
               file.delete()

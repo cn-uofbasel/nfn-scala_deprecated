@@ -7,7 +7,8 @@ object CCNName {
   val thunkKeyword = "THUNK"
   val nfnKeyword = "NFN"
   val keepaliveKeyword = "ALIVE"
-  val intermediateKeyword = "INTERMEDIATE"
+  val getIntermediateKeyword = "GIM"
+  val requestKeyword = "R2C"
   val computeKeyword = "COMPUTE"
   def withAddedNFNComponent(ccnName: CCNName) = CCNName(ccnName.cmps ++ Seq(nfnKeyword) :_*)
   def withAddedNFNComponent(cmps: Seq[String]) = CCNName(cmps ++ Seq(nfnKeyword) :_*)
@@ -26,7 +27,7 @@ object CCNName {
 
 case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
-  import CCNName.{thunkKeyword, nfnKeyword, keepaliveKeyword, computeKeyword, intermediateKeyword}
+  import CCNName.{thunkKeyword, nfnKeyword, keepaliveKeyword, computeKeyword, getIntermediateKeyword, requestKeyword}
 
 //  def to = toString.replaceAll("/", "_").replaceAll("[^a-zA-Z0-9]", "-")
   override def toString = {
@@ -37,33 +38,50 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
 
   def isThunk: Boolean = isThunkWithKeyword(thunkKeyword)
 
-  def isNFN: Boolean = cmps.size >= 1 && cmps.last == nfnKeyword
+  def isNFN: Boolean = cmps.nonEmpty && cmps.last == nfnKeyword
 
   def isKeepalive: Boolean = cmps.size >= 2 && cmps(cmps.size - 2) == keepaliveKeyword
 
-  def isCompute: Boolean = cmps.size >= 1 && cmps.head == computeKeyword
+  def isCompute: Boolean = cmps.nonEmpty && cmps.head == computeKeyword
 
-  def isIntermediate: Boolean =
-    (cmps.size >= 3 && cmps(cmps.size - 3) == intermediateKeyword) ||
-    (cmps.size >= 2 && cmps(cmps.size - 2) == intermediateKeyword)
+//  def isIntermediate: Boolean =
+//    (cmps.size >= 3 && cmps(cmps.size - 3) == intermediateKeyword) ||
+//    (cmps.size >= 2 && cmps(cmps.size - 2) == intermediateKeyword)
+
+  def isRequest: Boolean = {
+    val name = withoutNFN
+    name.cmps.size >= 2 && name.cmps(name.cmps.size - 2) == requestKeyword
+  }
 
   def withoutCompute: CCNName = {
-    if(cmps.size > 0) {
+    if(cmps.nonEmpty) {
       if(cmps.head == computeKeyword) CCNName(cmps.tail:_*)
       else this
     } else this
   }
 
   def withoutNFN: CCNName = {
-    if(cmps.size > 0) {
+    if(cmps.nonEmpty) {
       if(cmps.last == nfnKeyword) CCNName(cmps.init:_*)
       else this
     } else this
   }
 
-  def withoutIntermediate: CCNName = {
+  def withoutChunk: CCNName = {
+    CCNName(cmps, None)
+  }
+
+//  def withoutIntermediate: CCNName = {
+//    if (cmps.size > 1 &&
+//        cmps.takeRight(2).head == requestKeyword &&
+//        cmps.last.startsWith(getIntermediateKeyword))
+//      CCNName(cmps.dropRight(2):_*)
+//    else this
+//  }
+
+  def withoutRequest: CCNName = {
     if (cmps.size > 1) {
-      if (cmps.takeRight(2).head == intermediateKeyword) CCNName(cmps.dropRight(2):_*)
+      if (cmps.takeRight(2).head == requestKeyword) CCNName(cmps.dropRight(2):_*)
       else this
     } else this
   }
@@ -76,19 +94,40 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
     CCNName(cmps ++ Seq(nfnKeyword):_*)
   }
 
-  def withIntermediate(index: Int) = {
-    CCNName(cmps ++ Seq(intermediateKeyword, index.toString):_*)
+  def withRequest: CCNName = {
+    CCNName(withoutNFN.cmps ++ Seq(requestKeyword):_*).withNFN
+  }
+
+  def withRequest(request: String): CCNName = {
+    CCNName(withoutNFN.cmps ++ Seq(requestKeyword, request):_*).withNFN
+  }
+
+  def withIntermediate(index: Int): CCNName = {
+    withRequest(s"$getIntermediateKeyword ${index.toString}")
   }
 
   def intermediateIndex: Int = {
-    if (cmps.size >= 2 && cmps.takeRight(2).head == intermediateKeyword) cmps.last.toInt
-    else if (cmps.size >= 3 && cmps.takeRight(3).head == intermediateKeyword) cmps(cmps.size - 2).toInt
+    val name = withoutNFN
+    if (name.cmps.size >= 2 &&
+        name.cmps.takeRight(2).head == requestKeyword &&
+        name.cmps.last.startsWith(getIntermediateKeyword))
+      name.cmps.last.stripPrefix(getIntermediateKeyword).trim.toInt
     else -1
   }
 
+  def requestType: String = {
+    val name = withoutNFN
+    name.cmps.last.split(' ')(0) // TODO: parse parameters
+  }
+
+  def requestParameters: List[String] = {
+    val name = withoutNFN
+    name.cmps.last.split(' ').toList.drop(1)
+  }
+
   def expression: Option[String] = {
-    if(cmps.size > 0) {
-      val expr = this.withoutCompute.withoutNFN.withoutIntermediate
+    if(cmps.nonEmpty) {
+      val expr = this.withoutCompute.withoutNFN.withoutRequest
       expr.cmps match {
         case h :: Nil => Some(h)
         case _ =>
@@ -99,7 +138,7 @@ case class CCNName(cmps: List[String], chunkNum: Option[Int])extends Logging {
   }
 
   private def withoutThunkAndIsThunkWithKeyword(keyword: String): (CCNName, Boolean) = {
-    if(cmps.size == 0) this -> false                                       // name '/' is not a thunk
+    if(cmps.isEmpty) this -> false                                       // name '/' is not a thunk
     cmps.last match {
       case t if t == keyword =>                                                 // thunk of normal ccn name like /docRepo/doc/1/THUNK
         CCNName(cmps.init:_*) -> true                                      // return /docRepo/doc/1 -> true

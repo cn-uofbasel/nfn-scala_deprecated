@@ -25,11 +25,11 @@ class LocalAbstractMachineWorker(ccnServer: ActorRef) extends Actor {
 
   override def receive: Actor.Receive = {
     case content: Content => {
-      logger.debug(s"Received content $content")
+      logger.debug(s"Abstract machine received content $content")
       handleContent(content, sender)
     }
     case interest: Interest =>
-      logger.debug(s"Received interest $interest")
+      logger.debug(s"Abstract machine received interest $interest")
       handleInterest(interest, sender)
   }
 
