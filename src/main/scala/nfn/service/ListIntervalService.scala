@@ -13,7 +13,7 @@ class ListIntervalService() extends  NFNService {
 
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     NFNStringValue(
-    args match {
+    /*args match {
       case Seq(start: NFNLongValue, end: NFNLongValue) => {
 
         //TODO change start and end from time to unix
@@ -28,7 +28,8 @@ class ListIntervalService() extends  NFNService {
         return NFNStringValue(string)
       }
 
-    }
+    }*/
+      "HALLOWELT"
     )
   }
 }

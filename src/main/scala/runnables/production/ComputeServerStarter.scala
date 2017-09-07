@@ -111,23 +111,23 @@ object ComputeServerStarter extends Logging {
         // The name of this service is infered from the package structure of the service as well as the prefix of the local node.
         // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
         node.publishServiceLocalPrefix(new WordCount())
-        node.publishServiceLocalPrefix(new DelayedWordCount())
-        node.publishServiceLocalPrefix(new IntermediateTest())
+//        node.publishServiceLocalPrefix(new DelayedWordCount())
+//        node.publishServiceLocalPrefix(new IntermediateTest())
 //        node.publishServiceLocalPrefix(new FetchContentTest())
-        node.publishServiceLocalPrefix(new NBody.SimulationService())
-        node.publishServiceLocalPrefix(new NBody.RenderService())
+//        node.publishServiceLocalPrefix(new NBody.SimulationService())
+//        node.publishServiceLocalPrefix(new NBody.RenderService())
         node.publishServiceLocalPrefix(new ListIntervalService())
-        node.publishServiceLocalPrefix(new NBody.SimulationRenderService())
-        node.publishServiceLocalPrefix(new ChainIntermediates())
-        node.publishServiceLocalPrefix(new PubSubBroker())
-        node.publishServiceLocalPrefix(new ControlRequestTest())
+//        node.publishServiceLocalPrefix(new NBody.SimulationRenderService())
+//        node.publishServiceLocalPrefix(new ChainIntermediates())
+//        node.publishServiceLocalPrefix(new PubSubBroker())
+//        node.publishServiceLocalPrefix(new ControlRequestTest())
 
         //node.publishServiceLocalPrefix(new Pandoc())
         //node.publishServiceLocalPrefix(new PDFLatex())
         //node.publishServiceLocalPrefix(new Reverse())
-        node.publishServiceLocalPrefix(new Echo())
-        node.publishServiceLocalPrefix(new ChunkTest())
-        node.publishServiceLocalPrefix(new Waypoint())
+//        node.publishServiceLocalPrefix(new Echo())
+//        node.publishServiceLocalPrefix(new ChunkTest())
+//        node.publishServiceLocalPrefix(new Waypoint())
 //        node.publishServiceLocalPrefix(new EchoP())
         //node.publishServiceLocalPrefix(new GPXOriginFilter())
         //node.publishServiceLocalPrefix(new GPXDistanceComputer())
@@ -139,7 +139,7 @@ object ComputeServerStarter extends Logging {
 //        node.publishServiceLocalPrefix(new SimpleToJSON())
 
         //node.publishServiceLocalPrefix(new StoreSensorData())
-        //node.publishServiceLocalPrefix(new ReadSensorData())
+        //node.publishServiceLocalPrefix(new ReadSensorData())*/
 
         // Gets the content of the ccn-lite tutorial
         //node += PandocTestDocuments.tutorialMd(node.localPrefix)
