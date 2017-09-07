@@ -49,7 +49,6 @@ object NFNService extends Logging {
     }
 
     val file: File = createTempFile
-
     try {
       val out = new FileOutputStream(file)
       var filePath = file.getCanonicalPath
