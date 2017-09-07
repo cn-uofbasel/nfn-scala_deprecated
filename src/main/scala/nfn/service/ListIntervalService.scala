@@ -12,7 +12,6 @@ class ListIntervalService() extends  NFNService {
   override def pinned = true
 
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
-
     args match {
      case Seq(start: NFNIntValue, end: NFNIntValue) => {
 
