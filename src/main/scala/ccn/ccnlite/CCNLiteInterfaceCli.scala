@@ -30,7 +30,7 @@ object CCNLiteInterfaceCli {
 case class CCNLiteInterfaceCli(wireFormat: CCNWireFormat) extends CCNInterface with Logging {
 
   val ccnLiteEnv = CCNLiteSystemPath.ccnLiteHome
-  val binFolderName = s"$ccnLiteEnv/bin/"
+  val binFolderName = s"$ccnLiteEnv/build/bin/"
 
   private def ccnNameToRoutableCmpsAndNfnString(name: CCNName): List[String] = {
     val nameCmps = name.cmps
