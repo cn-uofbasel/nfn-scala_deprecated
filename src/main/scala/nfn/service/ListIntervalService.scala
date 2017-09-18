@@ -14,7 +14,7 @@ class ListIntervalService() extends  NFNService {
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     args match {
      case Seq(start: NFNIntValue, end: NFNIntValue) => {
-
+        NFNNameValue.
         //TODO change start and end from time to unix
         val uStart = start.i
         val uEnd = end.i
