@@ -4,11 +4,7 @@ package orgOpenmhealth.computeServer
 import ccn.packet.{Content, CCNName}
 import com.typesafe.scalalogging.slf4j.Logging
 import config.{ComputeNodeConfig, RouterConfig, StaticConfig}
-import nfn.service.GPS.GPX.GPXOriginFilter
-import nfn.service.GPS.GPX.GPXDistanceAggregator
-import nfn.service.GPS.GPX.GPXDistanceComputer
-import nfn.service.Temperature.{ReadSensorData, ReadSensorDataSimu, StoreSensorData}
-import nfn.service._
+
 import node.LocalNode
 import orgOpenmhealth.services.PointCount
 import scopt.OptionParser
