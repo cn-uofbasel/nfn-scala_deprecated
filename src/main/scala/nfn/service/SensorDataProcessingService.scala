@@ -16,11 +16,11 @@ class SensorDataProcessingService() extends  NFNService {
 
      case Seq(num: NFNIntValue, data: NFNContentObjectValue) => {
        val list = new String(data.data).split("\n").toList
-        NFNStringValue.
+
        //request data from remote host here
        val i1 = new Interest( new CCNName(list(num.i).split("/").toList.tail, None))
        val c1 = fetchContent(i1, ccnApi, 30 seconds).get
-  
+
        val cont = new String(c1.data)
        //val cont = list(num.i)
        NFNStringValue(cont)
