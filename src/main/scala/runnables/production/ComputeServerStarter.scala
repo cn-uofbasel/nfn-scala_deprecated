@@ -105,88 +105,9 @@ object ComputeServerStarter extends Logging {
         // put the data of the jar into a content object.
         // The name of this service is infered from the package structure of the service as well as the prefix of the local node.
         // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
-       // node.publishServiceLocalPrefix(new WordCount())
-//        node.publishServiceLocalPrefix(new DelayedWordCount())
-//        node.publishServiceLocalPrefix(new IntermediateTest())
-//        node.publishServiceLocalPrefix(new FetchContentTest())
-//        node.publishServiceLocalPrefix(new NBody.SimulationService())
-//        node.publishServiceLocalPrefix(new NBody.RenderService())
 //        node.publishServiceLocalPrefix(new ListIntervalService())
-        node.publishServiceLocalPrefix(new SensorDataProcessingService())
-//        node.publishServiceLocalPrefix(new NBody.SimulationRenderService())
-//        node.publishServiceLocalPrefix(new ChainIntermediates())
-//        node.publishServiceLocalPrefix(new PubSubBroker())
-//        node.publishServiceLocalPrefix(new ControlRequestTest())
-
-        //node.publishServiceLocalPrefix(new Pandoc())
-        //node.publishServiceLocalPrefix(new PDFLatex())
-        //node.publishServiceLocalPrefix(new Reverse())
-//        node.publishServiceLocalPrefix(new Echo())
-//        node.publishServiceLocalPrefix(new ChunkTest())
-//        node.publishServiceLocalPrefix(new Waypoint())
-//        node.publishServiceLocalPrefix(new EchoP())
-        //node.publishServiceLocalPrefix(new GPXOriginFilter())
-        //node.publishServiceLocalPrefix(new GPXDistanceComputer())
-        //node.publishServiceLocalPrefix(new GPXDistanceAggregator())
-        //node.publishServiceLocalPrefix(new ReadSensorData())
-
-//        node.publishServiceLocalPrefix(new PointCount())
-//        node.publishServiceLocalPrefix(new DistanceTo())
-//        node.publishServiceLocalPrefix(new SimpleToJSON())
-
-        //node.publishServiceLocalPrefix(new StoreSensorData())
-        //node.publishServiceLocalPrefix(new ReadSensorData())*/
-
-        // Gets the content of the ccn-lite tutorial
-        //node += PandocTestDocuments.tutorialMd(node.localPrefix)
-        // Publishes a very small two-line markdown file
-        //node += PandocTestDocuments.tinyMd(node.localPrefix)
-
-        //Read GPS Trackpoints for NDN Fit Experiment, uncomment if needed
-       //val files =  ("ls trackpoints/" !!)
-       //val filelist = files.split('\n')
-       /*filelist.foreach(f => {
-        val data = Source.fromFile(s"trackpoints/$f").mkString
-        val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
-        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/Joe/internal/running/training/2015/02/04/gpx/p$num".substring(1).split("/").toList, None), data.getBytes)
-      }
-      )*/
-
-      /*
-      val files =  ("ls /home/claudio/trackpoints/" !!)
-      val filelist = files.split('\n')
-
-      filelist.foreach(f => {
-        val data = Source.fromFile(s"/home/claudio/trackpoints/$f").mkString
-        val num = f.substring(f.indexOf("_")+1, f.indexOf("."))
-        node += Content(CCNName(s"/ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p$num".substring(1).split("/").toList, None), data.getBytes)
-      }
-      )
-      */
-
-
-
-
-
-      /*
-       * --------------
-       *  GPX SCENARIO
-       * --------------
-       *
-       * Uncomment code above to put raw data into the cache!
-       *
-       * Arguments for this runnable: -m /tmp/mgmt.sock -o 9000 -p 9001 -d /nfn/node0
-       *
-       *
-       * Test Requests:
-       *
-       *  ccn-lite-peek -w 10 -u 127.0.0.1/9000 /ndn/ch/unibas/NDNfit/hidden/run1/gpx/data/p1 | ccn-lite-pktdump -f2
-       *  ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 3 /nfn/node0/nfn_service_GPX_GPXOriginFilter '/run1/gpx/data' 1" | ccn-lite-pktdump -f2
-       *  ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 5 /nfn/node0/nfn_service_GPX_GPXDistanceComputer '/run1/gpx/data' 1 '/run1/gpx/data' 2" | ccn-lite-pktdump -f2
-       *  ccn-lite-simplenfn -w 10 -u 127.0.0.1/9000 "call 3 /nfn/node0/nfn_service_GPX_GPXDistanceAggregator '/run1/gpx/data' 5" | ccn-lite-pktdump -f2
-       *
-       *
-       */
+          node.publishServiceLocalPrefix(new SensorDataProcessingService())
+          node.publishServiceLocalPrefix(new SensorDataProcessingService())
 
       case None => sys.exit(1)
     }
