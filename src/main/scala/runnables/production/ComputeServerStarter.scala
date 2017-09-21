@@ -107,6 +107,7 @@ object ComputeServerStarter extends Logging {
           node.publishServiceLocalPrefix(new ListIntervalService())
           node.publishServiceLocalPrefix(new ExampleService())
           node.publishServiceLocalPrefix(new SensorDataProcessingService())
+          node.publishServiceLocalPrefix(new GetListedSensorDataService())
 
 
 
