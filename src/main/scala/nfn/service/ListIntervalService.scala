@@ -7,7 +7,7 @@ import scala.io.Source
 
 class ListIntervalService() extends  NFNService {
 
-  val filename =   "~/sensorvalues.txt"
+  val filename =  System.getProperty("user.home") + "/sensorvalues.txt"
 
   override def pinned = true
 

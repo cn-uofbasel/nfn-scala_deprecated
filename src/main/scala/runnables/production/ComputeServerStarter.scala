@@ -84,7 +84,6 @@ object ComputeServerStarter extends Logging {
         if(config.suite != ""){
           StaticConfig.setWireFormat(config.suite)
         }
-
         logger.debug(s"config: $config")
 
         // Configuration of the router, sro far always ccn-lite
@@ -107,7 +106,7 @@ object ComputeServerStarter extends Logging {
         // In this case the prefix is given with the commandline argument 'prefixStr' (e.g. /node/nodeA/nfn_service_WordCount)
           node.publishServiceLocalPrefix(new ListIntervalService())
           node.publishServiceLocalPrefix(new ExampleService())
-//          node.publishServiceLocalPrefix(new SensorDataProcessingService())
+          node.publishServiceLocalPrefix(new SensorDataProcessingService())
 
 
 
