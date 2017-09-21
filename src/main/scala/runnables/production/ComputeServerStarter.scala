@@ -108,7 +108,7 @@ object ComputeServerStarter extends Logging {
           node.publishServiceLocalPrefix(new ExampleService())
           node.publishServiceLocalPrefix(new SensorDataProcessingService())
           node.publishServiceLocalPrefix(new GetListedSensorDataService())
-
+          node.publishServiceLocalPrefix(new GetAverageSensorDataService())
 
 
       case None => sys.exit(1)

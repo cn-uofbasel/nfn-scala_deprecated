@@ -8,13 +8,10 @@ import akka.actor.ActorRef
 import ccn.packet.{CCNName, Interest}
 import nfn.tools.Networking._
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 
 
-
-
-class GetListedSensorDataService() extends  NFNService {
+class GetAverageSensorDataService() extends  NFNService {
 
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
     //return NFNStringValue(args.tail.head.getClass.toString)
@@ -34,16 +31,12 @@ class GetListedSensorDataService() extends  NFNService {
 
        val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm")
 
-       val timestams = listFiltered.map(uxTS => "\"" + sdf.format(Date.from(
-                  Instant.ofEpochSecond(uxTS.split("/").last.toInt))) + "\"" )
 
        val sensorValuesSeparated =  sensorValues.map(dp => dp.splitAt(2)._1 + "." +  dp.splitAt(2)._2)
 
-       val content = "{ \"x\" : [" + timestams.mkString(",") + "] , \"y\": [" + sensorValuesSeparated.mkString(",") + "] }"
-       //val cont = list(num.i)
+       val avg = sensorValuesSeparated.foldLeft(0.0)((a,b) => a.toFloat + b.toFloat) / sensorValues.length
 
-
-       NFNStringValue(content)
+       NFNStringValue(avg.toString)
       }
      case _ => NFNStringValue("error")
     }
