@@ -26,6 +26,33 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * Created by blacksheeep on 16/11/15.
  */
 object Networking {
+
+  /**
+    * Try to resolve Redirect by given data.
+    *
+    * @param    data       data to redirect
+    * @param    ccnApi     Actor Reference
+    * @param    time       Timeout
+    * @return              resloved data
+    */
+  def resolveRedirect(data: Array[Byte], ccnApi: ActorRef, time: Duration): Option[Array[Byte]] = {
+
+    var str = new String(data)
+
+    if(str.contains("redirect")) {
+      str = str.replace("\n", "").trim
+      val rname = CCNName(str.splitAt(9)._2.split("/").toList.tail.map(_.replace("%2F", "/").replace("%2f", "/")), None)
+
+
+      val interest = new Interest(rname)
+      val content = fetchContent(interest, ccnApi, time).get
+      return Some(content.data)
+    }
+    return Some(data)
+  }
+
+
+
   /**
    * Try to fetch content object by given interest.
    *

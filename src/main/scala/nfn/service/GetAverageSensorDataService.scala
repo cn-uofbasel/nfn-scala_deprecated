@@ -18,16 +18,7 @@ class GetAverageSensorDataService() extends  NFNService {
 
      case Seq(sensortype: NFNStringValue, data: NFNContentObjectValue) => {
 
-       var str = new String(data.data)
-
-       if(str.contains("redirect")) {
-           str = str.replace("\n", "").trim
-           val rname = CCNName(str.splitAt(9)._2.split("/").toList.tail.map(_.replace("%2F", "/").replace("%2f", "/")), None)
-
-
-           val interest = new Interest(rname)
-           str = new String(fetchContent(interest, ccnApi, 30 seconds).get.data)
-       }
+       val str = new String(resolveRedirect(data.data, ccnApi, 30 seconds).get)
        val list = str.split("\n").toList.tail
 
        val listFiltered = list.filter(_.contains(sensortype.str))
