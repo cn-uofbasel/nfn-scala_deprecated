@@ -21,7 +21,9 @@ class GetListedSensorDataService() extends  NFNService {
     args match {
 
      case Seq(sensortype: NFNStringValue, data: NFNContentObjectValue) => {
-       val list = new String(data.data).split("\n").toList.tail
+
+
+       val list = new String(resolveRedirect(data.data, ccnApi, 30 seconds).get).split("\n").toList.tail
 
        val listFiltered = list.filter(_.contains(sensortype.str))
 
