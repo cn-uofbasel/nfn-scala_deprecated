@@ -18,7 +18,7 @@ class GetAverageSensorDataService() extends  NFNService {
 
      case Seq(sensortype: NFNStringValue, data: NFNContentObjectValue) => {
 
-       val str = new String(resolveRedirect(data.data, ccnApi, 30 seconds).get)
+       val str = new String(data.data)
        val list = str.split("\n").toList.tail
 
        val listFiltered = list.filter(_.contains(sensortype.str))

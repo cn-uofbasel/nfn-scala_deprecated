@@ -18,6 +18,8 @@ import nfn.KlangCancellableFuture
 
 import scala.concurrent._
 import scala.util.{Failure, Success, Try}
+import nfn.tools.Networking._
+import scala.concurrent.duration._
 
 object NFNService extends Logging {
 
@@ -188,7 +190,10 @@ trait NFNService {
 
   def instantiateCallable(interestName: CCNName, name: CCNName, values: Seq[NFNValue], ccnServer: ActorRef, executionTimeEstimate: Option[Int]): Try[CallableNFNService] = {
     assert(name == ccnName, s"Service $ccnName is created with wrong name $name")
-    Try(CallableNFNService(interestName, name, values, ccnServer, (interestName, args, ccnApi) => function(interestName, args, ccnApi), executionTimeEstimate = executionTimeEstimate))
+    Try(CallableNFNService(interestName, name, values, ccnServer, (interestName, args, ccnApi) => function(interestName, args.map(s => s match {
+      case c : NFNContentObjectValue => NFNContentObjectValue(c.name, resolveRedirect(c.data, ccnApi, 30 seconds).get)
+      case v: NFNValue => v
+    }), ccnApi), executionTimeEstimate = executionTimeEstimate))
   }
 //  def instantiateCallable(name: NFNName, futValues: Seq[Future[NFNServiceValue]], ccnWorker: ActorRef): Future[CallableNFNService]
 
