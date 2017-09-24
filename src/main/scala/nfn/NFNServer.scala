@@ -202,7 +202,10 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
   private def handleContentChunk(contentChunk: Content, senderCopy: ActorRef): Unit = {
     logger.debug("enter handleContentChunk")
 
-    val maybeFace = pit.get(contentChunk.name.withoutChunk)
+    var maybeFace = pit.get(contentChunk.name)
+    if(maybeFace.isEmpty){
+      maybeFace = pit.get(contentChunk.name.withoutChunk)
+    }
     if (maybeFace.isEmpty) {
       logger.error(s"content ${contentChunk.name} not found in PIT")
       return
@@ -313,7 +316,7 @@ case class NFNServer(routerConfig: RouterConfig, computeNodeConfig: ComputeNodeC
 
         }
         case None =>
-          logger.warning(s"Discarding content $content because there is no entry in pit")
+          logger.warning(s"Discarding content $content because there is no entry in pit " + pit.toString())
       }
     }
   }
