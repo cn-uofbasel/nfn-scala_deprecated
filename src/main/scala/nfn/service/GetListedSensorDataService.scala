@@ -17,7 +17,6 @@ import scala.concurrent.duration._
 class GetListedSensorDataService() extends  NFNService {
 
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
-    //return NFNStringValue(args.tail.head.getClass.toString)
     args match {
 
      case Seq(sensortype: NFNStringValue, data: NFNContentObjectValue) => {
@@ -34,7 +33,7 @@ class GetListedSensorDataService() extends  NFNService {
          ccnApi, 30 seconds).get.data)
        )
 
-       val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm")
+       val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
        val timestams = listFiltered.map(uxTS => "\"" + sdf.format(Date.from(
                   Instant.ofEpochSecond(uxTS.split("/").last.toInt))) + "\"" )
