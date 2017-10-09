@@ -8,7 +8,7 @@ It can also be used to run CCN-Lite directly from Scala and to create a network 
 
 ###Dependencies
 
-Installation is fairly straight forward, and boils down to an available Java JDK 7, sbt 0.13.5 and CCN-Lite.
+Installation is fairly straight forward, and boils down to an available Java JDK 8, sbt 0.13.5 and CCN-Lite.
 If you want to install the JVM or sbt you could also test it out within a Docker container.
 For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://github.com/cn-uofbasel/ccn-lite).
 
@@ -16,11 +16,11 @@ For a tutorial on that, refer to the docker tutorial in [CCN-lite](https://githu
 
 ##### Ubuntu
 
-1. `sudo apt-get install openjdk-7-jdk`
+1. `sudo apt-get install openjdk-8-jdk`
 2. Follow [instructions](http://www.scala-sbt.org/0.13.5/docs/Getting-Started/Setup.html) to install sbt
 
 ##### OSX
-JDK 7 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
+JDK 8 should be available, otherwise it can be downloaded directly from [oracle](http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html). 
 To install sbt you can use homebrew (`brew install sbt`).
 
 #### CCN-Lite
