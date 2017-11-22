@@ -27,6 +27,32 @@ object NFNServiceLibrary extends Logging {
       if(serv.pinned) pinnedData
       else byteCodeData(serv)
 
+    if(serv.pinned){
+      val serviceLibraryDir = "./temp-service-library"
+      val serviceLibararyFile = new File(serviceLibraryDir)
+      if(!serviceLibararyFile.exists) {
+        serviceLibararyFile.mkdir
+      }
+      val servName = serv.ccnName.cmps.last.replace("_", ".")
+
+      val f = new File(s"$serviceLibraryDir/${servName}")
+      if (!f.exists) {
+        f
+      } else {
+        Thread.sleep(1)
+      }
+      val out = new FileOutputStream(f)
+      val filePath = f.getCanonicalPath
+      try {
+        out.write(byteCodeData(serv))
+        out.flush()
+      } finally {
+        if (out != null) out.close
+      }
+
+    }
+
+
     val content = Content(
       prefix.map(_.append(serv.ccnName)).getOrElse(serv.ccnName),
       serviceContent,

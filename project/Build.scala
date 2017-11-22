@@ -8,7 +8,7 @@ import sbtassembly.Plugin.assemblySettings
 
 object BuildSettings {
   val buildSettings: Seq[Def.Setting[_]] = assemblySettings ++ Seq (
-    version       := "0.2.0",
+    version       := "0.2.1",
     scalaVersion  := "2.10.3",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-encoding", "UTF-8", "-language:implicitConversions"),
     resolvers += Resolver.sonatypeRepo("snapshots"),

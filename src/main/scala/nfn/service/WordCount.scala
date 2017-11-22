@@ -16,6 +16,10 @@ class WordCount() extends NFNService {
           throw new NFNServiceArgumentException(s"$ccnName can only be applied to values of type NFNBinaryDataValue and not $args")
       }).sum
     )
+ /*   args.head match {
+
+      case foo : NFNContentObjectValue => NFNNameValue(foo.name)
+    }*/
   }
 }
 

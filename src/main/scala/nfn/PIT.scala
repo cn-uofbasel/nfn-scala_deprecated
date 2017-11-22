@@ -27,7 +27,7 @@ case class PIT(context: ActorContext) extends Logging {
 
   def get(name: CCNName): Option[Set[ActorRef]] = pit.get(name)
 
-  def remove(name: CCNName): Option[Set[ActorRef]] =  {println(s"Stacktrace: " + Thread.currentThread().getStackTrace().toString); pit.remove(name); }
+  def remove(name: CCNName): Option[Set[ActorRef]] = pit.remove(name)
 
   override def toString() = {
     pit.toString()

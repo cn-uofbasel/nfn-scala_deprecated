@@ -14,6 +14,7 @@ import config.{StaticConfig, AkkaConfig}
 import lambdacalculus.parser.ast._
 import myutil.IOHelper
 import nfn.NFNApi
+import nfn.KlangCancellableFuture
 
 import scala.concurrent._
 import scala.util.{Failure, Success, Try}
@@ -25,7 +26,8 @@ object NFNService extends Logging {
   /**
    * Creates a [[NFNService]] from a content object containing the binary code of the service.
    * The data is written to a temporary file, which is passed to the [[BytecodeLoader]] which then instantiates the actual class.
-   * @param content
+    *
+    * @param content
    * @return
    */
   def serviceFromContent(content: Content): Try[NFNService] = {
@@ -47,12 +49,10 @@ object NFNService extends Logging {
     }
 
     val file: File = createTempFile
-
     try {
       val out = new FileOutputStream(file)
-      val filePath = file.getCanonicalPath
+      var filePath = file.getCanonicalPath
       try {
-
         out.write(content.data)
         out.flush()
       } finally {
@@ -60,9 +60,22 @@ object NFNService extends Logging {
       }
 
       val servName = content.name.cmps.last.replace("_", ".")
-      val loadedService: Try[NFNService] = BytecodeLoader.loadClass[NFNService](filePath, servName)
-      logger.debug(s"Dynamically loaded class $servName from content")
-      loadedService
+
+      logger.debug(s"Loading service $servName from $filePath")
+      try {
+        val loadedService: Try[NFNService] = BytecodeLoader.loadClass[NFNService](filePath, servName)
+        logger.debug(s"Dynamically loaded class $servName from content from $filePath")
+        loadedService
+      }
+      catch {
+        case _ => {
+          val f = new File(s"$serviceLibraryDir/${servName}")
+          val filePath = f.getCanonicalPath
+          val loadedService: Try[NFNService] = BytecodeLoader.loadClass[NFNService](filePath, servName)
+          logger.debug(s"Loading PINNED service $servName from $filePath")
+          loadedService
+        }
+      }
     } finally {
       if (file.exists) file.delete
     }
@@ -151,6 +164,7 @@ object NFNService extends Logging {
                   serv <- futServ
                   callable <- serv.instantiateCallable(CCNName(name), serv.ccnName, args, ccnServer, serv.executionTimeEstimate)
                 } yield callable
+
 
               futCallableServ onSuccess {
                 case callableServ => logger.info(s"Instantiated callable serv: '$name' -> $callableServ")

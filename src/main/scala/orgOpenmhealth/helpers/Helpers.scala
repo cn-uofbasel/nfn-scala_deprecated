@@ -99,7 +99,7 @@ object Helpers {
 
     // produce content object
     val ccnLiteEnv = CCNLiteSystemPath.ccnLiteHome
-    val mkCmd = s"${ccnLiteEnv}/bin/ccn-lite-mkC -s ndn2013 -i /tmp/result -o /tmp/content-object ${name}"
+    val mkCmd = s"${ccnLiteEnv}/build/bin/ccn-lite-mkC -s ndn2013 -i /tmp/result -o /tmp/content-object ${name}"
     mkCmd !
 
     // return

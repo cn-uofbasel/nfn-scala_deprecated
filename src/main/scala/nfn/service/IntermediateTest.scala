@@ -11,8 +11,10 @@ class IntermediateTest() extends NFNService {
   override def function(interestName: CCNName, args: Seq[NFNValue], ccnApi: ActorRef): NFNValue = {
 
     for ( i <- 0 to 10) {
-      intermediateResult(ccnApi, interestName, i, NFNStringValue("intermediate test " + i))
-      Thread.sleep(1 * 1000)
+      if (!Thread.currentThread().isInterrupted) {
+        intermediateResult(ccnApi, interestName, i, NFNStringValue("intermediate test " + i))
+        Thread.sleep(1 * 1000)
+      }
     }
     NFNStringValue("this is the final result")
   }
