@@ -36,7 +36,7 @@ install:
 script:
     - cd $CCNL_HOME
     - pwd
-    - mkdir build
+    - mkdir build && ch build
     - cmake ../src 
     - make
     - echo $CCNL_HOME
