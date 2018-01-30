@@ -1,12 +1,18 @@
-#nfn-scala
+# nfn-scala
 
 nfn-scala is a NFN service layer implementation written in Scala, interfacing and depending on CCN-Lite. 
 This project provides an asynchronous compute environment, an CCN and NFN client library, a DSL to write lambda calculus programs. 
 It can also be used to run CCN-Lite directly from Scala and to create a network topology.
 
-##Installation
+# Status of Automatic Tests
 
-###Dependencies
+[![Build Status](https://semaphoreci.com/api/v1/blacksheeep-36/nfn-scala/branches/master/badge.svg)](https://semaphoreci.com/blacksheeep-36/nfn-scala)
+
+(For the Moment we run only build tests, there are no functionality tests)
+
+## Installation
+
+### Dependencies
 
 Installation is fairly straight forward, and boils down to an available Java JDK 8, sbt 0.13.5 and CCN-Lite.
 If you want to install the JVM or sbt you could also test it out within a Docker container.
