@@ -6,7 +6,7 @@ It can also be used to run CCN-Lite directly from Scala and to create a network 
 
 # Status of Automatic Tests
 
-[![Build Status](https://semaphoreci.com/api/v1/blacksheeep-36/nfn-scala/branches/master/badge.svg)](https://semaphoreci.com/blacksheeep-36/nfn-scala)
+[![Build Status](https://semaphoreci.com/api/v1/cn-unibas/nfn-scala/branches/master/badge.svg)](https://semaphoreci.com/cn-unibas/nfn-scala)
 
 (For the Moment we run only build tests, there are no functionality tests)
 
