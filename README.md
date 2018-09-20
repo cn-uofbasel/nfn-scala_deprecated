@@ -1,5 +1,8 @@
 # nfn-scala
 
+WARNING: NFN-SCALA is discontinued. For NFN please use [PiCN](https://github.com/cn-uofbasel/PiCN) 
+
+
 nfn-scala is a NFN service layer implementation written in Scala, interfacing and depending on CCN-Lite. 
 This project provides an asynchronous compute environment, an CCN and NFN client library, a DSL to write lambda calculus programs. 
 It can also be used to run CCN-Lite directly from Scala and to create a network topology.
