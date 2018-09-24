@@ -1,6 +1,6 @@
 # nfn-scala
 
-WARNING: NFN-SCALA is discontinued. For NFN please use [PiCN](https://github.com/cn-uofbasel/PiCN) 
+**WARNING: NFN-SCALA is discontinued. For NFN please use [PiCN](https://github.com/cn-uofbasel/PiCN)**
 
 
 nfn-scala is a NFN service layer implementation written in Scala, interfacing and depending on CCN-Lite. 
