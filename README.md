@@ -1,4 +1,4 @@
-<font color="red"> **WARNING: NFN-SCALA is discontinued. For NFN please use [PiCN](https://github.com/cn-uofbasel/PiCN)** </span>
+**WARNING: NFN-SCALA is discontinued. For NFN please use [PiCN](https://github.com/cn-uofbasel/PiCN)**
 
 
 # nfn-scala
